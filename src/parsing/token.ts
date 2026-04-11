@@ -62,6 +62,20 @@ export type TokenType =
 export type TokenValue = string | number | boolean | undefined;
 
 /**
+ * Minimal source span. Phase 1 keeps this alongside the legacy `index` field
+ * as optional metadata — the existing hand-rolled lexer only records start
+ * indices, and populating `end` requires tracking raw lengths which is done
+ * in Phase 2 when the lexer is rewritten. `src/ast/nodes.ts` re-uses the same
+ * shape.
+ */
+export interface TokenSpan {
+  /** Inclusive start offset in the source expression (0-based). */
+  readonly start: number;
+  /** Exclusive end offset in the source expression. */
+  readonly end: number;
+}
+
+/**
  * Token class representing a single lexical unit in an expression
  */
 export class Token {
@@ -69,11 +83,19 @@ export class Token {
   public readonly value: TokenValue;
   /** Position index in the source expression string */
   public readonly index: number;
+  /**
+   * Optional source span. Currently unpopulated by the legacy lexer;
+   * `src/ast/nodes.ts` has a full span slot on every AST node so the bridge
+   * and round-tripping infrastructure are in place ahead of the Phase 2
+   * lexer rewrite that will start filling this in.
+   */
+  public readonly span?: TokenSpan;
 
-  constructor(type: TokenType, value: TokenValue, index: number) {
+  constructor(type: TokenType, value: TokenValue, index: number, span?: TokenSpan) {
     this.type = type;
     this.value = value;
     this.index = index;
+    this.span = span;
   }
 
   toString(): string {

@@ -1,9 +1,10 @@
 import simplify from './simplify.js';
 import substitute from './substitute.js';
 import evaluate from './evaluate.js';
-import expressionToString from './expression-to-string.js';
-import getSymbols from './get-symbols.js';
 import { Instruction } from '../parsing/instruction.js';
+import { fromInstructions } from '../ast/from-instructions.js';
+import { nodeToString } from '../ast/visitors/to-string.js';
+import { getSymbolsFromNode } from '../ast/visitors/get-symbols.js';
 import type {
   OperatorFunction,
   Value,
@@ -132,7 +133,7 @@ export class Expression {
    * ```
    */
   toString(): string {
-    return expressionToString(this.tokens, false);
+    return nodeToString(fromInstructions(this.tokens), false);
   }
 
   /**
@@ -151,7 +152,7 @@ export class Expression {
   symbols(options?: SymbolOptions): string[] {
     options = options || {};
     const vars: string[] = [];
-    getSymbols(this.tokens, vars, options);
+    getSymbolsFromNode(fromInstructions(this.tokens), vars, options);
 
     return vars;
   }
@@ -171,7 +172,7 @@ export class Expression {
   variables(options?: SymbolOptions): string[] {
     options = options || {};
     const vars: string[] = [];
-    getSymbols(this.tokens, vars, options);
+    getSymbolsFromNode(fromInstructions(this.tokens), vars, options);
     const { functions } = this;
 
     return vars.filter(function (name) {
@@ -200,7 +201,9 @@ export class Expression {
    */
   toJSFunction(param: string, variables?: ReadonlyValues): (...args: Value[]) => Value {
     const expr = this;
-    const f = new Function(param, 'with(this.functions) with (this.ternaryOps) with (this.binaryOps) with (this.unaryOps) { return ' + expressionToString(this.simplify(variables).tokens, true) + '; }');
+    const simplifiedTokens = this.simplify(variables).tokens;
+    const jsSource = nodeToString(fromInstructions(simplifiedTokens), true);
+    const f = new Function(param, 'with(this.functions) with (this.ternaryOps) with (this.binaryOps) with (this.unaryOps) { return ' + jsSource + '; }');
 
     return function (...args: Value[]): Value {
       return f.apply(expr, args);

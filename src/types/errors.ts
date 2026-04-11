@@ -25,11 +25,22 @@ export interface ErrorPosition {
 }
 
 /**
+ * Source span for error reporting. Phase 1 ships this alongside the
+ * line/column position — Phase 2 wires the lexer to populate it for every
+ * token and `ParseError.context.span` becomes the primary locator.
+ */
+export interface ErrorSpan {
+    readonly start: number;
+    readonly end: number;
+}
+
+/**
  * Error context interface for better error reporting
  */
 export interface ErrorContext {
     readonly expression?: string;
     readonly position?: ErrorPosition;
+    readonly span?: ErrorSpan;
     readonly token?: string;
     readonly variableName?: string;
     readonly functionName?: string;
