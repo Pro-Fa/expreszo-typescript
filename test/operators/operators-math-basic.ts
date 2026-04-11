@@ -44,51 +44,51 @@ describe('sqrt(x)', () => {
 describe('ln/log operator', () => {
   it('returns the natural logarithm of its argument', () => {
     const delta = 1e-15;
-    strictEqual(Parser.evaluate('ln 0'), -Infinity);
-    strictEqual(Parser.evaluate('log 0'), -Infinity);
-    assertCloseTo(Parser.evaluate('ln 0.5'), -0.6931471805599453, delta);
-    assertCloseTo(Parser.evaluate('log 0.5'), -0.6931471805599453, delta);
-    strictEqual(Parser.evaluate('ln 1'), 0);
-    strictEqual(Parser.evaluate('log 1'), 0);
-    assertCloseTo(Parser.evaluate('ln 2'), 0.6931471805599453, delta);
-    assertCloseTo(Parser.evaluate('log 2'), 0.6931471805599453, delta);
-    strictEqual(Parser.evaluate('ln E'), 1);
-    strictEqual(Parser.evaluate('log E'), 1);
-    assertCloseTo(Parser.evaluate('ln PI'), 1.1447298858494002, delta);
-    assertCloseTo(Parser.evaluate('log PI'), 1.1447298858494002, delta);
-    assertCloseTo(Parser.evaluate('ln 10'), 2.302585092994046, delta);
-    assertCloseTo(Parser.evaluate('log 10'), 2.302585092994046, delta);
-    assertCloseTo(Parser.evaluate('ln 100'), 4.605170185988092, delta);
-    ok(isNaN(Parser.evaluate('ln -1')));
-    ok(isNaN(Parser.evaluate('log -1')));
+    strictEqual(parser.evaluate('ln 0'), -Infinity);
+    strictEqual(parser.evaluate('log 0'), -Infinity);
+    assertCloseTo(parser.evaluate('ln 0.5'), -0.6931471805599453, delta);
+    assertCloseTo(parser.evaluate('log 0.5'), -0.6931471805599453, delta);
+    strictEqual(parser.evaluate('ln 1'), 0);
+    strictEqual(parser.evaluate('log 1'), 0);
+    assertCloseTo(parser.evaluate('ln 2'), 0.6931471805599453, delta);
+    assertCloseTo(parser.evaluate('log 2'), 0.6931471805599453, delta);
+    strictEqual(parser.evaluate('ln E'), 1);
+    strictEqual(parser.evaluate('log E'), 1);
+    assertCloseTo(parser.evaluate('ln PI'), 1.1447298858494002, delta);
+    assertCloseTo(parser.evaluate('log PI'), 1.1447298858494002, delta);
+    assertCloseTo(parser.evaluate('ln 10'), 2.302585092994046, delta);
+    assertCloseTo(parser.evaluate('log 10'), 2.302585092994046, delta);
+    assertCloseTo(parser.evaluate('ln 100'), 4.605170185988092, delta);
+    ok(isNaN(parser.evaluate('ln -1')));
+    ok(isNaN(parser.evaluate('log -1')));
   });
 });
 
 describe('log10 operator', () => {
   it('returns the base-10 logarithm of its argument', () => {
     const delta = 1e-15;
-    strictEqual(Parser.evaluate('log10 0'), -Infinity);
-    strictEqual(Parser.evaluate('lg 0'), -Infinity);
-    assertCloseTo(Parser.evaluate('log10 0.5'), -0.3010299956639812, delta);
-    assertCloseTo(Parser.evaluate('lg 0.5'), -0.3010299956639812, delta);
-    strictEqual(Parser.evaluate('log10 1'), 0);
-    strictEqual(Parser.evaluate('lg 1'), 0);
-    assertCloseTo(Parser.evaluate('log10 2'), 0.3010299956639812, delta);
-    assertCloseTo(Parser.evaluate('lg 2'), 0.3010299956639812, delta);
-    assertCloseTo(Parser.evaluate('log10 E'), 0.4342944819032518, delta);
-    assertCloseTo(Parser.evaluate('lg E'), 0.4342944819032518, delta);
-    assertCloseTo(Parser.evaluate('log10 PI'), 0.49714987269413385, delta);
-    assertCloseTo(Parser.evaluate('lg PI'), 0.49714987269413385, delta);
-    strictEqual(Parser.evaluate('log10 10'), 1);
-    strictEqual(Parser.evaluate('lg 10'), 1);
-    strictEqual(Parser.evaluate('log10 100'), 2);
-    strictEqual(Parser.evaluate('lg 100'), 2);
-    strictEqual(Parser.evaluate('log10 1000'), 3);
-    strictEqual(Parser.evaluate('lg 1000'), 3);
-    strictEqual(Parser.evaluate('log10 10000000000'), 10);
-    strictEqual(Parser.evaluate('lg 10000000000'), 10);
-    ok(isNaN(Parser.evaluate('log10 -1')));
-    ok(isNaN(Parser.evaluate('lg -1')));
+    strictEqual(parser.evaluate('log10 0'), -Infinity);
+    strictEqual(parser.evaluate('lg 0'), -Infinity);
+    assertCloseTo(parser.evaluate('log10 0.5'), -0.3010299956639812, delta);
+    assertCloseTo(parser.evaluate('lg 0.5'), -0.3010299956639812, delta);
+    strictEqual(parser.evaluate('log10 1'), 0);
+    strictEqual(parser.evaluate('lg 1'), 0);
+    assertCloseTo(parser.evaluate('log10 2'), 0.3010299956639812, delta);
+    assertCloseTo(parser.evaluate('lg 2'), 0.3010299956639812, delta);
+    assertCloseTo(parser.evaluate('log10 E'), 0.4342944819032518, delta);
+    assertCloseTo(parser.evaluate('lg E'), 0.4342944819032518, delta);
+    assertCloseTo(parser.evaluate('log10 PI'), 0.49714987269413385, delta);
+    assertCloseTo(parser.evaluate('lg PI'), 0.49714987269413385, delta);
+    strictEqual(parser.evaluate('log10 10'), 1);
+    strictEqual(parser.evaluate('lg 10'), 1);
+    strictEqual(parser.evaluate('log10 100'), 2);
+    strictEqual(parser.evaluate('lg 100'), 2);
+    strictEqual(parser.evaluate('log10 1000'), 3);
+    strictEqual(parser.evaluate('lg 1000'), 3);
+    strictEqual(parser.evaluate('log10 10000000000'), 10);
+    strictEqual(parser.evaluate('lg 10000000000'), 10);
+    ok(isNaN(parser.evaluate('log10 -1')));
+    ok(isNaN(parser.evaluate('lg -1')));
   });
 });
 
@@ -283,7 +283,7 @@ describe('log1p(x)', () => {
     strictEqual(parser.evaluate('log1p 0'), 0);
     assertCloseTo(parser.evaluate('log1p 1'), 0.6931471805599453, delta);
     ok(isNaN(parser.evaluate('log1p -2')));
-    assertCloseTo(Parser.evaluate('log1p 9'), 2.302585092994046, delta);
+    assertCloseTo(parser.evaluate('log1p 9'), 2.302585092994046, delta);
 
     assertCloseTo(parser.parse('log1p x').evaluate({ x: 1 }) as number, 0.6931471805599453, delta);
     assertCloseTo(parser.parse('log1p x').evaluate({ x: 9 }) as number, 2.302585092994046, delta);
@@ -297,12 +297,12 @@ describe('log2(x)', () => {
     ok(isNaN(parser.evaluate('log2(0/0)')));
     ok(isNaN(parser.evaluate('log2 -1')));
     strictEqual(parser.evaluate('log2 0'), -1 / 0);
-    strictEqual(Parser.evaluate('log2 1'), 0);
-    strictEqual(Parser.evaluate('log2 2'), 1);
-    strictEqual(Parser.evaluate('log2 3'), 1.584962500721156);
-    strictEqual(Parser.evaluate('log2 4'), 2);
-    strictEqual(Parser.evaluate('log2 8'), 3);
-    strictEqual(Parser.evaluate('log2 1024'), 10);
+    strictEqual(parser.evaluate('log2 1'), 0);
+    strictEqual(parser.evaluate('log2 2'), 1);
+    strictEqual(parser.evaluate('log2 3'), 1.584962500721156);
+    strictEqual(parser.evaluate('log2 4'), 2);
+    strictEqual(parser.evaluate('log2 8'), 3);
+    strictEqual(parser.evaluate('log2 1024'), 10);
 
     strictEqual(parser.parse('log2 x').evaluate({ x: 4 }), 2);
     assertCloseTo(parser.parse('log2 x').evaluate({ x: 3 }) as number, 1.584962500721156, delta);

@@ -2,6 +2,8 @@ import { expect, describe, it } from 'vitest';
 import { Parser } from '../../index.js';
 import spy from '../lib/spy.js';
 
+const parser = new Parser();
+
 // Helper functions for spy tests
 function returnTrue() {
   return true;
@@ -17,27 +19,27 @@ function returnFalse() {
 describe('Logical Operators TypeScript Test', () => {
   describe('and operator', () => {
     it('1 and 0', () => {
-      expect(Parser.evaluate('1 and 0')).toBe(false);
+      expect(parser.evaluate('1 and 0')).toBe(false);
     });
 
     it('1 and 1', () => {
-      expect(Parser.evaluate('1 and 1')).toBe(true);
+      expect(parser.evaluate('1 and 1')).toBe(true);
     });
 
     it('0 and 0', () => {
-      expect(Parser.evaluate('0 and 0')).toBe(false);
+      expect(parser.evaluate('0 and 0')).toBe(false);
     });
 
     it('0 and 1', () => {
-      expect(Parser.evaluate('0 and 1')).toBe(false);
+      expect(parser.evaluate('0 and 1')).toBe(false);
     });
 
     it('0 and 1 and 0', () => {
-      expect(Parser.evaluate('0 and 1 and 0')).toBe(false);
+      expect(parser.evaluate('0 and 1 and 0')).toBe(false);
     });
 
     it('1 and 1 and 0', () => {
-      expect(Parser.evaluate('1 and 1 and 0')).toBe(false);
+      expect(parser.evaluate('1 and 1 and 0')).toBe(false);
     });
 
     it('skips rhs when lhs is false', () => {
@@ -63,27 +65,27 @@ describe('Logical Operators TypeScript Test', () => {
 
   describe('or operator', () => {
     it('1 or 0', () => {
-      expect(Parser.evaluate('1 or 0')).toBe(true);
+      expect(parser.evaluate('1 or 0')).toBe(true);
     });
 
     it('1 or 1', () => {
-      expect(Parser.evaluate('1 or 1')).toBe(true);
+      expect(parser.evaluate('1 or 1')).toBe(true);
     });
 
     it('0 or 0', () => {
-      expect(Parser.evaluate('0 or 0')).toBe(false);
+      expect(parser.evaluate('0 or 0')).toBe(false);
     });
 
     it('0 or 1', () => {
-      expect(Parser.evaluate('0 or 1')).toBe(true);
+      expect(parser.evaluate('0 or 1')).toBe(true);
     });
 
     it('0 or 1 or 0', () => {
-      expect(Parser.evaluate('0 or 1 or 0')).toBe(true);
+      expect(parser.evaluate('0 or 1 or 0')).toBe(true);
     });
 
     it('1 or 1 or 0', () => {
-      expect(Parser.evaluate('1 or 1 or 0')).toBe(true);
+      expect(parser.evaluate('1 or 1 or 0')).toBe(true);
     });
 
     it('skips rhs when lhs is true', () => {
@@ -169,35 +171,35 @@ describe('Logical Operators TypeScript Test', () => {
 
   describe('not operator', () => {
     it('not 1', () => {
-      expect(Parser.evaluate('not 1')).toBe(false);
+      expect(parser.evaluate('not 1')).toBe(false);
     });
 
     it('not true', () => {
-      expect(Parser.evaluate('not true')).toBe(false);
+      expect(parser.evaluate('not true')).toBe(false);
     });
 
     it('not 0', () => {
-      expect(Parser.evaluate('not 0')).toBe(true);
+      expect(parser.evaluate('not 0')).toBe(true);
     });
 
     it('not false', () => {
-      expect(Parser.evaluate('not false')).toBe(true);
+      expect(parser.evaluate('not false')).toBe(true);
     });
 
     it('not 4', () => {
-      expect(Parser.evaluate('not 4')).toBe(false);
+      expect(parser.evaluate('not 4')).toBe(false);
     });
 
     it('1 and not 0', () => {
-      expect(Parser.evaluate('1 and not 0')).toBe(true);
+      expect(parser.evaluate('1 and not 0')).toBe(true);
     });
 
     it('not \'0\'', () => {
-      expect(Parser.evaluate('not \'0\'')).toBe(false);
+      expect(parser.evaluate('not \'0\'')).toBe(false);
     });
 
     it('not \'\'', () => {
-      expect(Parser.evaluate('not \'\'')).toBe(true);
+      expect(parser.evaluate('not \'\'')).toBe(true);
     });
   });
 

@@ -22,6 +22,27 @@ export type FunctionCategory =
   | 'utility'
   | 'type-check';
 
+/**
+ * Human-readable docs for a single function parameter. Consumed by the
+ * language service for hover/completion arity and placeholder rendering.
+ */
+export interface FunctionParamDoc {
+  readonly name: string;
+  readonly description: string;
+  readonly optional?: boolean;
+  readonly isVariadic?: boolean;
+}
+
+/**
+ * Doc block attached to a `FunctionDescriptor`. Phase 4 merged the legacy
+ * `BUILTIN_FUNCTION_DOCS` map into descriptors so the registry is the single
+ * source of truth the language service reads from.
+ */
+export interface FunctionDocs {
+  readonly description: string;
+  readonly params?: readonly FunctionParamDoc[];
+}
+
 export interface FunctionDescriptor {
   /** Name exposed to expressions (e.g. `max`, `indexOf`). */
   readonly name: string;
@@ -37,14 +58,19 @@ export interface FunctionDescriptor {
   readonly pure: boolean;
   /**
    * Whether `ExpressionValidator` treats this function as safe to call from
-   * untrusted expressions. Mirrors the `SAFE_MATH_FUNCTIONS` allow-list that
-   * Phase 4 will delete once the validator walks descriptors directly.
+   * untrusted expressions. The validator builds its allow-list from every
+   * descriptor with `safe: true`; there is no separate allow-list anywhere.
    */
   readonly safe: boolean;
   /**
    * Whether the function ever returns a promise. The async-analysis visitor
-   * in Phase 3 uses this to route evaluation to the sync or async evaluator
-   * without runtime duck-typing. All current built-ins are sync.
+   * uses this to route evaluation to the sync or async evaluator without
+   * runtime duck-typing. All current built-ins are sync.
    */
   readonly async: boolean;
+  /**
+   * Optional language-service documentation. If omitted, the language
+   * service falls back to generic `name(arg1, …)` rendering.
+   */
+  readonly docs?: FunctionDocs;
 }

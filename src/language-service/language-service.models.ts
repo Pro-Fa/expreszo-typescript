@@ -1,19 +1,21 @@
-﻿import { Parser } from '../parsing/parser';
-import { BUILTIN_FUNCTION_DOCS, FunctionDoc } from './language-service.documentation';
+import { Parser } from '../parsing/parser';
+import { BUILTIN_FUNCTIONS_BY_NAME } from '../registry/builtin/functions.js';
+import type { FunctionDocs, FunctionParamDoc } from '../registry/function-descriptor.js';
 import type { ArityInfo } from './language-service.types';
 
 export class FunctionDetails {
-  private readonly builtInFunctionDoc : FunctionDoc | undefined;
+  private readonly docBlock: FunctionDocs | undefined;
 
   constructor(private readonly parser: Parser, public readonly name: string) {
-    this.builtInFunctionDoc = BUILTIN_FUNCTION_DOCS[this.name] || undefined;
+    this.docBlock = BUILTIN_FUNCTIONS_BY_NAME.get(this.name)?.docs;
   }
 
-  private arity() {
-    if (this.builtInFunctionDoc) {
-      return this.builtInFunctionDoc.params?.length;
-    }
+  private params(): readonly FunctionParamDoc[] {
+    return this.docBlock?.params ?? [];
+  }
 
+  private arity(): number | undefined {
+    if (this.docBlock) return this.params().length;
     const f: unknown = (this.parser.functions && this.parser.functions[this.name]) || (this.parser.unaryOps && this.parser.unaryOps[this.name]);
     return typeof f === 'function' ? f.length : undefined;
   }
@@ -24,45 +26,34 @@ export class FunctionDetails {
    * - max: maximum number of arguments, or undefined if variadic
    */
   public arityInfo(): ArityInfo | undefined {
-    if (this.builtInFunctionDoc) {
-      const params = this.builtInFunctionDoc.params || [];
-      if (params.length === 0) {
-        return { min: 0, max: 0 };
-      }
+    if (this.docBlock) {
+      const params = this.params();
+      if (params.length === 0) return { min: 0, max: 0 };
 
-      // Check if any parameter is variadic
-      const hasVariadic = params.some(p => p.isVariadic);
-      // Count required (non-optional, non-variadic) parameters
-      const requiredParams = params.filter(p => !p.optional && !p.isVariadic);
-      const optionalParams = params.filter(p => p.optional && !p.isVariadic);
+      const hasVariadic = params.some((p) => p.isVariadic);
+      const requiredParams = params.filter((p) => !p.optional && !p.isVariadic);
+      const optionalParams = params.filter((p) => p.optional && !p.isVariadic);
 
       const min = requiredParams.length;
-      // If variadic, max is undefined (unlimited); otherwise, it's all non-variadic params
-      const max = hasVariadic ? undefined : (requiredParams.length + optionalParams.length);
+      const max = hasVariadic ? undefined : requiredParams.length + optionalParams.length;
 
       return { min, max };
     }
 
-    // For functions without documentation, use the JavaScript function's .length property
     const f: unknown = (this.parser.functions && this.parser.functions[this.name]) || (this.parser.unaryOps && this.parser.unaryOps[this.name]);
     if (typeof f === 'function') {
-      // JavaScript's .length gives number of expected arguments (doesn't account for variadic)
       return { min: f.length, max: f.length };
     }
-
     return undefined;
   }
 
-  public docs() {
-    if (this.builtInFunctionDoc) {
-      const description = this.builtInFunctionDoc.description || '';
-
-      const params = this.builtInFunctionDoc.params || [];
-
-      return `**${this.details()}**\n\n${description}\n\n*Parameters:*\n` + params.map((paramDoc) => `* \`${paramDoc.name}\`: ${paramDoc.description}`).join('\n');
+  public docs(): string | undefined {
+    if (this.docBlock) {
+      const params = this.params();
+      const paramList = params.map((p) => `* \`${p.name}\`: ${p.description}`).join('\n');
+      return `**${this.details()}**\n\n${this.docBlock.description}\n\n*Parameters:*\n${paramList}`;
     }
 
-    // Provide a generic doc for unary operators if not documented
     if (this.parser.unaryOps && this.parser.unaryOps[this.name]) {
       return `${this.name} x: unary operator`;
     }
@@ -70,24 +61,27 @@ export class FunctionDetails {
     return undefined;
   }
 
-  public details() {
-    if (this.builtInFunctionDoc) {
-      const name = this.builtInFunctionDoc.name || this.name;
-      const params = this.builtInFunctionDoc.params || [];
-      return `${name}(${params.map((paramDoc) => `${paramDoc.name}`).join(', ')})`;
+  public details(): string {
+    if (this.docBlock) {
+      const params = this.params();
+      return `${this.name}(${params.map((p) => p.name).join(', ')})`;
     }
 
     const arity = this.arity();
-    return arity != null ? `${this.name}(${Array.from({ length: arity }).map((_, i) => 'arg' + (i + 1)).join(', ')})` : `${this.name}(…)`;
+    return arity != null
+      ? `${this.name}(${Array.from({ length: arity }).map((_, i) => 'arg' + (i + 1)).join(', ')})`
+      : `${this.name}(…)`;
   }
 
-  public completionText() {
-    if (this.builtInFunctionDoc) {
-      const params = this.builtInFunctionDoc.params || [];
-      return `${this.name}(${params.map((paramDoc, i) => `\${${i + 1}:${paramDoc.name}}`).join(', ')})`;
+  public completionText(): string {
+    if (this.docBlock) {
+      const params = this.params();
+      return `${this.name}(${params.map((p, i) => `\${${i + 1}:${p.name}}`).join(', ')})`;
     }
 
     const arity = this.arity();
-    return arity != null ? `${this.name}(${Array.from({ length: arity }).map((_, i) => `\${${i + 1}}`).join(', ')})` : `${this.name}(…)`;
+    return arity != null
+      ? `${this.name}(${Array.from({ length: arity }).map((_, i) => `\${${i + 1}}`).join(', ')})`
+      : `${this.name}(…)`;
   }
 }

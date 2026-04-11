@@ -356,43 +356,4 @@ export class Parser {
 
     return !(optionName in operators) || !!operators[optionName];
   }
-
-  // Static methods for the shared parser instance
-  private static sharedParser = new Parser();
-
-  /**
-   * Parses a mathematical expression using the default shared parser instance.
-   * This is a static convenience method.
-   *
-   * @param expr - The mathematical expression string to parse
-   * @returns An Expression object that can be evaluated
-   * @throws {ParseError} When the expression contains syntax errors
-   * @example
-   * ```typescript
-   * const expression = Parser.parse('2 + 3 * x');
-   * const result = expression.evaluate({ x: 4 }); // Returns 14
-   * ```
-   */
-  static parse(expr: string): Expression {
-    return Parser.sharedParser.parse(expr);
-  }
-
-  /**
-   * Parses and immediately evaluates a mathematical expression using the default shared parser instance.
-   * This is a static convenience method equivalent to `Parser.parse(expr).evaluate(variables)`.
-   *
-   * @param expr - The mathematical expression string to evaluate
-   * @param variables - Optional object containing variable values
-   * @returns The result of evaluating the expression
-   * @throws {ParseError} When the expression contains syntax errors
-   * @throws {VariableError} When the expression references undefined variables
-   * @throws {EvaluationError} When runtime evaluation fails
-   * @example
-   * ```typescript
-   * const result = Parser.evaluate('2 + 3 * x', { x: 4 }); // Returns 14
-   * ```
-   */
-  static evaluate(expr: string, variables?: Values): Value | Promise<Value> {
-    return Parser.sharedParser.parse(expr).evaluate(variables);
-  }
 }

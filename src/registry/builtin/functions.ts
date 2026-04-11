@@ -1,19 +1,20 @@
 /**
- * Built-in function catalog. Mirrors `Parser.functions` in
- * `src/parsing/parser.ts` — every `impl` here is the *same function
- * reference* the legacy parser registers, and a catalog-parity test asserts
- * that at build time. Phase 4 will delete the hand-rolled record and make
- * `defineParser` consume this array directly.
+ * Built-in function catalog. The single source-of-truth for `Parser.functions`,
+ * the `ExpressionValidator` safe allow-list, and the language-service docs.
+ * Every `impl` here is the reference the parser registers at construction
+ * time. `docs` is merged from `function-docs.ts` at module init so adding a
+ * new built-in and its docs are one file + one map entry.
  *
  * `pure: false` is reserved for functions with observable side effects or
- * non-determinism. Only `random` qualifies today. Everything else folds.
+ * non-determinism. Only `random` qualifies today.
  *
  * `async: false` everywhere — all current built-ins are synchronous. Users
- * who register async functions via `parser.functions[name] = ...` will
- * continue to work through the runtime scope path, and the Phase 3
- * async-analysis visitor will treat them as sync-until-proven-async.
+ * who register async functions via `parser.functions[name] = ...` still
+ * work through the runtime scope path; the async-analysis visitor detects
+ * them via `constructor.name === 'AsyncFunction'`.
  */
 import type { FunctionDescriptor } from '../function-descriptor.js';
+import { BUILTIN_FUNCTION_DOCS } from './function-docs.js';
 import {
   atan2, condition, fac, filter, fold, gamma, hypot, indexOf, join, map,
   max, min, random, roundTo, sum, json,
@@ -27,7 +28,7 @@ import {
 } from '../../functions/index.js';
 import { pow } from '../../operators/binary/index.js';
 
-export const BUILTIN_FUNCTIONS: readonly FunctionDescriptor[] = [
+const RAW_BUILTIN_FUNCTIONS: readonly Omit<FunctionDescriptor, 'docs'>[] = [
   // Math
   { name: 'atan2',   category: 'math', pure: true,  safe: true, async: false, impl: atan2 },
   { name: 'clamp',   category: 'math', pure: true,  safe: true, async: false, impl: clamp },
@@ -105,3 +106,18 @@ export const BUILTIN_FUNCTIONS: readonly FunctionDescriptor[] = [
   { name: 'isUndefined', category: 'type-check', pure: true, safe: true, async: false, impl: isUndefined },
   { name: 'isFunction',  category: 'type-check', pure: true, safe: true, async: false, impl: isFunctionValue }
 ];
+
+export const BUILTIN_FUNCTIONS: readonly FunctionDescriptor[] = RAW_BUILTIN_FUNCTIONS.map(
+  (desc): FunctionDescriptor => {
+    const docs = BUILTIN_FUNCTION_DOCS[desc.name];
+    return docs ? { ...desc, docs } : desc;
+  }
+);
+
+/**
+ * Name → descriptor lookup built once at module load. Language service,
+ * validator, and `defineParser` all read through this map.
+ */
+export const BUILTIN_FUNCTIONS_BY_NAME: ReadonlyMap<string, FunctionDescriptor> = new Map(
+  BUILTIN_FUNCTIONS.map((d) => [d.name, d])
+);

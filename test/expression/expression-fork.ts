@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { Parser } from '../../index';
 
+const parser = new Parser();
+
 describe('Expression Fork Features TypeScript Test', () => {
   describe('CASE statements', () => {
     describe('switch style cases', () => {
@@ -173,23 +175,23 @@ describe('Expression Fork Features TypeScript Test', () => {
 
     describe('invalid case block', () => {
       it('should throw error for missing when', () => {
-        expect(() => Parser.evaluate('case true then 5 end')).toThrow(/invalid case block/);
-        expect(() => Parser.evaluate('case then 5 end')).toThrow(/invalid case block/);
+        expect(() => parser.evaluate('case true then 5 end')).toThrow(/invalid case block/);
+        expect(() => parser.evaluate('case then 5 end')).toThrow(/invalid case block/);
       });
 
       it('should throw error for missing then', () => {
-        expect(() => Parser.evaluate('case true when 5 end')).toThrow(/case block missing when/);
-        expect(() => Parser.evaluate('case when 5 end')).toThrow(/case block missing when/);
+        expect(() => parser.evaluate('case true when 5 end')).toThrow(/case block missing when/);
+        expect(() => parser.evaluate('case when 5 end')).toThrow(/case block missing when/);
       });
 
       it('should throw error for missing end', () => {
-        expect(() => Parser.evaluate('case true when 5 then 6')).toThrow(/invalid case block/);
-        expect(() => Parser.evaluate('case when 5 then 6')).toThrow(/invalid case block/);
+        expect(() => parser.evaluate('case true when 5 then 6')).toThrow(/invalid case block/);
+        expect(() => parser.evaluate('case when 5 then 6')).toThrow(/invalid case block/);
       });
 
       it('should throw error for else followed by when', () => {
-        expect(() => Parser.evaluate('case true else "abc" when true then "def" end')).toThrow(/invalid case block/);
-        expect(() => Parser.evaluate('case else "abc" when true then "def" end')).toThrow(/invalid case block/);
+        expect(() => parser.evaluate('case true else "abc" when true then "def" end')).toThrow(/invalid case block/);
+        expect(() => parser.evaluate('case else "abc" when true then "def" end')).toThrow(/invalid case block/);
       });
     });
   });
@@ -285,19 +287,19 @@ describe('Expression Fork Features TypeScript Test', () => {
 
   describe('extra logical operators', () => {
     it('should handle false or true', () => {
-      expect(Parser.evaluate('false or true')).toBe(true);
+      expect(parser.evaluate('false or true')).toBe(true);
     });
 
     it('should handle false || true', () => {
-      expect(Parser.evaluate('false || true')).toBe(true);
+      expect(parser.evaluate('false || true')).toBe(true);
     });
 
     it('should handle false and true', () => {
-      expect(Parser.evaluate('false and true')).toBe(false);
+      expect(parser.evaluate('false and true')).toBe(false);
     });
 
     it('should handle false && true', () => {
-      expect(Parser.evaluate('false && true')).toBe(false);
+      expect(parser.evaluate('false && true')).toBe(false);
     });
   });
 });

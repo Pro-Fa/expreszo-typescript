@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { Parser } from '../../index';
 import type { VariableResolver } from '../../index';
 
+const parser = new Parser();
+
 describe('Expression Advanced Features TypeScript Test', () => {
   describe('function definitions', () => {
     it('should handle f(x) = x * x', () => {
@@ -61,11 +63,11 @@ describe('Expression Advanced Features TypeScript Test', () => {
 
   describe('sequential operations', () => {
     it('should handle 3 ; 2 ; 1', () => {
-      expect(Parser.evaluate('3 ; 2 ; 1')).toBe(1);
+      expect(parser.evaluate('3 ; 2 ; 1')).toBe(1);
     });
 
     it('should handle 3 ; 2 ; 1 ;', () => {
-      expect(Parser.evaluate('3 ; 2 ; 1 ;')).toBe(1);
+      expect(parser.evaluate('3 ; 2 ; 1 ;')).toBe(1);
     });
 
     it('should handle x = 3 ; y = 4 ; z = x * y', () => {
@@ -91,13 +93,13 @@ describe('Expression Advanced Features TypeScript Test', () => {
 
   describe('undefined support', () => {
     it('should parse undefined', () => {
-      expect(Parser.evaluate('undefined')).toBeUndefined();
-      expect(Parser.evaluate('x = undefined; x')).toBeUndefined();
+      expect(parser.evaluate('undefined')).toBeUndefined();
+      expect(parser.evaluate('x = undefined; x')).toBeUndefined();
     });
 
     it('should fail to parse undefined as a custom function', () => {
-      expect(() => Parser.evaluate('undefined()')).toThrow(/undefined is not a function/);
-      expect(() => Parser.evaluate('x = undefined(); x')).toThrow(/undefined is not a function/);
+      expect(() => parser.evaluate('undefined()')).toThrow(/undefined is not a function/);
+      expect(() => parser.evaluate('x = undefined(); x')).toThrow(/undefined is not a function/);
     });
   });
 
@@ -345,17 +347,17 @@ describe('Expression Advanced Features TypeScript Test', () => {
 
   describe('?? (nullish coalescing) operator', () => {
     it('should succeed with variables set to undefined', () => {
-      expect(Parser.evaluate('x = undefined; x + 1')).toBeUndefined();
-      expect(Parser.evaluate('x = undefined; x ?? 3 + 1')).toBe(4);
+      expect(parser.evaluate('x = undefined; x + 1')).toBeUndefined();
+      expect(parser.evaluate('x = undefined; x ?? 3 + 1')).toBe(4);
     });
 
     it('should handle y = x ?? 2 + 4', () => {
-      expect(Parser.evaluate('y = x ?? 2 + 4', { x: undefined })).toBe(6);
-      expect(Parser.evaluate('y = x ?? 2 + 4', { x: 3 })).toBe(7);
+      expect(parser.evaluate('y = x ?? 2 + 4', { x: undefined })).toBe(6);
+      expect(parser.evaluate('y = x ?? 2 + 4', { x: 3 })).toBe(7);
     });
 
     it('should handle (a / b * 10) ?? 0 (divide by 0)', () => {
-      expect(Parser.evaluate('(a / b * 10) ?? 0', { a: 5, b: 0 })).toBe(0);
+      expect(parser.evaluate('(a / b * 10) ?? 0', { a: 5, b: 0 })).toBe(0);
     });
 
     it('should be disabled by the coalesce option', () => {
@@ -366,7 +368,7 @@ describe('Expression Advanced Features TypeScript Test', () => {
 
   describe('as operator', () => {
     it('should be disabled by default', () => {
-      expect(() => Parser.evaluate('"1.6" as "abc"')).toThrow();
+      expect(() => parser.evaluate('"1.6" as "abc"')).toThrow();
     });
 
     it('should work when enabled', () => {

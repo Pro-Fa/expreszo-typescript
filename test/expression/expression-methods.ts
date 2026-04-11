@@ -4,6 +4,8 @@ import { Parser } from '../../index.js';
 // Expression Methods Tests - Converted from expression.js
 // Tests for substitute(), simplify(), variables(), symbols(), and toString() methods
 
+const parser = new Parser();
+
 describe('Expression methods', () => {
   describe('substitute()', () => {
     const parser = new Parser();
@@ -48,56 +50,56 @@ describe('Expression methods', () => {
 
   describe('variables()', () => {
     it('should return variable names', () => {
-      const expr = Parser.parse('x * (y * atan2(1, 2)) + z.y.x');
+      const expr = parser.parse('x * (y * atan2(1, 2)) + z.y.x');
       expect(expr.variables()).toEqual(['x', 'y', 'z']);
     });
 
     it('should return variables after simplification', () => {
-      const expr = Parser.parse('x * (y * atan2(1, 2)) + z.y.x');
+      const expr = parser.parse('x * (y * atan2(1, 2)) + z.y.x');
       expect(expr.simplify({ y: 4 }).variables()).toEqual(['x', 'z']);
       expect(expr.simplify({ y: 4, z: { y: { x: 5 } } }).variables()).toEqual(['x']);
     });
 
     it('should handle conditional expressions', () => {
-      expect(Parser.parse('a or b ? c + d : e * f').variables()).toEqual(['a', 'b', 'c', 'd', 'e', 'f']);
+      expect(parser.parse('a or b ? c + d : e * f').variables()).toEqual(['a', 'b', 'c', 'd', 'e', 'f']);
     });
 
     it('should handle special variable names', () => {
-      expect(Parser.parse('$x * $y_+$a1*$z - $b2').variables()).toEqual(['$x', '$y_', '$a1', '$z', '$b2']);
+      expect(parser.parse('$x * $y_+$a1*$z - $b2').variables()).toEqual(['$x', '$y_', '$a1', '$z', '$b2']);
     });
 
     it('should handle member access', () => {
-      expect(Parser.parse('user.age + 2').variables()).toEqual(['user']);
-      expect(Parser.parse('user.age + 2').variables({ withMembers: false })).toEqual(['user']);
+      expect(parser.parse('user.age + 2').variables()).toEqual(['user']);
+      expect(parser.parse('user.age + 2').variables({ withMembers: false })).toEqual(['user']);
 
-      const expr = Parser.parse('user.age + 2');
+      const expr = parser.parse('user.age + 2');
       expect(expr.variables({ withMembers: true })).toEqual(['user.age']);
     });
 
     it('should handle complex member access with withMembers option', () => {
-      const expr1 = Parser.parse('x.y ? x.y.z : default.z');
+      const expr1 = parser.parse('x.y ? x.y.z : default.z');
       expect(expr1.variables({ withMembers: true })).toEqual(['x.y.z', 'default.z', 'x.y']);
 
-      const expr2 = Parser.parse('x + x.y + x.z');
+      const expr2 = parser.parse('x + x.y + x.z');
       expect(expr2.variables({ withMembers: true })).toEqual(['x', 'x.y', 'x.z']);
 
-      const expr3 = Parser.parse('x.y < 3 ? 2 * x.y.z : default.z + 1');
+      const expr3 = parser.parse('x.y < 3 ? 2 * x.y.z : default.z + 1');
       expect(expr3.variables({ withMembers: true })).toEqual(['x.y', 'x.y.z', 'default.z']);
 
-      const expr4 = Parser.parse('user.age');
+      const expr4 = parser.parse('user.age');
       expect(expr4.variables({ withMembers: true })).toEqual(['user.age']);
 
-      const expr5 = Parser.parse('x');
+      const expr5 = parser.parse('x');
       expect(expr5.variables({ withMembers: true })).toEqual(['x']);
       expect(expr5.variables({ withMembers: false })).toEqual(['x']);
     });
 
     it('should handle function calls with member access', () => {
-      const expr1 = Parser.parse('max(conf.limits.lower, conf.limits.upper)');
+      const expr1 = parser.parse('max(conf.limits.lower, conf.limits.upper)');
       expect(expr1.variables({ withMembers: false })).toEqual(['conf']);
       expect(expr1.variables({ withMembers: true })).toEqual(['conf.limits.lower', 'conf.limits.upper']);
 
-      const expr2 = Parser.parse('fn.max(conf.limits.lower, conf.limits.upper)');
+      const expr2 = parser.parse('fn.max(conf.limits.lower, conf.limits.upper)');
       expect(expr2.variables({ withMembers: false })).toEqual(['fn', 'conf']);
       expect(expr2.variables({ withMembers: true })).toEqual(['fn.max', 'conf.limits.lower', 'conf.limits.upper']);
     });
@@ -113,39 +115,39 @@ describe('Expression methods', () => {
 
   describe('symbols()', () => {
     it('should return symbols including functions', () => {
-      const expr = Parser.parse('x * (y * atan2(1, 2)) + z.y.x');
+      const expr = parser.parse('x * (y * atan2(1, 2)) + z.y.x');
       expect(expr.symbols()).toEqual(['x', 'y', 'atan2', 'z']);
     });
 
     it('should return symbols after simplification', () => {
-      const expr = Parser.parse('x * (y * atan2(1, 2)) + z.y.x');
+      const expr = parser.parse('x * (y * atan2(1, 2)) + z.y.x');
       expect(expr.simplify({ y: 4 }).symbols()).toEqual(['x', 'atan2', 'z']);
       expect(expr.simplify({ y: 4, z: { y: { x: 5 } } }).symbols()).toEqual(['x', 'atan2']);
     });
 
     it('should handle conditional expressions', () => {
-      expect(Parser.parse('a or b ? c + d : e * f').symbols()).toEqual(['a', 'b', 'c', 'd', 'e', 'f']);
+      expect(parser.parse('a or b ? c + d : e * f').symbols()).toEqual(['a', 'b', 'c', 'd', 'e', 'f']);
     });
 
     it('should handle member access', () => {
-      expect(Parser.parse('user.age + 2').symbols()).toEqual(['user']);
-      expect(Parser.parse('user.age + 2').symbols({ withMembers: false })).toEqual(['user']);
+      expect(parser.parse('user.age + 2').symbols()).toEqual(['user']);
+      expect(parser.parse('user.age + 2').symbols({ withMembers: false })).toEqual(['user']);
 
-      const expr = Parser.parse('user.age + 2');
+      const expr = parser.parse('user.age + 2');
       expect(expr.symbols({ withMembers: true })).toEqual(['user.age']);
     });
 
     it('should handle complex member access with withMembers option', () => {
-      const expr1 = Parser.parse('x.y ? x.y.z : default.z');
+      const expr1 = parser.parse('x.y ? x.y.z : default.z');
       expect(expr1.symbols({ withMembers: true })).toEqual(['x.y.z', 'default.z', 'x.y']);
 
-      const expr2 = Parser.parse('x.y < 3 ? 2 * x.y.z : default.z + 1');
+      const expr2 = parser.parse('x.y < 3 ? 2 * x.y.z : default.z + 1');
       expect(expr2.symbols({ withMembers: true })).toEqual(['x.y', 'x.y.z', 'default.z']);
 
-      const expr3 = Parser.parse('user.age');
+      const expr3 = parser.parse('user.age');
       expect(expr3.symbols({ withMembers: true })).toEqual(['user.age']);
 
-      const expr4 = Parser.parse('x');
+      const expr4 = parser.parse('x');
       expect(expr4.symbols({ withMembers: true })).toEqual(['x']);
       expect(expr4.symbols({ withMembers: false })).toEqual(['x']);
     });
@@ -214,9 +216,9 @@ describe('Expression methods', () => {
       });
 
       it('should handle arrays', () => {
-        expect(Parser.parse('[1, 2, 3]').toString()).toBe('[1, 2, 3]');
-        expect(Parser.parse('[1, 2, 3, [4, [5, 6]]]').toString()).toBe('[1, 2, 3, [4, [5, 6]]]');
-        expect(Parser.parse('["a", ["b", ["c"]], true, 1 + 2 + 3]').toString()).toBe('["a", ["b", ["c"]], true, ((1 + 2) + 3)]');
+        expect(parser.parse('[1, 2, 3]').toString()).toBe('[1, 2, 3]');
+        expect(parser.parse('[1, 2, 3, [4, [5, 6]]]').toString()).toBe('[1, 2, 3, [4, [5, 6]]]');
+        expect(parser.parse('["a", ["b", ["c"]], true, 1 + 2 + 3]').toString()).toBe('["a", ["b", ["c"]], true, ((1 + 2) + 3)]');
         expect(parser.parse('[1, 2+3, a, "5"]').toString()).toBe('[1, (2 + 3), a, "5"]');
         expect(parser.parse('a[0]').toString()).toBe('a[0]');
         expect(parser.parse('a[2 + 3]').toString()).toBe('a[(2 + 3)]');

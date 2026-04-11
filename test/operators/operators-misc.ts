@@ -146,33 +146,33 @@ describe('x!', () => {
 
 describe('[] operator', () => {
   it('a[0]', () => {
-    strictEqual(Parser.evaluate('a[0]', { a: [4, 3, 2, 1] }), 4);
+    strictEqual(parser.evaluate('a[0]', { a: [4, 3, 2, 1] }), 4);
   });
 
   it('a[0.1] on array', () => {
     throws(() => {
-      Parser.evaluate('a[0.1]', { a: [4, 3, 2, 1] });
+      parser.evaluate('a[0.1]', { a: [4, 3, 2, 1] });
     }, 'Array can only be indexed with integers. Received: 0.1');
   });
 
   it('a[0.1] on object', () => {
-    strictEqual(Parser.evaluate('a[0.1]', { a: { 0.1: 4, 1: 3 } }), 4);
+    strictEqual(parser.evaluate('a[0.1]', { a: { 0.1: 4, 1: 3 } }), 4);
   });
 
   it('a[3]', () => {
-    strictEqual(Parser.evaluate('a[3]', { a: [4, 3, 2, 1] }), 1);
+    strictEqual(parser.evaluate('a[3]', { a: [4, 3, 2, 1] }), 1);
   });
 
   it('a[3 - 2]', () => {
-    strictEqual(Parser.evaluate('a[3 - 2]', { a: [4, 3, 2, 1] }), 3);
+    strictEqual(parser.evaluate('a[3 - 2]', { a: [4, 3, 2, 1] }), 3);
   });
 
   it('a["foo"]', () => {
-    strictEqual(Parser.evaluate('a["foo"]', { a: { foo: 'bar' } }), 'bar');
+    strictEqual(parser.evaluate('a["foo"]', { a: { foo: 'bar' } }), 'bar');
   });
 
   it('a[2]^3', () => {
-    strictEqual(Parser.evaluate('a[2]^3', { a: [1, 2, 3, 4] }), 27);
+    strictEqual(parser.evaluate('a[2]^3', { a: [1, 2, 3, 4] }), 27);
   });
 });
 

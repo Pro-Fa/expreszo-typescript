@@ -34,5 +34,5 @@ export * from './validation/index.js';
 // Error handling utilities
 export * from './errors/index.js';
 
-// Configuration utilities
-export * from './config/index.js';
+// v7 descriptor-driven API: defineParser + presets
+export * from './api/index.js';

@@ -12,6 +12,19 @@
 import { Expression } from './src/core/expression.js';
 import { Parser } from './src/parsing/parser.js';
 import { createLanguageService } from './src/language-service/index.js';
+import { defineParser } from './src/api/define-parser.js';
+import {
+  coreParser,
+  withComparison,
+  withLogical,
+  withMath,
+  withString,
+  withArray,
+  withObject,
+  withTypeCheck,
+  withUtility,
+  fullParser
+} from './src/api/presets.js';
 
 // Re-export types for public API
 export type {
@@ -50,4 +63,22 @@ export type {
   ArityInfo
 } from './src/language-service/index.js';
 
-export { createLanguageService, Expression, Parser };
+export type { ParserConfig } from './src/api/define-parser.js';
+export type { ParserPreset } from './src/api/presets.js';
+
+export {
+  createLanguageService,
+  Expression,
+  Parser,
+  defineParser,
+  coreParser,
+  withComparison,
+  withLogical,
+  withMath,
+  withString,
+  withArray,
+  withObject,
+  withTypeCheck,
+  withUtility,
+  fullParser
+};

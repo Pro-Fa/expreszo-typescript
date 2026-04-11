@@ -15,6 +15,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { Parser } from '../../index.js';
+import type { Value } from '../../index.js';
 
 /**
  * Native async wrapper. `constructor.name === 'AsyncFunction'` trips the
@@ -33,7 +34,7 @@ function makeAsyncParser(): Parser {
   return parser;
 }
 
-type Scope = Record<string, unknown>;
+type Scope = Record<string, Value>;
 
 async function parity(
   expression: string,
