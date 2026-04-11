@@ -228,9 +228,9 @@ describe('sign(x)', () => {
 
     strictEqual(parser.parse('sign -0.001').simplify().toString(), '(-1)');
 
-    strictEqual(parser.parse('sign x').toJSFunction('x')(0), 0);
-    strictEqual(parser.parse('sign x').toJSFunction('x')(2), 1);
-    strictEqual(parser.parse('sign x').toJSFunction('x')(-2), -1);
+    strictEqual(parser.parse('sign x').evaluate({ x: 0 }), 0);
+    strictEqual(parser.parse('sign x').evaluate({ x: 2 }), 1);
+    strictEqual(parser.parse('sign x').evaluate({ x: -2 }), -1);
   });
 });
 
@@ -253,7 +253,7 @@ describe('cbrt(x)', () => {
 
     strictEqual(parser.parse('cbrt 8').simplify().toString(), '2');
 
-    strictEqual(parser.parse('cbrt x').toJSFunction('x')(27), 3);
+    strictEqual(parser.parse('cbrt x').evaluate({ x: 27 }), 3);
   });
 });
 
@@ -269,8 +269,8 @@ describe('expm1(x)', () => {
 
     ok(/^1.718281828459\d*$/.test(parser.parse('expm1 1').simplify().toString()));
 
-    assertCloseTo(parser.parse('expm1 x').toJSFunction('x')(1), 1.718281828459045, delta);
-    assertCloseTo(parser.parse('expm1 x').toJSFunction('x')(2), 6.38905609893065, delta);
+    assertCloseTo(parser.parse('expm1 x').evaluate({ x: 1 }) as number, 1.718281828459045, delta);
+    assertCloseTo(parser.parse('expm1 x').evaluate({ x: 2 }) as number, 6.38905609893065, delta);
   });
 });
 
@@ -285,8 +285,8 @@ describe('log1p(x)', () => {
     ok(isNaN(parser.evaluate('log1p -2')));
     assertCloseTo(Parser.evaluate('log1p 9'), 2.302585092994046, delta);
 
-    assertCloseTo(parser.parse('log1p x').toJSFunction('x')(1), 0.6931471805599453, delta);
-    assertCloseTo(parser.parse('log1p x').toJSFunction('x')(9), 2.302585092994046, delta);
+    assertCloseTo(parser.parse('log1p x').evaluate({ x: 1 }) as number, 0.6931471805599453, delta);
+    assertCloseTo(parser.parse('log1p x').evaluate({ x: 9 }) as number, 2.302585092994046, delta);
   });
 });
 
@@ -304,8 +304,8 @@ describe('log2(x)', () => {
     strictEqual(Parser.evaluate('log2 8'), 3);
     strictEqual(Parser.evaluate('log2 1024'), 10);
 
-    strictEqual(parser.parse('log2 x').toJSFunction('x')(4), 2);
-    assertCloseTo(parser.parse('log2 x').toJSFunction('x')(3), 1.584962500721156, delta);
+    strictEqual(parser.parse('log2 x').evaluate({ x: 4 }), 2);
+    assertCloseTo(parser.parse('log2 x').evaluate({ x: 3 }) as number, 1.584962500721156, delta);
   });
 });
 

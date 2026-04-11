@@ -1,7 +1,10 @@
 import type { Node } from '../ast/nodes.js';
 import { simplifyAst } from '../ast/visitors/simplify.js';
 import { substituteAst } from '../ast/visitors/substitute.js';
-import { evaluateAst } from '../eval/ast-evaluator.js';
+import { containsAsyncCall } from '../ast/visitors/async-analysis.js';
+import { evaluateAstSync } from '../eval/sync-evaluator.js';
+import { evaluateAstAsync } from '../eval/async-evaluator.js';
+import { AsyncRequiredError } from '../eval/value.js';
 import { nodeToString } from '../ast/visitors/to-string.js';
 import { getSymbolsFromNode } from '../ast/visitors/get-symbols.js';
 import type {
@@ -31,6 +34,14 @@ export class Expression {
   public binaryOps: Record<string, OperatorFunction>;
   public ternaryOps: Record<string, OperatorFunction>;
   public functions: Record<string, OperatorFunction>;
+
+  /**
+   * Cached result of the async-analysis visitor. `undefined` means "not yet
+   * computed"; `true` routes straight to the async evaluator; `false` lets
+   * the sync evaluator run and upgrades to async only if it raises
+   * `AsyncRequiredError` (at which point this flag flips to `true`).
+   */
+  private isAsync: boolean | undefined;
 
   /**
    * Creates a new Expression instance. Usually created via Parser.parse().
@@ -121,7 +132,22 @@ export class Expression {
   evaluate(values?: ReadonlyValues, resolver?: VariableResolver): Value | Promise<Value> {
     const safeValues = (values || {}) as Record<string, Value>;
 
-    return evaluateAst(this.root, this, safeValues, resolver);
+    if (this.isAsync === undefined) {
+      this.isAsync = containsAsyncCall(this.root, { functions: this.functions });
+    }
+    if (this.isAsync) {
+      return evaluateAstAsync(this.root, this, safeValues, resolver);
+    }
+
+    try {
+      return evaluateAstSync(this.root, this, safeValues, resolver);
+    } catch (err) {
+      if (err instanceof AsyncRequiredError) {
+        this.isAsync = true;
+        return evaluateAstAsync(this.root, this, safeValues, resolver);
+      }
+      throw err;
+    }
   }
 
   /**
@@ -135,7 +161,7 @@ export class Expression {
    * ```
    */
   toString(): string {
-    return nodeToString(this.root, false);
+    return nodeToString(this.root);
   }
 
   /**
@@ -182,33 +208,4 @@ export class Expression {
     });
   }
 
-  /**
-   * Compiles the expression into a JavaScript function.
-   * The resulting function can be called with arguments corresponding to variables in the expression.
-   *
-   * @param param - The parameter name for the generated function
-   * @param variables - Optional pre-computed variable values for optimization
-   * @returns A JavaScript function that evaluates the expression
-   * @example
-   * ```typescript
-   * const expr = parser.parse('2 + 3 * x');
-   * const fn = expr.toJSFunction('x');
-   * const result = fn(4); // Returns 14
-   *
-   * // Multiple parameters
-   * const expr2 = parser.parse('x + y * z');
-   * const fn2 = expr2.toJSFunction('vars');
-   * const result2 = fn2({ x: 1, y: 2, z: 3 }); // Returns 7
-   * ```
-   */
-  toJSFunction(param: string, variables?: ReadonlyValues): (...args: Value[]) => Value {
-    const expr = this;
-    const simplifiedRoot = this.simplify(variables).root;
-    const jsSource = nodeToString(simplifiedRoot, true);
-    const f = new Function(param, 'with(this.functions) with (this.ternaryOps) with (this.binaryOps) with (this.unaryOps) { return ' + jsSource + '; }');
-
-    return function (...args: Value[]): Value {
-      return f.apply(expr, args);
-    };
-  }
 }

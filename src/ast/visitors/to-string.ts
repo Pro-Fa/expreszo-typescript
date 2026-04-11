@@ -3,11 +3,6 @@
  * `src/core/expression-to-string.ts` output byte-for-byte on the existing
  * parser fixture corpus, including the paren-wrapping produced by the legacy
  * `IEXPR` instruction (represented here as `Paren` nodes).
- *
- * Two modes:
- *   - `toString(node)` — human-readable, used by `Expression.toString()`.
- *   - `toJSString(node)` — JavaScript-compatible, used by
- *     `Expression.toJSFunction()` to build the body of the generated function.
  */
 import type {
   Node,
@@ -42,10 +37,6 @@ function escapeValue(v: unknown): string {
 }
 
 export class ToStringVisitor extends BaseVisitor<string> {
-  constructor(private readonly toJS: boolean = false) {
-    super();
-  }
-
   visitNumberLit(node: NumberLit): string {
     // Mirror the legacy RPN behaviour: negative numeric scalars are wrapped
     // in parens so that the emitted form re-parses as a unary-minus rather
@@ -106,11 +97,6 @@ export class ToStringVisitor extends BaseVisitor<string> {
     if (f === '-' || f === '+') {
       return '(' + f + operand + ')';
     }
-    if (this.toJS) {
-      if (f === 'not') return '(!' + operand + ')';
-      if (f === '!') return 'fac(' + operand + ')';
-      return f + '(' + operand + ')';
-    }
     if (f === '!') return '(' + operand + '!)';
     return '(' + f + ' ' + operand + ')';
   }
@@ -119,18 +105,6 @@ export class ToStringVisitor extends BaseVisitor<string> {
     const n1 = this.visit(node.left);
     const n2 = this.visit(node.right);
     const f = node.op;
-    if (this.toJS) {
-      if (f === '^') return 'Math.pow(' + n1 + ', ' + n2 + ')';
-      if (f === 'and' || f === '&&') return '(!!' + n1 + ' && !!' + n2 + ')';
-      if (f === 'or' || f === '||') return '(!!' + n1 + ' || !!' + n2 + ')';
-      if (f === '|') {
-        return '(function(a,b){ return Array.isArray(a) && Array.isArray(b) ? a.concat(b) : String(a) + String(b); }((' + n1 + '),(' + n2 + ')))';
-      }
-      if (f === '==') return '(' + n1 + ' === ' + n2 + ')';
-      if (f === '!=') return '(' + n1 + ' !== ' + n2 + ')';
-      if (f === '[') return n1 + '[(' + n2 + ') | 0]';
-      return '(' + n1 + ' ' + f + ' ' + n2 + ')';
-    }
     if (f === '[') return n1 + '[' + n2 + ']';
     return '(' + n1 + ' ' + f + ' ' + n2 + ')';
   }
@@ -153,9 +127,6 @@ export class ToStringVisitor extends BaseVisitor<string> {
 
   visitLambda(node: Lambda): string {
     const body = this.visit(node.body);
-    if (this.toJS) {
-      return '((' + node.params.join(', ') + ') => ' + body + ')';
-    }
     if (node.params.length === 1) {
       return '(' + node.params[0] + ' => ' + body + ')';
     }
@@ -164,9 +135,6 @@ export class ToStringVisitor extends BaseVisitor<string> {
 
   visitFunctionDef(node: FunctionDef): string {
     const body = this.visit(node.body);
-    if (this.toJS) {
-      return '(' + node.name + ' = function(' + node.params.join(', ') + ') { return ' + body + ' })';
-    }
     return '(' + node.name + '(' + node.params.join(', ') + ') = ' + body + ')';
   }
 
@@ -183,8 +151,7 @@ export class ToStringVisitor extends BaseVisitor<string> {
 
   visitSequence(node: Sequence): string {
     const parts = node.statements.map((s) => this.visit(s));
-    const sep = this.toJS ? ',' : ';';
-    return parts.join(sep);
+    return parts.join(';');
   }
 
   visitParen(node: Paren): string {
@@ -192,6 +159,6 @@ export class ToStringVisitor extends BaseVisitor<string> {
   }
 }
 
-export function nodeToString(node: Node, toJS: boolean = false): string {
-  return new ToStringVisitor(toJS).visit(node);
+export function nodeToString(node: Node): string {
+  return new ToStringVisitor().visit(node);
 }
