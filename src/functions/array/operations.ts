@@ -18,10 +18,10 @@ export function filter(arg1: Function | any[] | undefined, arg2: Function | any[
   if (arg1 === undefined) {
     return undefined;
   }
-  
+
   let f: Function;
   let a: any[] | undefined;
-  
+
   if (Array.isArray(arg1) && typeof arg2 === 'function') {
     // array-first: filter(array, fn)
     a = arg1;
@@ -32,7 +32,7 @@ export function filter(arg1: Function | any[] | undefined, arg2: Function | any[
     a = arg2 as any[] | undefined;
   } else {
     throw new Error(
-      `filter(array, predicate) expects an array and a function.\n` +
+      'filter(array, predicate) expects an array and a function.\n' +
       'Example: filter([1, -2, 3], x => x > 0)'
     );
   }
@@ -51,11 +51,11 @@ export function fold(arg1: Function | any[] | undefined, arg2: any, arg3: Functi
   if (arg1 === undefined) {
     return undefined;
   }
-  
+
   let f: Function;
   let init: any;
   let a: any[] | undefined;
-  
+
   if (Array.isArray(arg1) && typeof arg3 === 'function') {
     // array-first: fold(array, initial, fn)
     a = arg1;
@@ -70,7 +70,7 @@ export function fold(arg1: Function | any[] | undefined, arg2: any, arg3: Functi
     return undefined;
   } else {
     throw new Error(
-      `fold(array, initial, reducer) expects an array, initial value, and a function.\n` +
+      'fold(array, initial, reducer) expects an array, initial value, and a function.\n' +
       'Example: fold([1, 2, 3], 0, (acc, x) => acc + x)'
     );
   }
@@ -117,10 +117,10 @@ export function map(arg1: Function | any[] | undefined, arg2: Function | any[] |
   if (arg1 === undefined) {
     return undefined;
   }
-  
+
   let f: Function;
   let a: any[] | undefined;
-  
+
   if (Array.isArray(arg1) && typeof arg2 === 'function') {
     // array-first: map(array, fn)
     a = arg1;
@@ -131,7 +131,7 @@ export function map(arg1: Function | any[] | undefined, arg2: Function | any[] |
     a = arg2 as any[] | undefined;
   } else {
     throw new Error(
-      `map(array, mapper) expects an array and a function.\n` +
+      'map(array, mapper) expects an array and a function.\n' +
       'Example: map([1, 2, 3], x => x * 2)'
     );
   }
@@ -187,10 +187,10 @@ export function find(arg1: Function | any[] | undefined, arg2: Function | any[] 
   if (arg1 === undefined) {
     return undefined;
   }
-  
+
   let f: Function;
   let a: any[] | undefined;
-  
+
   if (Array.isArray(arg1) && typeof arg2 === 'function') {
     // array-first: find(array, fn)
     a = arg1;
@@ -201,7 +201,7 @@ export function find(arg1: Function | any[] | undefined, arg2: Function | any[] 
     a = arg2 as any[] | undefined;
   } else {
     throw new Error(
-      `find(array, predicate) expects an array and a function.\n` +
+      'find(array, predicate) expects an array and a function.\n' +
       'Example: find([1, 2, 3, 4], x => x > 2)'
     );
   }
@@ -220,10 +220,10 @@ export function some(arg1: Function | any[] | undefined, arg2: Function | any[] 
   if (arg1 === undefined) {
     return undefined;
   }
-  
+
   let f: Function;
   let a: any[] | undefined;
-  
+
   if (Array.isArray(arg1) && typeof arg2 === 'function') {
     // array-first: some(array, fn)
     a = arg1;
@@ -234,7 +234,7 @@ export function some(arg1: Function | any[] | undefined, arg2: Function | any[] 
     a = arg2 as any[] | undefined;
   } else {
     throw new Error(
-      `some(array, predicate) expects an array and a function.\n` +
+      'some(array, predicate) expects an array and a function.\n' +
       'Example: some([1, 2, 3, 4], x => x > 2)'
     );
   }
@@ -253,10 +253,10 @@ export function every(arg1: Function | any[] | undefined, arg2: Function | any[]
   if (arg1 === undefined) {
     return undefined;
   }
-  
+
   let f: Function;
   let a: any[] | undefined;
-  
+
   if (Array.isArray(arg1) && typeof arg2 === 'function') {
     // array-first: every(array, fn)
     a = arg1;
@@ -267,7 +267,7 @@ export function every(arg1: Function | any[] | undefined, arg2: Function | any[]
     a = arg2 as any[] | undefined;
   } else {
     throw new Error(
-      `every(array, predicate) expects an array and a function.\n` +
+      'every(array, predicate) expects an array and a function.\n' +
       'Example: every([1, 2, 3, 4], x => x > 0)'
     );
   }

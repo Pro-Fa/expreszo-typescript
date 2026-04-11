@@ -74,4 +74,3 @@ export function isUndefined(value: any): boolean {
 export function isFunctionValue(value: any): boolean {
   return typeof value === 'function';
 }
-

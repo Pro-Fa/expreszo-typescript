@@ -78,9 +78,11 @@ function wrapLiteral(value: unknown): Node {
   if (typeof value === 'boolean') return mkBool(value);
   if (value === null) return mkNull();
   if (value === undefined) return mkUndefined();
-  if (Array.isArray(value)) {
-    return mkArray(value.map(wrapLiteral));
-  }
+  // Arrays and objects stay opaque — the legacy RPN simplifier treated JS
+  // arrays/objects from `values` as scalar ISCALAR payloads and fed them
+  // straight into binary-op folds (e.g. `arrayIndexOrProperty`). RawLit is
+  // the AST equivalent: `isConstLiteral(RawLit) === true`, so downstream
+  // folds still trigger.
   return mkRaw(value);
 }
 

@@ -1,10 +1,12 @@
 /**
- * Expression parsing utilities and components
+ * Expression parsing utilities and components.
  *
- * This module contains all the core parsing logic including tokenization,
- * parser state management, and syntax analysis.
+ * Phase 2.6 deleted the legacy RPN `Instruction` types and `ParserState`
+ * cascade — the barrel now exposes only the immutable lexer primitives and
+ * AST-emitting Pratt parser.
  */
 
 export * from './token.js';
 export * from './token-stream.js';
-export * from './instruction.js';
+export { TokenCursor } from './token-cursor.js';
+export { PrattParser } from './pratt.js';

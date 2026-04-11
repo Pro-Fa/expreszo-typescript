@@ -1,8 +1,7 @@
-import simplify from './simplify.js';
-import substitute from './substitute.js';
-import evaluate from './evaluate.js';
-import { Instruction } from '../parsing/instruction.js';
-import { fromInstructions } from '../ast/from-instructions.js';
+import type { Node } from '../ast/nodes.js';
+import { simplifyAst } from '../ast/visitors/simplify.js';
+import { substituteAst } from '../ast/visitors/substitute.js';
+import { evaluateAst } from '../eval/ast-evaluator.js';
 import { nodeToString } from '../ast/visitors/to-string.js';
 import { getSymbolsFromNode } from '../ast/visitors/get-symbols.js';
 import type {
@@ -26,7 +25,7 @@ interface ParserLike {
 }
 
 export class Expression {
-  public tokens: Instruction[];
+  public root: Node;
   public parser: ParserLike;
   public unaryOps: Record<string, OperatorFunction>;
   public binaryOps: Record<string, OperatorFunction>;
@@ -36,12 +35,12 @@ export class Expression {
   /**
    * Creates a new Expression instance. Usually created via Parser.parse().
    *
-   * @param tokens - The compiled instruction tokens
+   * @param root - The AST root node
    * @param parser - The parser instance that created this expression
    * @internal
    */
-  constructor(tokens: Instruction[], parser: ParserLike) {
-    this.tokens = tokens;
+  constructor(root: Node, parser: ParserLike) {
+    this.root = root;
     this.parser = parser;
     this.unaryOps = parser.unaryOps;
     this.binaryOps = parser.binaryOps;
@@ -63,14 +62,14 @@ export class Expression {
    */
   simplify(values?: ReadonlyValues): Expression {
     const safeValues = values || {};
+    const simplifiedRoot = simplifyAst(this.root, {
+      unaryOps: this.unaryOps,
+      binaryOps: this.binaryOps,
+      ternaryOps: this.ternaryOps,
+      values: safeValues
+    });
 
-    return new Expression(simplify(
-      this.tokens,
-      this.unaryOps,
-      this.binaryOps,
-      this.ternaryOps,
-      safeValues
-    ), this.parser);
+    return new Expression(simplifiedRoot, this.parser);
   }
 
   /**
@@ -86,11 +85,14 @@ export class Expression {
    * ```
    */
   substitute(variable: string, expr: string | Expression): Expression {
-    if (!(expr instanceof Expression)) {
-      expr = this.parser.parse(String(expr));
-    }
+    const replacement = expr instanceof Expression
+      ? expr
+      : this.parser.parse(String(expr));
 
-    return new Expression(substitute(this.tokens, variable, expr), this.parser);
+    return new Expression(
+      substituteAst(this.root, variable, replacement.root),
+      this.parser
+    );
   }
 
   /**
@@ -117,9 +119,9 @@ export class Expression {
    * ```
    */
   evaluate(values?: ReadonlyValues, resolver?: VariableResolver): Value | Promise<Value> {
-    const safeValues = values || {};
+    const safeValues = (values || {}) as Record<string, Value>;
 
-    return evaluate(this.tokens, this, safeValues, resolver);
+    return evaluateAst(this.root, this, safeValues, resolver);
   }
 
   /**
@@ -133,7 +135,7 @@ export class Expression {
    * ```
    */
   toString(): string {
-    return nodeToString(fromInstructions(this.tokens), false);
+    return nodeToString(this.root, false);
   }
 
   /**
@@ -152,7 +154,7 @@ export class Expression {
   symbols(options?: SymbolOptions): string[] {
     options = options || {};
     const vars: string[] = [];
-    getSymbolsFromNode(fromInstructions(this.tokens), vars, options);
+    getSymbolsFromNode(this.root, vars, options);
 
     return vars;
   }
@@ -172,7 +174,7 @@ export class Expression {
   variables(options?: SymbolOptions): string[] {
     options = options || {};
     const vars: string[] = [];
-    getSymbolsFromNode(fromInstructions(this.tokens), vars, options);
+    getSymbolsFromNode(this.root, vars, options);
     const { functions } = this;
 
     return vars.filter(function (name) {
@@ -201,8 +203,8 @@ export class Expression {
    */
   toJSFunction(param: string, variables?: ReadonlyValues): (...args: Value[]) => Value {
     const expr = this;
-    const simplifiedTokens = this.simplify(variables).tokens;
-    const jsSource = nodeToString(fromInstructions(simplifiedTokens), true);
+    const simplifiedRoot = this.simplify(variables).root;
+    const jsSource = nodeToString(simplifiedRoot, true);
     const f = new Function(param, 'with(this.functions) with (this.ternaryOps) with (this.binaryOps) with (this.unaryOps) { return ' + jsSource + '; }');
 
     return function (...args: Value[]): Value {

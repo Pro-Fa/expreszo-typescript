@@ -1,10 +1,7 @@
 // cSpell:words TEOF fndef
-import { TEOF } from './token.js';
-import { TokenStream } from './token-stream.js';
-import { ParserState } from './parser-state.js';
+import { PrattParser } from './pratt.js';
 import { Expression } from '../core/expression.js';
 import type { Value, VariableResolveResult, VariableResolver, Values } from '../types/values.js';
-import type { Instruction } from './instruction.js';
 import type { OperatorFunction } from '../types/parser.js';
 import { atan2, condition, fac, filter, fold, gamma, hypot, indexOf, join, map, max, min, random, roundTo, sum, json, stringLength, isEmpty, stringContains, startsWith, endsWith, searchCount, trim, toUpper, toLower, toTitle, split, repeat, reverse, left, right, replace, replaceFirst, naturalSort, toNumber, toBoolean, padLeft, padRight, padBoth, slice, urlEncode, base64Encode, base64Decode, coalesceString, merge, keys, values, flatten, count, clamp, reduce, find, some, every, unique, distinct, isArray, isObject, isNumber, isString, isBoolean, isNull, isUndefined, isFunctionValue } from '../functions/index.js';
 import {
@@ -281,17 +278,8 @@ export class Parser {
    * ```
    */
   parse(expr: string): Expression {
-    const instr: Instruction[] = [];
-    const parserState = new ParserState(
-      this,
-      new TokenStream(this, expr),
-      { allowMemberAccess: this.options.allowMemberAccess }
-    );
-
-    parserState.parseExpression(instr);
-    parserState.expect(TEOF, 'EOF');
-
-    return new Expression(instr, this);
+    const root = PrattParser.parse(this, expr);
+    return new Expression(root, this);
   }
 
   /**
