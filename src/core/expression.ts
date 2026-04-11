@@ -1,4 +1,5 @@
 import type { Node } from '../ast/nodes.js';
+import type { NodeVisitor } from '../ast/visitor.js';
 import { simplifyAst } from '../ast/visitors/simplify.js';
 import { substituteAst } from '../ast/visitors/substitute.js';
 import { containsAsyncCall } from '../ast/visitors/async-analysis.js';
@@ -28,7 +29,7 @@ interface ParserLike {
 }
 
 export class Expression {
-  public root: Node;
+  readonly #root: Node;
   public parser: ParserLike;
   public unaryOps: Record<string, OperatorFunction>;
   public binaryOps: Record<string, OperatorFunction>;
@@ -51,12 +52,22 @@ export class Expression {
    * @internal
    */
   constructor(root: Node, parser: ParserLike) {
-    this.root = root;
+    this.#root = root;
     this.parser = parser;
     this.unaryOps = parser.unaryOps;
     this.binaryOps = parser.binaryOps;
     this.ternaryOps = parser.ternaryOps;
     this.functions = parser.functions;
+  }
+
+  /**
+   * Run an arbitrary visitor against the internal AST. This is the supported
+   * way for advanced consumers (e.g. a custom linter, analyzer, or
+   * alternative codegen target) to walk the expression without poking at
+   * private fields. The AST itself remains opaque.
+   */
+  accept<T>(visitor: NodeVisitor<T>): T {
+    return visitor.visit(this.#root);
   }
 
   /**
@@ -73,7 +84,7 @@ export class Expression {
    */
   simplify(values?: ReadonlyValues): Expression {
     const safeValues = values || {};
-    const simplifiedRoot = simplifyAst(this.root, {
+    const simplifiedRoot = simplifyAst(this.#root, {
       unaryOps: this.unaryOps,
       binaryOps: this.binaryOps,
       ternaryOps: this.ternaryOps,
@@ -101,7 +112,7 @@ export class Expression {
       : this.parser.parse(String(expr));
 
     return new Expression(
-      substituteAst(this.root, variable, replacement.root),
+      substituteAst(this.#root, variable, replacement.#root),
       this.parser
     );
   }
@@ -133,18 +144,18 @@ export class Expression {
     const safeValues = (values || {}) as Record<string, Value>;
 
     if (this.isAsync === undefined) {
-      this.isAsync = containsAsyncCall(this.root, { functions: this.functions });
+      this.isAsync = containsAsyncCall(this.#root, { functions: this.functions });
     }
     if (this.isAsync) {
-      return evaluateAstAsync(this.root, this, safeValues, resolver);
+      return evaluateAstAsync(this.#root, this, safeValues, resolver);
     }
 
     try {
-      return evaluateAstSync(this.root, this, safeValues, resolver);
+      return evaluateAstSync(this.#root, this, safeValues, resolver);
     } catch (err) {
       if (err instanceof AsyncRequiredError) {
         this.isAsync = true;
-        return evaluateAstAsync(this.root, this, safeValues, resolver);
+        return evaluateAstAsync(this.#root, this, safeValues, resolver);
       }
       throw err;
     }
@@ -161,7 +172,7 @@ export class Expression {
    * ```
    */
   toString(): string {
-    return nodeToString(this.root);
+    return nodeToString(this.#root);
   }
 
   /**
@@ -180,7 +191,7 @@ export class Expression {
   symbols(options?: SymbolOptions): string[] {
     options = options || {};
     const vars: string[] = [];
-    getSymbolsFromNode(this.root, vars, options);
+    getSymbolsFromNode(this.#root, vars, options);
 
     return vars;
   }
@@ -200,7 +211,7 @@ export class Expression {
   variables(options?: SymbolOptions): string[] {
     options = options || {};
     const vars: string[] = [];
-    getSymbolsFromNode(this.root, vars, options);
+    getSymbolsFromNode(this.#root, vars, options);
     const { functions } = this;
 
     return vars.filter(function (name) {

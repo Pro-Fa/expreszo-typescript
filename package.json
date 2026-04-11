@@ -1,6 +1,6 @@
 {
   "name": "@pro-fa/expr-eval",
-  "version": "6.3.1",
+  "version": "7.0.0",
   "description": "Mathematical expression evaluator",
   "keywords": [
     "expression",
@@ -33,6 +33,50 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/bundle.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.mjs"
+    },
+    "./math": {
+      "types": "./dist/math.d.ts",
+      "import": "./dist/math.mjs"
+    },
+    "./string": {
+      "types": "./dist/string.d.ts",
+      "import": "./dist/string.mjs"
+    },
+    "./array": {
+      "types": "./dist/array.d.ts",
+      "import": "./dist/array.mjs"
+    },
+    "./object": {
+      "types": "./dist/object.d.ts",
+      "import": "./dist/object.mjs"
+    },
+    "./comparison": {
+      "types": "./dist/comparison.d.ts",
+      "import": "./dist/comparison.mjs"
+    },
+    "./logical": {
+      "types": "./dist/logical.d.ts",
+      "import": "./dist/logical.mjs"
+    },
+    "./type-check": {
+      "types": "./dist/type-check.d.ts",
+      "import": "./dist/type-check.mjs"
+    },
+    "./utility": {
+      "types": "./dist/utility.d.ts",
+      "import": "./dist/utility.mjs"
+    },
+    "./validation": {
+      "types": "./dist/validation.d.ts",
+      "import": "./dist/validation.mjs"
+    },
+    "./language-service": {
+      "types": "./dist/language-service.d.ts",
+      "import": "./dist/language-service.mjs"
     }
   },
   "directories": {

@@ -85,16 +85,34 @@ export default defineConfig(() => {
           outDir: 'dist',
           emptyOutDir: buildTarget === 'esm', // Only clean on first build
           lib: {
-            entry: resolve(__dirname, 'index.ts'),
+            // v7 multi-entry build. The root `index` re-exports the full
+            // legacy surface for backwards compatibility within v7; the
+            // per-category entries are the tree-shakeable subpaths
+            // advertised in `package.json#exports`.
+            entry: {
+              index: resolve(__dirname, 'index.ts'),
+              core: resolve(__dirname, 'src/entries/core.ts'),
+              math: resolve(__dirname, 'src/entries/math.ts'),
+              string: resolve(__dirname, 'src/entries/string.ts'),
+              array: resolve(__dirname, 'src/entries/array.ts'),
+              object: resolve(__dirname, 'src/entries/object.ts'),
+              comparison: resolve(__dirname, 'src/entries/comparison.ts'),
+              logical: resolve(__dirname, 'src/entries/logical.ts'),
+              'type-check': resolve(__dirname, 'src/entries/type-check.ts'),
+              utility: resolve(__dirname, 'src/entries/utility.ts'),
+              validation: resolve(__dirname, 'src/entries/validation.ts'),
+              'language-service': resolve(__dirname, 'src/entries/language-service.ts')
+            },
             name: 'exprEval',
-            formats: ['es' as const],
-            fileName: () => 'index.mjs'
+            formats: ['es' as const]
           },
           rollupOptions: {
             output: {
               exports: 'named' as const,
-              preserveModules: false, // Bundle for easier consumption
-              inlineDynamicImports: false
+              preserveModules: false,
+              inlineDynamicImports: false,
+              entryFileNames: '[name].mjs',
+              chunkFileNames: 'chunks/[name]-[hash].mjs'
             }
           },
           minify: false
