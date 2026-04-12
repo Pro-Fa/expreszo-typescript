@@ -71,7 +71,8 @@ If you're integrating ExpresZo into your project:
 - [Expression](expression.md) - Expression object methods: evaluate, simplify, variables, toJSFunction
 - [Advanced Features](advanced-features.md) - Promises, custom resolution, type conversion, operator customization
 - [Language Service](language-service.md) - IDE integration: completions, hover info, diagnostics, Monaco Editor
-- [Migration Guide](migration.md) - Upgrading from original expr-eval or previous versions
+- [Migrating from expr-eval](migrating-from-expr-eval.md) - Switching from `expr-eval` / `@pro-fa/expr-eval` to ExpresZo, legacy mode
+- [Migration Guide](migration.md) - Upgrading between major versions
 
 ### For Contributors
 
