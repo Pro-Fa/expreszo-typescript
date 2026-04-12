@@ -6,6 +6,45 @@ This document lists breaking changes between versions of `@pro-fa/expr-eval`.
 
 For detailed migration instructions, see the [Migration Guide](migration.md).
 
+## Version 7.0.0
+
+### AST Replaces Stack-Based Bytecode
+
+The internal representation changed from RPN instruction tokens to an immutable AST. This removes two public surface areas:
+
+- **`Expression.tokens`** — No longer exists. The AST is private. Use `expr.accept(visitor)` to inspect expression structure.
+- **`Instruction` type** — Removed from the public API.
+
+### `toJSFunction()` Removed
+
+`Expression.toJSFunction()` has been removed. It used `new Function()` with `with` statements, which is incompatible with strict mode and CSP.
+
+**Migration**: Replace with a closure over `evaluate()`:
+```typescript
+const expr = parser.parse('x + 1');
+const fn = (x: number) => expr.evaluate({ x });
+```
+
+### Static `Parser.parse()` / `Parser.evaluate()` Removed
+
+Create an instance instead:
+```typescript
+const parser = new Parser();
+parser.parse('x + 1');
+```
+
+### Parser Recursion Depth Limit
+
+The parser now enforces a maximum nesting depth of 256. Extremely deep expressions (300+ nested parentheses) will throw `ParseError`.
+
+### New APIs (Non-Breaking)
+
+- `defineParser(config)` — Descriptor-driven, tree-shakeable parser creation
+- Composable presets: `coreParser`, `withMath`, `withString`, `withArray`, `withObject`, `withComparison`, `withLogical`, `withTypeCheck`, `withUtility`, `fullParser`
+- Subpath exports: `@pro-fa/expr-eval/core`, `/math`, `/string`, etc.
+- `Expression.accept(visitor)` — AST visitor pattern
+- Types: `ParserConfig`, `ParserPreset`
+
 ## Version 6.0.0
 
 ### Null Comparison Behavior

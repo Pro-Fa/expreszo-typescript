@@ -2,6 +2,95 @@
 
 This document lists breaking changes in the library to help users migrate between versions.
 
+## Version 7.0.0
+
+### Architecture: AST Replaces Stack-Based Bytecode
+
+The internal representation has been rewritten from RPN instruction tokens to an immutable AST with a visitor pattern. The parser has been replaced by a Pratt parser. These are implementation details, but they surface in a few places:
+
+**`Expression.tokens` removed**
+
+The `tokens: Instruction[]` property no longer exists. The internal AST is private (`#root`). Use the new visitor API to inspect expression structure:
+
+```typescript
+// Before (v6)
+const expr = parser.parse('x + 1');
+console.log(expr.tokens); // Instruction[]
+
+// After (v7)
+const expr = parser.parse('x + 1');
+expr.accept(myVisitor); // NodeVisitor<T>
+```
+
+**`Instruction` type removed**
+
+The `Instruction` class (`ISCALAR`, `IOP1`, `IOP2`, `IVAR`, `IFUNCALL`, etc.) is no longer part of the public API. If you were constructing or inspecting instructions directly, use the AST visitor pattern instead.
+
+### `Expression.toJSFunction()` Removed
+
+The `toJSFunction()` method has been removed. It relied on `new Function()` with `with` statements, which is incompatible with strict mode and CSP policies.
+
+```typescript
+// Before (v6)
+const fn = parser.parse('x + 1').toJSFunction('x');
+fn(4); // 5
+
+// After (v7) — use evaluate() directly
+const expr = parser.parse('x + 1');
+const fn = (x: number) => expr.evaluate({ x });
+fn(4); // 5
+```
+
+### `Parser.parse()` and `Parser.evaluate()` Static Methods Removed
+
+The static convenience methods on `Parser` have been removed. Create an instance instead:
+
+```typescript
+// Before (v6)
+Parser.parse('x + 1');
+Parser.evaluate('x + 1', { x: 4 });
+
+// After (v7)
+const parser = new Parser();
+parser.parse('x + 1');
+parser.evaluate('x + 1', { x: 4 });
+```
+
+### Expression Constructor Signature Changed
+
+The `Expression` constructor now takes `(root: Node, parser: ParserLike)` instead of `(tokens: Instruction[], parser: ParserLike)`. This is an internal API — expressions should always be created via `Parser.parse()`.
+
+### Parser Recursion Depth Limit (256)
+
+The Pratt parser enforces a maximum nesting depth of 256 to prevent stack overflow DoS attacks. Deeply nested expressions (e.g. 300 nested parentheses or 260 nested ternaries) will throw a `ParseError`. Reasonable expressions are unaffected.
+
+```typescript
+// Throws ParseError in v7
+const expr = '('.repeat(300) + '1' + ')'.repeat(300);
+parser.parse(expr); // ParseError: Expression nesting exceeds maximum depth
+```
+
+### New Exports
+
+The following are new in v7 and do not break existing code, but are listed for awareness:
+
+- **`defineParser(config)`** — Create a tree-shakeable parser from descriptor arrays
+- **Presets** — `coreParser`, `withMath`, `withString`, `withArray`, `withObject`, `withComparison`, `withLogical`, `withTypeCheck`, `withUtility`, `fullParser`
+- **Subpath exports** — `@pro-fa/expr-eval/core`, `@pro-fa/expr-eval/math`, etc.
+- **`Expression.accept(visitor)`** — Run a `NodeVisitor<T>` against the AST
+- **Types** — `ParserConfig`, `ParserPreset`
+
+### What's Unchanged
+
+- `new Parser(options?)` constructor and all instance methods
+- `parser.parse(expr)` / `parser.evaluate(expr, vars)` instance methods
+- `parser.functions`, `parser.unaryOps`, `parser.binaryOps`, `parser.ternaryOps`
+- `Expression.evaluate()`, `.simplify()`, `.substitute()`, `.toString()`, `.symbols()`, `.variables()`
+- All `ParserOptions` (operator gates, `allowMemberAccess`)
+- All error classes (`ParseError`, `EvaluationError`, `ArgumentError`, `AccessError`, `VariableError`, `FunctionError`)
+- Expression syntax (all operators, built-in functions, inline function definitions)
+- `createLanguageService()` API
+
 ## Version 6.0.0
 
 `null` is no longer silently casted to `0`. This means that from version 6 onwards, `null == 0` will no longer be true and `null == someVariable` with `someVariable` having a null value will become true. (This was not the case before.)

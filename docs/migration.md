@@ -60,6 +60,81 @@ parser.evaluate('user.profile.photo', obj); // undefined
 
 ## Migrating Between Major Versions
 
+### Version 7.0.0
+
+v7 replaces the stack-based bytecode interpreter with an AST-based architecture, adds a Pratt parser, and introduces descriptor-driven parser composition. Most expression syntax and the core `Parser`/`Expression` API are unchanged.
+
+**`Expression.toJSFunction()` removed:**
+
+```typescript
+// BEFORE (v6)
+const fn = parser.parse('x + y').toJSFunction('x, y');
+fn(2, 3); // 5
+
+// AFTER (v7) — wrap evaluate() in a closure
+const expr = parser.parse('x + y');
+const fn = (x: number, y: number) => expr.evaluate({ x, y });
+fn(2, 3); // 5
+```
+
+**`Expression.tokens` removed:**
+
+The internal instruction array is replaced by a private AST. Use the visitor pattern:
+
+```typescript
+// BEFORE (v6)
+expr.tokens.forEach(t => console.log(t));
+
+// AFTER (v7)
+import type { NodeVisitor } from '@pro-fa/expr-eval/core';
+expr.accept(myVisitor);
+```
+
+**Static `Parser.parse()` / `Parser.evaluate()` removed:**
+
+```typescript
+// BEFORE (v6)
+Parser.parse('x + 1');
+Parser.evaluate('x + 1', { x: 4 });
+
+// AFTER (v7)
+const parser = new Parser();
+parser.parse('x + 1');
+parser.evaluate('x + 1', { x: 4 });
+```
+
+**Parser recursion depth limit:**
+
+Expressions nested deeper than 256 levels now throw `ParseError`. This prevents stack overflow DoS attacks. Normal expressions are not affected.
+
+**New: tree-shakeable parser composition (optional):**
+
+v7 introduces `defineParser()` and composable presets. The default `new Parser()` still includes all built-in operators and functions (equivalent to `fullParser`), so no migration is needed. But you can now create minimal parsers:
+
+```typescript
+import { defineParser, coreParser, withMath, withComparison } from '@pro-fa/expr-eval';
+
+const parser = defineParser({
+  ...coreParser,
+  operators: [...coreParser.operators, ...withMath.operators, ...withComparison.operators],
+  functions: [...coreParser.functions, ...withMath.functions, ...withComparison.functions],
+});
+```
+
+Or use subpath imports for smaller bundles:
+
+```typescript
+import { coreParser } from '@pro-fa/expr-eval/core';
+import { withMath } from '@pro-fa/expr-eval/math';
+```
+
+**Migration steps:**
+
+1. Search for `toJSFunction` — replace with closures over `evaluate()`
+2. Search for `Expression.tokens` or `Instruction` — migrate to visitor pattern
+3. Search for `Parser.parse(` or `Parser.evaluate(` (static calls) — create an instance
+4. Test deeply nested expressions (unlikely to be affected unless programmatically generated)
+
 ### Version 6.0.0
 
 **`null` comparison changed:**
