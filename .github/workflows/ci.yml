@@ -13,8 +13,6 @@ jobs:
     strategy:
       matrix:
         node-version: [18, 20, 22]
-        # Testing on LTS and current versions
-        # Note: Removed older versions (6-12) as they are EOL
 
     steps:
     - name: Checkout code
@@ -39,7 +37,7 @@ jobs:
       run: npm test
 
     - name: Run coverage
-      if: matrix.node-version == 20  # Only run coverage on Node 20
+      if: matrix.node-version == 20
       run: npm run coverage
 
     - name: Upload coverage to Codecov
@@ -68,6 +66,9 @@ jobs:
 
     - name: Build
       run: npm run build
+
+    - name: Verify package contents
+      run: npm pack --dry-run
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
