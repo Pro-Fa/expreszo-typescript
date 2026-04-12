@@ -44,6 +44,8 @@ export class Expression {
    */
   private isAsync: boolean | undefined;
 
+  private cachedString: string | undefined;
+
   /**
    * Creates a new Expression instance. Usually created via Parser.parse().
    *
@@ -172,7 +174,10 @@ export class Expression {
    * ```
    */
   toString(): string {
-    return nodeToString(this.#root);
+    if (this.cachedString === undefined) {
+      this.cachedString = nodeToString(this.#root);
+    }
+    return this.cachedString;
   }
 
   /**

@@ -112,12 +112,20 @@ function buildFromInstr(instr: Node[]): Node {
 }
 
 export class PrattParser {
+  private static readonly MAX_DEPTH = 256;
   private cursor: TokenCursor;
   private readonly allowMemberAccess: boolean;
+  private depth = 0;
 
   private constructor(private readonly parser: ParserLike, cursor: TokenCursor) {
     this.cursor = cursor;
     this.allowMemberAccess = parser.options.allowMemberAccess !== false;
+  }
+
+  private enterRecursion(): void {
+    if (++this.depth > PrattParser.MAX_DEPTH) {
+      this.error('Expression nesting exceeds maximum depth');
+    }
   }
 
   /** Parse `expression` to an AST root node. Throws `ParseError` on failure. */
@@ -139,19 +147,20 @@ export class PrattParser {
 
   private check(
     type: TokenType,
-    value?: string | readonly string[] | ((t: Token) => boolean)
+    value?: string | Set<string> | readonly string[] | ((t: Token) => boolean)
   ): boolean {
     const t = this.peek();
     if (t.type !== type) return false;
     if (value === undefined) return true;
     if (typeof value === 'function') return value(t);
+    if (value instanceof Set) return value.has(t.value as string);
     if (Array.isArray(value)) return value.includes(t.value as string);
     return t.value === value;
   }
 
   private accept(
     type: TokenType,
-    value?: string | readonly string[] | ((t: Token) => boolean),
+    value?: string | Set<string> | readonly string[] | ((t: Token) => boolean),
     exclude?: readonly string[]
   ): boolean {
     const t = this.peek();
@@ -160,6 +169,8 @@ export class PrattParser {
     if (value !== undefined) {
       if (typeof value === 'function') {
         if (!value(t)) return false;
+      } else if (value instanceof Set) {
+        if (!value.has(t.value as string)) return false;
       } else if (Array.isArray(value)) {
         if (!value.includes(t.value as string)) return false;
       } else if (t.value !== value) {
@@ -198,12 +209,14 @@ export class PrattParser {
    * statement termination.
    */
   parseExpression(): Node {
+    this.enterRecursion();
     const exprInstr: Node[] = [];
 
     // Mirror legacy parseExpression: first attempt to consume a leading `;`.
     // This is a rare edge case (an empty leading statement) but we preserve
     // the behavior for parity.
     if (this.parseUntilEndStatement(exprInstr)) {
+      this.depth--;
       return this.finalizeStatements(exprInstr);
     }
 
@@ -211,10 +224,12 @@ export class PrattParser {
     exprInstr.push(first);
 
     if (this.parseUntilEndStatement(exprInstr)) {
+      this.depth--;
       return this.finalizeStatements(exprInstr);
     }
 
     // No `;` seen — return the single expression directly (no Paren wrap).
+    this.depth--;
     return first;
   }
 
@@ -268,6 +283,7 @@ export class PrattParser {
   // --- Assignment ----------------------------------------------------------
 
   private parseVariableAssignmentExpression(): Node {
+    this.enterRecursion();
     let left = this.parseConditionalExpression();
 
     while (this.accept(TOP, '=')) {
@@ -311,12 +327,14 @@ export class PrattParser {
       }
     }
 
+    this.depth--;
     return left;
   }
 
   // --- Conditional / ternary ----------------------------------------------
 
   private parseConditionalExpression(): Node {
+    this.enterRecursion();
     let expr = this.parseOrExpression();
 
     while (this.accept(TOP, '?')) {
@@ -326,6 +344,7 @@ export class PrattParser {
       expr = mkTernary('?', expr, mkParen(trueBranch), mkParen(falseBranch));
     }
 
+    this.depth--;
     return expr;
   }
 
@@ -355,8 +374,8 @@ export class PrattParser {
 
   // --- Comparison / AddSub / MulDiv / Coalesce ----------------------------
 
-  private static readonly COMPARISON_OPERATORS: readonly string[] =
-    ['==', '!=', '<', '<=', '>=', '>', 'in', 'not in'];
+  private static readonly COMPARISON_OPERATORS = new Set(
+    ['==', '!=', '<', '<=', '>=', '>', 'in', 'not in']);
 
   private parseComparison(): Node {
     let left = this.parseAddSub();
@@ -369,7 +388,7 @@ export class PrattParser {
     return left;
   }
 
-  private static readonly ADD_SUB_OPERATORS: readonly string[] = ['+', '-', '|'];
+  private static readonly ADD_SUB_OPERATORS = new Set(['+', '-', '|']);
 
   private parseAddSub(): Node {
     let left = this.parseTerm();
@@ -377,7 +396,7 @@ export class PrattParser {
       const t = this.peek();
       if (t.type !== TOP) break;
       const v = t.value as string;
-      if (!PrattParser.ADD_SUB_OPERATORS.includes(v)) break;
+      if (!PrattParser.ADD_SUB_OPERATORS.has(v)) break;
       if (v === '||') break; // exclude: `||` is handled by parseOrExpression
       this.cursor = this.cursor.advance();
       const right = this.parseTerm();
@@ -386,7 +405,7 @@ export class PrattParser {
     return left;
   }
 
-  private static readonly TERM_OPERATORS: readonly string[] = ['*', '/', '%'];
+  private static readonly TERM_OPERATORS = new Set(['*', '/', '%']);
 
   private parseTerm(): Node {
     let left = this.parseCoalesceExpression();
@@ -399,7 +418,7 @@ export class PrattParser {
     return left;
   }
 
-  private static readonly COALESCE_OPERATORS: readonly string[] = ['??', 'as'];
+  private static readonly COALESCE_OPERATORS = new Set(['??', 'as']);
 
   private parseCoalesceExpression(): Node {
     let left = this.parseFactor();
@@ -415,6 +434,7 @@ export class PrattParser {
   // --- Factor (prefix unary with the weird parseFactor save/restore) ------
 
   private parseFactor(): Node {
+    this.enterRecursion();
     const saved = this.cursor;
     const t = this.peek();
 
@@ -428,6 +448,7 @@ export class PrattParser {
           // `sin(x)` — treat `sin` as a function call target, not a prefix.
           // Restore and fall through to the normal expression path.
           this.cursor = saved;
+          this.depth--;
           return this.parseExponential();
         }
         if (
@@ -436,14 +457,17 @@ export class PrattParser {
         ) {
           // Bare identifier like `sin;` — parse as atom, not a prefix.
           this.cursor = saved;
+          this.depth--;
           return this.parseAtom();
         }
       }
       // Genuine prefix unary: recurse right-associatively.
       const operand = this.parseFactor();
+      this.depth--;
       return mkUnary(v, operand);
     }
 
+    this.depth--;
     return this.parseExponential();
   }
 

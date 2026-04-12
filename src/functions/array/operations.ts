@@ -154,13 +154,12 @@ export function sum(array: (number | undefined)[] | undefined): number | undefin
       'Example: sum([1, 2, 3, 4])'
     );
   }
-  if (array.includes(undefined)) {
-    return undefined;
+  let total = 0;
+  for (let i = 0; i < array.length; i++) {
+    if (array[i] === undefined) return undefined;
+    total += Number(array[i]);
   }
-
-  return array.reduce(function (total: number, value: number | undefined): number {
-    return total + (value === undefined ? 0 : Number(value));
-  }, 0);
+  return total;
 }
 
 export function count(array: any[] | undefined): number | undefined {

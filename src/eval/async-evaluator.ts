@@ -113,6 +113,7 @@ async function evalObject(
   const keys: string[] = [];
   const pending: Promise<Value>[] = [];
   for (const prop of node.properties) {
+    ExpressionValidator.validateMemberAccess(prop.key, expr.toString());
     keys.push(prop.key);
     pending.push(evalNode(prop.value, expr, values, resolver));
   }
@@ -271,7 +272,7 @@ function evalLambda(
   const body = node.body;
   const capturedValues = values;
   const arrowFunction = function (...functionArguments: Value[]): Promise<Value> {
-    const localScope: Values = Object.assign({}, capturedValues);
+    const localScope: Values = Object.create(capturedValues);
     for (let i = 0; i < params.length; i++) {
       localScope[params[i]] = functionArguments[i];
     }
@@ -294,7 +295,7 @@ function evalFunctionDef(
   const name = node.name;
   const capturedValues = values;
   const userDefinedFunction = function (...functionArguments: Value[]): Promise<Value> {
-    const localScope: Values = Object.assign({}, capturedValues);
+    const localScope: Values = Object.create(capturedValues);
     for (let i = 0; i < params.length; i++) {
       localScope[params[i]] = functionArguments[i];
     }

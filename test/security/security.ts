@@ -5,11 +5,18 @@
  * 1. CVE-2025-12735: Code injection via arbitrary function calls in evaluation context
  * 2. CVE-2025-13204: Prototype pollution via __proto__, prototype, constructor access
  * 3. Bypass vulnerabilities via member function calls (Issue #289)
+ * 4. Prototype pollution via assignment operator
+ * 5. Prototype pollution via bracket notation bypass
+ * 6. Prototype pollution via object literal property keys
+ * 7. String escape parsing (double-backslash before quote)
+ * 8. Parser recursion depth limits (stack overflow DoS)
+ * 9. Input length limits
  */
 
 import { describe, it, expect } from 'vitest';
 import { Parser } from '../../index';
-import { AccessError, FunctionError } from '../../src/types/errors';
+import { AccessError, FunctionError, ParseError } from '../../src/types/errors';
+// ParseError is used by recursion depth tests
 
 describe('Security Tests', () => {
   describe('CVE-2025-12735: Code Injection Prevention', () => {
@@ -246,4 +253,182 @@ describe('Security Tests', () => {
       expect(parser.evaluate('not true')).toBe(false);
     });
   });
+
+  describe('Assignment Operator Prototype Pollution Prevention', () => {
+    it('should block __proto__ assignment', () => {
+      const parser = new Parser();
+
+      expect(() => parser.evaluate('__proto__ = 1', {}))
+        .toThrow(AccessError);
+    });
+
+    it('should block prototype assignment', () => {
+      const parser = new Parser();
+
+      expect(() => parser.evaluate('prototype = 1', {}))
+        .toThrow(AccessError);
+    });
+
+    it('should block constructor assignment', () => {
+      const parser = new Parser();
+
+      expect(() => parser.evaluate('constructor = 1', {}))
+        .toThrow();
+    });
+
+    it('should not pollute the variables object via assignment', () => {
+      const parser = new Parser();
+      const vars = { x: 0 } as any;
+
+      expect(() => parser.evaluate('__proto__ = {isAdmin: true}', vars))
+        .toThrow(AccessError);
+      expect(({} as any).isAdmin).toBeUndefined();
+    });
+
+    it('should still allow normal variable assignment', () => {
+      const parser = new Parser();
+
+      expect(parser.evaluate('x = 5', { x: 0 })).toBe(5);
+    });
+  });
+
+  describe('Bracket Notation Prototype Pollution Prevention', () => {
+    it('should block obj["__proto__"] access', () => {
+      const parser = new Parser();
+
+      expect(() => parser.evaluate('x["__proto__"]', { x: {} }))
+        .toThrow(AccessError);
+    });
+
+    it('should block obj["prototype"] access', () => {
+      const parser = new Parser();
+
+      expect(() => parser.evaluate('x["prototype"]', { x: { prototype: 1 } }))
+        .toThrow(AccessError);
+    });
+
+    it('should block obj["constructor"] access', () => {
+      const parser = new Parser();
+
+      expect(() => parser.evaluate('x["constructor"]', { x: {} }))
+        .toThrow(AccessError);
+    });
+
+    it('should still allow normal bracket access with string keys', () => {
+      const parser = new Parser();
+
+      expect(parser.evaluate('x["name"]', { x: { name: 'test' } })).toBe('test');
+    });
+
+    it('should still allow normal bracket access with numeric indices', () => {
+      const parser = new Parser();
+
+      expect(parser.evaluate('arr[0]', { arr: [10, 20, 30] })).toBe(10);
+      expect(parser.evaluate('arr[2]', { arr: [10, 20, 30] })).toBe(30);
+    });
+  });
+
+  describe('Object Literal Property Key Validation', () => {
+    it('should block __proto__ as object literal key', () => {
+      const parser = new Parser();
+
+      expect(() => parser.evaluate('{__proto__: 1}'))
+        .toThrow(AccessError);
+    });
+
+    it('should block prototype as object literal key', () => {
+      const parser = new Parser();
+
+      expect(() => parser.evaluate('{prototype: 1}'))
+        .toThrow(AccessError);
+    });
+
+    it('should block constructor as object literal key', () => {
+      const parser = new Parser();
+
+      // 'constructor' is blocked at parse time since it shadows Object.prototype
+      expect(() => parser.evaluate('{constructor: 1}'))
+        .toThrow();
+    });
+
+    it('should still allow normal object literals', () => {
+      const parser = new Parser();
+
+      const result = parser.evaluate('{name: "test", value: 42}') as Record<string, unknown>;
+      expect(result.name).toBe('test');
+      expect(result.value).toBe(42);
+    });
+  });
+
+  describe('String Escape Parsing', () => {
+    it('should correctly parse string ending with escaped backslash', () => {
+      const parser = new Parser();
+
+      const result = parser.evaluate('"hello\\\\"');
+      expect(result).toBe('hello\\');
+    });
+
+    it('should correctly parse escaped quote after escaped backslash', () => {
+      const parser = new Parser();
+
+      const result = parser.evaluate('"hello\\\\\\"world"');
+      expect(result).toBe('hello\\"world');
+    });
+
+    it('should correctly parse simple escaped quote', () => {
+      const parser = new Parser();
+
+      const result = parser.evaluate('"hello\\"world"');
+      expect(result).toBe('hello"world');
+    });
+
+    it('should correctly parse multiple escaped backslashes', () => {
+      const parser = new Parser();
+
+      const result = parser.evaluate('"\\\\\\\\"');
+      expect(result).toBe('\\\\');
+    });
+
+    it('should still parse normal strings correctly', () => {
+      const parser = new Parser();
+
+      expect(parser.evaluate('"hello"')).toBe('hello');
+      expect(parser.evaluate("'world'")).toBe('world');
+      expect(parser.evaluate('"hello\\nworld"')).toBe('hello\nworld');
+    });
+  });
+
+  describe('Parser Recursion Depth Limits', () => {
+    it('should reject deeply nested parentheses', () => {
+      const parser = new Parser();
+      const depth = 300;
+      const expr = '('.repeat(depth) + '1' + ')'.repeat(depth);
+
+      expect(() => parser.parse(expr)).toThrow(ParseError);
+    });
+
+    it('should reject deeply nested ternary expressions', () => {
+      const parser = new Parser();
+      let expr = '1';
+      for (let i = 0; i < 260; i++) {
+        expr = `x ? ${expr} : 0`;
+      }
+
+      expect(() => parser.parse(expr)).toThrow(ParseError);
+    });
+
+    it('should allow reasonably nested expressions', () => {
+      const parser = new Parser();
+      const expr = '((((1 + 2) * 3) - 4) / 5)';
+
+      expect(parser.evaluate(expr)).toBe((((1 + 2) * 3) - 4) / 5);
+    });
+
+    it('should allow moderately nested ternaries', () => {
+      const parser = new Parser();
+
+      expect(parser.evaluate('x ? 1 : y ? 2 : 3', { x: false, y: true })).toBe(2);
+    });
+  });
+
 });

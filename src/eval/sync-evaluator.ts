@@ -121,6 +121,7 @@ function evalObject(
 ): Value {
   const obj: Record<string, Value> = {};
   for (const prop of node.properties) {
+    ExpressionValidator.validateMemberAccess(prop.key, expr.toString());
     obj[prop.key] = evalNode(prop.value, expr, values, resolver);
   }
   return obj as Value;
@@ -277,7 +278,7 @@ function evalLambda(
   const body = node.body;
   const capturedValues = values;
   const arrowFunction = function (...functionArguments: Value[]): Value {
-    const localScope: Values = Object.assign({}, capturedValues);
+    const localScope: Values = Object.create(capturedValues);
     for (let i = 0; i < params.length; i++) {
       localScope[params[i]] = functionArguments[i];
     }
@@ -300,7 +301,7 @@ function evalFunctionDef(
   const name = node.name;
   const capturedValues = values;
   const userDefinedFunction = function (...functionArguments: Value[]): Value {
-    const localScope: Values = Object.assign({}, capturedValues);
+    const localScope: Values = Object.create(capturedValues);
     for (let i = 0; i < params.length; i++) {
       localScope[params[i]] = functionArguments[i];
     }

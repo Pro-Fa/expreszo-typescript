@@ -3,6 +3,9 @@
  * Handles special operations: concat, setVar, arrayIndexOrProperty, coalesce, as
  */
 
+import { AccessError } from '../../types/errors.js';
+import { DANGEROUS_PROPERTIES } from '../../validation/constants.js';
+
 export function concat(a: any[] | string | undefined, b: any[] | string | undefined): any[] | string | undefined {
   if (Array.isArray(a) && Array.isArray(b)) {
     return a.concat(b);
@@ -14,6 +17,12 @@ export function concat(a: any[] | string | undefined, b: any[] | string | undefi
 }
 
 export function setVar(name: string, value: any, variables: Record<string, any> | undefined): any {
+  if (DANGEROUS_PROPERTIES.has(name)) {
+    throw new AccessError(
+      'Prototype access detected in assignment',
+      { propertyName: name }
+    );
+  }
   if (variables) {
     variables[name] = value;
   }
@@ -28,6 +37,13 @@ export function arrayIndexOrProperty(parent: any, index: number | string | undef
 
   if (typeof index !== 'number' && typeof index !== 'string') {
     return undefined;
+  }
+
+  if (typeof index === 'string' && DANGEROUS_PROPERTIES.has(index)) {
+    throw new AccessError(
+      'Prototype access detected in bracket expression',
+      { propertyName: index }
+    );
   }
 
   // When parent is array and index is not a round number: Throw error.

@@ -62,15 +62,9 @@ export function round(a: number | undefined): number | undefined {
   return Math.round(a);
 }
 
+const _sign: (x: number) => number = Math.sign || ((x: number) => ((x > 0 ? 1 : 0) - (x < 0 ? 1 : 0)) || +x);
 export function sign(x: number | undefined): number | undefined {
-  if (x === undefined) {
-    return undefined;
-  }
-  if (Math.sign) {
-    return Math.sign(x);
-  } else {
-    return ((x > 0 ? 1 : 0) - (x < 0 ? 1 : 0)) || +x;
-  }
+  return x === undefined ? undefined : _sign(x);
 }
 
 export function sqrt(a: number | undefined): number | undefined {
@@ -81,29 +75,15 @@ export function sqrt(a: number | undefined): number | undefined {
   return Math.sqrt(a);
 }
 
+const _trunc: (x: number) => number = Math.trunc || ((a: number) => a < 0 ? Math.ceil(a) : Math.floor(a));
 export function trunc(a: number | undefined): number | undefined {
-  if (a === undefined) {
-    return undefined;
-  }
-
-  if (Math.trunc) {
-    return Math.trunc(a);
-  } else {
-    return a < 0 ? Math.ceil(a) : Math.floor(a);
-  }
+  return a === undefined ? undefined : _trunc(a);
 }
 
 const ONE_THIRD = 1 / 3;
+const _cbrt: (x: number) => number = Math.cbrt || ((x: number) => x < 0 ? -Math.pow(-x, ONE_THIRD) : Math.pow(x, ONE_THIRD));
 export function cbrt(x: number | undefined): number | undefined {
-  if (x === undefined) {
-    return undefined;
-  }
-
-  if (Math.cbrt) {
-    return Math.cbrt(x);
-  } else {
-    return x < 0 ? -Math.pow(-x, ONE_THIRD) : Math.pow(x, ONE_THIRD);
-  }
+  return x === undefined ? undefined : _cbrt(x);
 }
 
 export function exp(a: number | undefined): number | undefined {
@@ -114,16 +94,9 @@ export function exp(a: number | undefined): number | undefined {
   return Math.exp(a);
 }
 
+const _expm1: (x: number) => number = Math.expm1 || ((x: number) => Math.exp(x) - 1);
 export function expm1(x: number | undefined): number | undefined {
-  if (x === undefined) {
-    return undefined;
-  }
-
-  if (Math.expm1) {
-    return Math.expm1(x);
-  } else {
-    return Math.exp(x) - 1;
-  }
+  return x === undefined ? undefined : _expm1(x);
 }
 
 export function log(a: number | undefined): number | undefined {
@@ -134,38 +107,17 @@ export function log(a: number | undefined): number | undefined {
   return Math.log(a);
 }
 
+const _log1p: (x: number) => number = Math.log1p || ((x: number) => Math.log(1 + x));
 export function log1p(x: number | undefined): number | undefined {
-  if (x === undefined) {
-    return undefined;
-  }
-
-  if (Math.log1p) {
-    return Math.log1p(x);
-  } else {
-    return Math.log(1 + x);
-  }
+  return x === undefined ? undefined : _log1p(x);
 }
 
+const _log2: (x: number) => number = Math.log2 || ((x: number) => Math.log(x) / Math.LN2);
 export function log2(x: number | undefined): number | undefined {
-  if (x === undefined) {
-    return undefined;
-  }
-
-  if (Math.log2) {
-    return Math.log2(x);
-  } else {
-    return Math.log(x) / Math.LN2;
-  }
+  return x === undefined ? undefined : _log2(x);
 }
 
+const _log10: (x: number) => number = Math.log10 || ((a: number) => Math.log(a) * Math.LOG10E);
 export function log10(a: number | undefined): number | undefined {
-  if (a === undefined) {
-    return undefined;
-  }
-
-  if (Math.log10) {
-    return Math.log10(a);
-  } else {
-    return Math.log(a) * Math.LOG10E;
-  }
+  return a === undefined ? undefined : _log10(a);
 }

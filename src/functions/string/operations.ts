@@ -241,7 +241,11 @@ export function reverse(str: string | undefined): string | undefined {
   if (typeof str !== 'string') {
     throw new Error('Argument to reverse must be a string');
   }
-  return str.split('').reverse().join('');
+  let result = '';
+  for (let i = str.length - 1; i >= 0; i--) {
+    result += str[i];
+  }
+  return result;
 }
 
 /**
@@ -327,6 +331,11 @@ export function replaceFirst(str: string | undefined, oldValue: string | undefin
 /**
  * Sorts an array of strings using natural sort order (alphanumeric aware)
  */
+const naturalSortCollator = new Intl.Collator(undefined, {
+  numeric: true,
+  sensitivity: 'base'
+});
+
 export function naturalSort(arr: string[] | undefined): string[] | undefined {
   if (arr === undefined) {
     return undefined;
@@ -335,12 +344,7 @@ export function naturalSort(arr: string[] | undefined): string[] | undefined {
     throw new Error('Argument to naturalSort must be an array');
   }
 
-  const collator = new Intl.Collator(undefined, {
-    numeric: true,
-    sensitivity: 'base'
-  });
-
-  return [...arr].sort(collator.compare);
+  return [...arr].sort(naturalSortCollator.compare);
 }
 
 /**

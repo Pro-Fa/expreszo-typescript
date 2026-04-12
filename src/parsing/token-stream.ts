@@ -25,7 +25,7 @@ import type { OperatorFunction } from '../types/parser.js';
  * This interface represents the subset of Parser functionality needed by TokenStream
  */
 interface ParserLike {
-  keywords: string[];
+  keywords: string[] | Set<string>;
   unaryOps: Record<string, OperatorFunction>;
   binaryOps: Record<string, OperatorFunction>;
   ternaryOps: Record<string, OperatorFunction>;
@@ -45,6 +45,13 @@ interface ParserLike {
 interface Coordinates {
   line: number;
   column: number;
+}
+
+function isLetter(c: string): boolean {
+  const code = c.charCodeAt(0);
+  if ((code >= 65 && code <= 90) || (code >= 97 && code <= 122)) return true;
+  if (code < 128) return false;
+  return c.toUpperCase() !== c.toLowerCase();
 }
 
 /** Single-character operators that map directly to themselves */
@@ -68,7 +75,7 @@ const ESCAPE_SEQUENCES: Record<string, string> = {
 
 export class TokenStream {
   public pos: number = 0;
-  public keywords: string[];
+  public keywords: Set<string>;
   public current: Token | null = null;
   public unaryOps: Record<string, OperatorFunction>;
   public binaryOps: Record<string, OperatorFunction>;
@@ -82,7 +89,7 @@ export class TokenStream {
   public parser: ParserLike;
 
   constructor(parser: ParserLike, expression: string) {
-    this.keywords = parser.keywords;
+    this.keywords = parser.keywords instanceof Set ? parser.keywords : new Set(parser.keywords);
     this.unaryOps = parser.unaryOps;
     this.binaryOps = parser.binaryOps;
     this.ternaryOps = parser.ternaryOps;
@@ -141,7 +148,13 @@ export class TokenStream {
       let index = this.expression.indexOf(quote, startPos + 1);
       while (index >= 0 && this.pos < this.expression.length) {
         this.pos = index + 1;
-        if (this.expression.charAt(index - 1) !== '\\') {
+        let backslashCount = 0;
+        let checkPos = index - 1;
+        while (checkPos >= startPos + 1 && this.expression.charAt(checkPos) === '\\') {
+          backslashCount++;
+          checkPos--;
+        }
+        if (backslashCount % 2 === 0) {
           const rawString = this.expression.substring(startPos + 1, index);
           this.current = this.newToken(TSTRING, this.unescape(rawString), startPos);
           r = true;
@@ -208,7 +221,7 @@ export class TokenStream {
     let i = startPos;
     for (; i < this.expression.length; i++) {
       const c = this.expression.charAt(i);
-      if (c.toUpperCase() === c.toLowerCase()) {
+      if (!isLetter(c)) {
         if (i === this.pos || (c !== '_' && c !== '.' && (c < '0' || c > '9'))) {
           break;
         }
@@ -235,7 +248,7 @@ export class TokenStream {
     let i = startPos;
     for (; i < this.expression.length; i++) {
       const c = this.expression.charAt(i);
-      if (c.toUpperCase() === c.toLowerCase()) {
+      if (!isLetter(c)) {
         if (i === this.pos || (c !== '_' && (c < '0' || c > '9'))) {
           break;
         }
@@ -265,7 +278,7 @@ export class TokenStream {
     let leading$ = false;
     for (; i < this.expression.length; i++) {
       const c = this.expression.charAt(i);
-      if (c.toUpperCase() === c.toLowerCase()) {
+      if (!isLetter(c)) {
         if (i === this.pos && (c === '$' || c === '_')) {
           if (c === '_') {
             hasLetter = true;
@@ -285,7 +298,7 @@ export class TokenStream {
     }
     if (hasLetter) {
       const str = this.expression.substring(startPos, i);
-      if (this.keywords.includes(str)) {
+      if (this.keywords.has(str)) {
         this.current = this.newToken(TKEYWORD, str);
       } else {
         this.current = this.newToken(TNAME, str);

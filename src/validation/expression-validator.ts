@@ -21,8 +21,8 @@ import { AccessError, FunctionError } from '../types/errors.js';
 import type { OperatorFunction } from '../types/index.js';
 import { BUILTIN_FUNCTIONS } from '../registry/builtin/functions.js';
 import { ALL_OPERATORS } from '../registry/builtin/operators.js';
-
-const DANGEROUS_PROPERTIES = new Set(['__proto__', 'prototype', 'constructor']);
+import { DANGEROUS_PROPERTIES } from './constants.js';
+export { DANGEROUS_PROPERTIES };
 
 /**
  * Every descriptor-declared safe built-in. Replaces the legacy hand-written
@@ -72,12 +72,34 @@ export class ExpressionValidator {
    * values pass through; functions must appear in a descriptor-backed set
    * or the parser's runtime registries.
    */
+  private static registeredFunctionCache: WeakRef<Record<string, OperatorFunction>> | undefined;
+  private static registeredFunctionSet: Set<Function> | undefined;
+
   static isAllowedFunction(fn: unknown, registeredFunctions: Record<string, OperatorFunction>): boolean {
     if (typeof fn !== 'function') return true;
     if (SAFE_BUILTIN_IMPLS.has(fn as Function)) return true;
     if (SAFE_NATIVE_IMPLS.has(fn as Function)) return true;
+
+    let fnSet = ExpressionValidator.registeredFunctionSet;
+    const cached = ExpressionValidator.registeredFunctionCache?.deref();
+    if (cached !== registeredFunctions || !fnSet) {
+      fnSet = new Set<Function>();
+      for (const key in registeredFunctions) {
+        if (Object.prototype.hasOwnProperty.call(registeredFunctions, key)) {
+          const val = registeredFunctions[key];
+          if (typeof val === 'function') fnSet.add(val as unknown as Function);
+        }
+      }
+      ExpressionValidator.registeredFunctionCache = new WeakRef(registeredFunctions);
+      ExpressionValidator.registeredFunctionSet = fnSet;
+    }
+    if (fnSet.has(fn as Function)) return true;
+
+    // Cache may be stale if registeredFunctions was mutated (e.g. inline function defs).
+    // Fall back to direct scan and update cache on hit.
     for (const key in registeredFunctions) {
       if (Object.prototype.hasOwnProperty.call(registeredFunctions, key) && registeredFunctions[key] === fn) {
+        fnSet.add(fn as Function);
         return true;
       }
     }
