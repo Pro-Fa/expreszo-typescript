@@ -14,7 +14,7 @@
  * Phase 2 drops this quirk — the AST-native replacement returns a stable
  * declaration-order list and updates the expected fixtures.
  */
-import type { Node, Member, Ident, NameRef } from '../nodes.js';
+import type { Node, Member, Ident, NameRef, ObjectProperty, ObjectSpread } from '../nodes.js';
 
 export interface GetSymbolsOptions {
   readonly withMembers?: boolean;
@@ -99,12 +99,22 @@ function walk(node: Node, state: WalkState): void {
       flush(state); // IMEMBER off a non-ident base — legacy flushes.
       return;
     case 'ArrayLit':
-      for (const el of node.elements) walk(el, state);
+      for (const el of node.elements) {
+        if (el.type === 'ArraySpread') {
+          walk(el.argument, state);
+        } else {
+          walk(el, state);
+        }
+      }
       flush(state);
       return;
     case 'ObjectLit':
-      for (const p of node.properties) {
-        walk(p.value, state);
+      for (const entry of node.properties) {
+        if ('type' in entry && (entry as any).type === 'ObjectSpread') {
+          walk((entry as ObjectSpread).argument, state);
+        } else {
+          walk((entry as ObjectProperty).value, state);
+        }
         flush(state);
       }
       flush(state);

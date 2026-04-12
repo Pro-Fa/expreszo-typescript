@@ -52,69 +52,69 @@ describe('Array and String Functions TypeScript Test', function () {
     });
   });
 
-  describe('join(sep, array)', function () {
+  describe('join(array, sep)', function () {
     it('should return an empty string on an empty array', function () {
       const parser = new Parser();
-      assert.strictEqual(parser.evaluate('join(",", [])'), '');
+      assert.strictEqual(parser.evaluate('join([], ",")'), '');
     });
     it('should work on a single-element array', function () {
       const parser = new Parser();
-      assert.strictEqual(parser.evaluate('join(",", [1])'), '1');
+      assert.strictEqual(parser.evaluate('join([1], ",")'), '1');
     });
     it('should work on multi-element arrays', function () {
       const parser = new Parser();
-      assert.strictEqual(parser.evaluate('join(",", [1, 2, 3])'), '1,2,3');
-      assert.strictEqual(parser.evaluate('join(" - ", ["a", "b", "c"])'), 'a - b - c');
+      assert.strictEqual(parser.evaluate('join([1, 2, 3], ",")'), '1,2,3');
+      assert.strictEqual(parser.evaluate('join(["a", "b", "c"], " - ")'), 'a - b - c');
     });
     it('should return undefined if one of the arguments is undefined', function () {
       const parser = new Parser();
-      assert.strictEqual(parser.evaluate('join(undefined, [1, 2])'), undefined);
-      assert.strictEqual(parser.evaluate('join(",", undefined)'), undefined);
+      assert.strictEqual(parser.evaluate('join([1, 2], undefined)'), undefined);
+      assert.strictEqual(parser.evaluate('join(undefined, ",")'), undefined);
     });
   });
 
-  describe('indexOf(target, array)', function () {
+  describe('indexOf(array, target)', function () {
     it('should return -1 for empty array', function () {
       const parser = new Parser();
-      assert.strictEqual(parser.evaluate('indexOf(1, [])'), -1);
+      assert.strictEqual(parser.evaluate('indexOf([], 1)'), -1);
     });
     it('should find values in the array', function () {
       const parser = new Parser();
-      assert.strictEqual(parser.evaluate('indexOf(2, [1, 2, 3])'), 1);
-      assert.strictEqual(parser.evaluate('indexOf("b", ["a", "b", "c"])'), 1);
+      assert.strictEqual(parser.evaluate('indexOf([1, 2, 3], 2)'), 1);
+      assert.strictEqual(parser.evaluate('indexOf(["a", "b", "c"], "b")'), 1);
     });
     it('should find the first matching value in the array', function () {
       const parser = new Parser();
-      assert.strictEqual(parser.evaluate('indexOf(2, [1, 2, 3, 2])'), 1);
+      assert.strictEqual(parser.evaluate('indexOf([1, 2, 3, 2], 2)'), 1);
     });
     it('should return -1 for no match', function () {
       const parser = new Parser();
-      assert.strictEqual(parser.evaluate('indexOf(5, [1, 2, 3])'), -1);
+      assert.strictEqual(parser.evaluate('indexOf([1, 2, 3], 5)'), -1);
     });
     it('should return undefined if undefined is passed as the array', function () {
       const parser = new Parser();
-      assert.strictEqual(parser.evaluate('indexOf(1, undefined)'), undefined);
+      assert.strictEqual(parser.evaluate('indexOf(undefined, 1)'), undefined);
     });
   });
 
-  describe('indexOf(target, string)', function () {
-    it('should return -1 for indexOf("x", "")', function () {
+  describe('indexOf(string, target)', function () {
+    it('should return -1 for indexOf("", "x")', function () {
       const parser = new Parser();
-      assert.strictEqual(parser.evaluate('indexOf("x", "")'), -1);
+      assert.strictEqual(parser.evaluate('indexOf("", "x")'), -1);
     });
-    it('should return 0 for indexOf("", *)', function () {
+    it('should return 0 for indexOf(*, "")', function () {
       const parser = new Parser();
-      assert.strictEqual(parser.evaluate('indexOf("", "hello")'), 0);
+      assert.strictEqual(parser.evaluate('indexOf("hello", "")'), 0);
       assert.strictEqual(parser.evaluate('indexOf("", "")'), 0);
     });
     it('should find substrings in the string', function () {
       const parser = new Parser();
-      assert.strictEqual(parser.evaluate('indexOf("ell", "hello")'), 1);
-      assert.strictEqual(parser.evaluate('indexOf("o", "hello")'), 4);
+      assert.strictEqual(parser.evaluate('indexOf("hello", "ell")'), 1);
+      assert.strictEqual(parser.evaluate('indexOf("hello", "o")'), 4);
     });
     it('should find the first matching substring in the string', function () {
       const parser = new Parser();
-      assert.strictEqual(parser.evaluate('indexOf("l", "hello")'), 2);
+      assert.strictEqual(parser.evaluate('indexOf("hello", "l")'), 2);
     });
     it('should find the entire string', function () {
       const parser = new Parser();
@@ -122,11 +122,11 @@ describe('Array and String Functions TypeScript Test', function () {
     });
     it('should return -1 for no match', function () {
       const parser = new Parser();
-      assert.strictEqual(parser.evaluate('indexOf("xyz", "hello")'), -1);
+      assert.strictEqual(parser.evaluate('indexOf("hello", "xyz")'), -1);
     });
     it('should return undefined if undefined is passed as the string', function () {
       const parser = new Parser();
-      assert.strictEqual(parser.evaluate('indexOf("x", undefined)'), undefined);
+      assert.strictEqual(parser.evaluate('indexOf(undefined, "x")'), undefined);
     });
   });
 

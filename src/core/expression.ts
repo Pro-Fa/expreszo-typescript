@@ -23,6 +23,7 @@ interface ParserLike {
   binaryOps: Record<string, OperatorFunction>;
   ternaryOps: Record<string, OperatorFunction>;
   functions: Record<string, OperatorFunction>;
+  legacy?: boolean;
   resolve: (token: string) => VariableResolveResult;
   isOperatorEnabled: (op: string) => boolean;
   parse(expression: string): Expression;
@@ -35,6 +36,7 @@ export class Expression {
   public binaryOps: Record<string, OperatorFunction>;
   public ternaryOps: Record<string, OperatorFunction>;
   public functions: Record<string, OperatorFunction>;
+  public legacy: boolean;
 
   /**
    * Cached result of the async-analysis visitor. `undefined` means "not yet
@@ -60,6 +62,7 @@ export class Expression {
     this.binaryOps = parser.binaryOps;
     this.ternaryOps = parser.ternaryOps;
     this.functions = parser.functions;
+    this.legacy = parser.legacy ?? false;
   }
 
   /**

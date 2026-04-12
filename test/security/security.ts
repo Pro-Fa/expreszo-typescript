@@ -234,7 +234,7 @@ describe('Security Tests', () => {
     it('should still allow string operations', () => {
       const parser = new Parser();
 
-      expect(parser.evaluate('"hello" + " " + "world"')).toBe('hello world');
+      expect(parser.evaluate('"hello" | " " | "world"')).toBe('hello world');
       expect(parser.evaluate('length "test"')).toBe(4);
     });
 

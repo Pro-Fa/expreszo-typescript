@@ -6,7 +6,20 @@
 import { AccessError } from '../../types/errors.js';
 import { DANGEROUS_PROPERTIES } from '../../validation/constants.js';
 
-export function concat(a: any[] | string | undefined, b: any[] | string | undefined): any[] | string | undefined {
+export function concat(a: any, b: any): any[] | string | undefined {
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return a.concat(b);
+  }
+  if (typeof a === 'string' && typeof b === 'string') {
+    return a + b;
+  }
+  if (typeof a === 'string' || typeof b === 'string') {
+    return String(a) + String(b);
+  }
+  return undefined;
+}
+
+export function concatLegacy(a: any, b: any): any[] | string | undefined {
   if (Array.isArray(a) && Array.isArray(b)) {
     return a.concat(b);
   } else if (typeof a === 'string' && typeof b === 'string') {

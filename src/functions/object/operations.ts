@@ -100,3 +100,18 @@ export function flatten(
 
   return result;
 }
+
+export function mapValues(obj: any, fn: any): ValueObject | undefined {
+  if (obj === undefined) return undefined;
+  if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
+    throw new Error('mapValues() expects an object as first argument');
+  }
+  if (typeof fn !== 'function') {
+    throw new Error('mapValues() expects a function as second argument');
+  }
+  const result: ValueObject = {};
+  for (const [key, value] of Object.entries(obj)) {
+    result[key] = fn(value, key);
+  }
+  return result;
+}

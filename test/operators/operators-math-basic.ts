@@ -101,7 +101,7 @@ describe('abs(x)', () => {
     strictEqual(parser.evaluate('abs -1'), 1);
     strictEqual(parser.evaluate('abs 2'), 2);
     strictEqual(parser.evaluate('abs -2'), 2);
-    strictEqual(parser.evaluate('abs(-1/0)'), Infinity);
+    strictEqual(parser.evaluate('abs(-Infinity)'), Infinity);
   });
 });
 
@@ -118,8 +118,8 @@ describe('ceil(x)', () => {
     strictEqual(parser.evaluate('ceil -2.999'), -2);
     strictEqual(parser.evaluate('ceil 123.5'), 124);
     strictEqual(parser.evaluate('ceil -123.5'), -123);
-    strictEqual(parser.evaluate('ceil(1/0)'), Infinity);
-    strictEqual(parser.evaluate('ceil(-1/0)'), -Infinity);
+    strictEqual(parser.evaluate('ceil(Infinity)'), Infinity);
+    strictEqual(parser.evaluate('ceil(-Infinity)'), -Infinity);
   });
 });
 
@@ -136,8 +136,8 @@ describe('floor(x)', () => {
     strictEqual(parser.evaluate('floor -2.999'), -3);
     strictEqual(parser.evaluate('floor 123.5'), 123);
     strictEqual(parser.evaluate('floor -123.5'), -124);
-    strictEqual(parser.evaluate('floor(1/0)'), Infinity);
-    strictEqual(parser.evaluate('floor(-1/0)'), -Infinity);
+    strictEqual(parser.evaluate('floor(Infinity)'), Infinity);
+    strictEqual(parser.evaluate('floor(-Infinity)'), -Infinity);
   });
 });
 
@@ -162,8 +162,8 @@ describe('round(x)', () => {
     strictEqual(parser.evaluate('round -2.5'), -2);
     strictEqual(parser.evaluate('round 123.5'), 124);
     strictEqual(parser.evaluate('round -123.5'), -123);
-    strictEqual(parser.evaluate('round(1/0)'), Infinity);
-    strictEqual(parser.evaluate('round(-1/0)'), -Infinity);
+    strictEqual(parser.evaluate('round(Infinity)'), Infinity);
+    strictEqual(parser.evaluate('round(-Infinity)'), -Infinity);
   });
 });
 
@@ -188,8 +188,8 @@ describe('trunc(x)', () => {
     strictEqual(parser.evaluate('trunc -2.5'), -2);
     strictEqual(parser.evaluate('trunc 123.5'), 123);
     strictEqual(parser.evaluate('trunc -123.5'), -123);
-    strictEqual(parser.evaluate('trunc(1/0)'), Infinity);
-    strictEqual(parser.evaluate('trunc(-1/0)'), -Infinity);
+    strictEqual(parser.evaluate('trunc(Infinity)'), Infinity);
+    strictEqual(parser.evaluate('trunc(-Infinity)'), -Infinity);
   });
 });
 
@@ -211,8 +211,8 @@ describe('exp(x)', () => {
     assertCloseTo(parser.evaluate('exp 4'), 54.59815003314423, delta * 10);
     assertCloseTo(parser.evaluate('exp 10'), 22026.46579480671, delta * 10000);
     assertCloseTo(parser.evaluate('exp -10'), 0.00004539992976248486, delta);
-    strictEqual(parser.evaluate('exp(1/0)'), Infinity);
-    strictEqual(parser.evaluate('exp(-1/0)'), 0);
+    strictEqual(parser.evaluate('exp(Infinity)'), Infinity);
+    strictEqual(parser.evaluate('exp(-Infinity)'), 0);
   });
 });
 
@@ -238,12 +238,12 @@ describe('cbrt(x)', () => {
   it('returns the cube root of x', () => {
     const delta = 1e-15;
 
-    ok(isNaN(parser.evaluate('cbrt(0/0)')));
+    ok(isNaN(parser.evaluate('cbrt(NaN)')));
     strictEqual(parser.evaluate('cbrt -1'), -1);
     strictEqual(parser.evaluate('cbrt 0'), 0);
-    strictEqual(parser.evaluate('cbrt(-1/0)'), -1 / 0);
+    strictEqual(parser.evaluate('cbrt(-Infinity)'), -Infinity);
     strictEqual(parser.evaluate('cbrt 1'), 1);
-    strictEqual(parser.evaluate('cbrt(1/0)'), 1 / 0);
+    strictEqual(parser.evaluate('cbrt(Infinity)'), Infinity);
     assertCloseTo(parser.evaluate('cbrt 2'), 1.2599210498948732, delta);
     assertCloseTo(parser.evaluate('cbrt -2'), -1.2599210498948732, delta);
     strictEqual(parser.evaluate('cbrt 8'), 2);
@@ -261,7 +261,7 @@ describe('expm1(x)', () => {
   it('returns e^x - 1', () => {
     const delta = 1e-15;
 
-    ok(isNaN(parser.evaluate('expm1(0/0)')));
+    ok(isNaN(parser.evaluate('expm1(NaN)')));
     assertCloseTo(parser.evaluate('expm1 -1'), -0.6321205588285577, delta);
     strictEqual(parser.evaluate('expm1 0'), 0);
     assertCloseTo(parser.evaluate('expm1 1'), 1.718281828459045, delta);
@@ -278,7 +278,7 @@ describe('log1p(x)', () => {
   it('returns log(1 + x)', () => {
     const delta = 1e-15;
 
-    ok(isNaN(parser.evaluate('log1p(0/0)')));
+    ok(isNaN(parser.evaluate('log1p(NaN)')));
     strictEqual(parser.evaluate('log1p -1'), -1 / 0);
     strictEqual(parser.evaluate('log1p 0'), 0);
     assertCloseTo(parser.evaluate('log1p 1'), 0.6931471805599453, delta);
@@ -294,7 +294,7 @@ describe('log2(x)', () => {
   it('returns the base 2 log of x', () => {
     const delta = 1e-15;
 
-    ok(isNaN(parser.evaluate('log2(0/0)')));
+    ok(isNaN(parser.evaluate('log2(NaN)')));
     ok(isNaN(parser.evaluate('log2 -1')));
     strictEqual(parser.evaluate('log2 0'), -1 / 0);
     strictEqual(parser.evaluate('log2 1'), 0);

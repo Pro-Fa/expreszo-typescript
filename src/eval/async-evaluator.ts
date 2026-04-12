@@ -101,7 +101,19 @@ async function evalArray(
   values: Values,
   resolver: VariableResolver | undefined
 ): Promise<Value> {
-  return Promise.all(node.elements.map((el) => evalNode(el, expr, values, resolver)));
+  const result: Value[] = [];
+  for (const el of node.elements) {
+    if (el.type === 'ArraySpread') {
+      const arr = await evalNode(el.argument, expr, values, resolver);
+      if (!Array.isArray(arr)) {
+        throw new Error('Spread argument must be an array');
+      }
+      result.push(...(arr as Value[]));
+    } else {
+      result.push(await evalNode(el, expr, values, resolver));
+    }
+  }
+  return result;
 }
 
 async function evalObject(
@@ -110,16 +122,21 @@ async function evalObject(
   values: Values,
   resolver: VariableResolver | undefined
 ): Promise<Value> {
-  const keys: string[] = [];
-  const pending: Promise<Value>[] = [];
-  for (const prop of node.properties) {
-    ExpressionValidator.validateMemberAccess(prop.key, expr.toString());
-    keys.push(prop.key);
-    pending.push(evalNode(prop.value, expr, values, resolver));
-  }
-  const resolved = await Promise.all(pending);
   const obj: Record<string, Value> = {};
-  for (let i = 0; i < keys.length; i++) obj[keys[i]] = resolved[i];
+  for (const entry of node.properties) {
+    if ('type' in entry && (entry as any).type === 'ObjectSpread') {
+      const s = entry as import('../ast/nodes.js').ObjectSpread;
+      const spread = await evalNode(s.argument, expr, values, resolver);
+      if (spread === null || typeof spread !== 'object' || Array.isArray(spread)) {
+        throw new Error('Spread argument must be an object');
+      }
+      Object.assign(obj, spread);
+    } else {
+      const prop = entry as import('../ast/nodes.js').ObjectProperty;
+      ExpressionValidator.validateMemberAccess(prop.key, expr.toString());
+      obj[prop.key] = await evalNode(prop.value, expr, values, resolver);
+    }
+  }
   return obj as Value;
 }
 
@@ -253,6 +270,19 @@ async function evalCall(
   values: Values,
   resolver: VariableResolver | undefined
 ): Promise<Value> {
+  // Lazy if(): only evaluate the matching branch
+  if (
+    !expr.legacy &&
+    node.callee.type === 'Ident' &&
+    node.callee.name === 'if' &&
+    node.args.length === 3
+  ) {
+    const cond = await evalNode(node.args[0], expr, values, resolver);
+    return cond
+      ? evalNode(node.args[1], expr, values, resolver)
+      : evalNode(node.args[2], expr, values, resolver);
+  }
+
   const callee = await evalNode(node.callee, expr, values, resolver);
   const args = await Promise.all(
     node.args.map((arg) => evalNode(arg, expr, values, resolver))

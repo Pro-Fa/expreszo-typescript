@@ -115,22 +115,22 @@ describe('Array Function Error Messages', function () {
   });
 
   describe('indexOf()', function () {
-    it('should provide user-friendly error when second argument is not an array or string', function () {
+    it('should provide user-friendly error when first argument is not an array or string', function () {
       const parser = new Parser();
-      expect(() => parser.evaluate('indexOf(1, 123)')).toThrow(
-        /indexOf\(target, arrayOrString\) expects a string or array as second argument, got number/
+      expect(() => parser.evaluate('indexOf(123, 1)')).toThrow(
+        /indexOf\(arrayOrString, target\) expects a string or array as first argument, got number/
       );
-      expect(() => parser.evaluate('indexOf(1, 123)')).toThrow(/Example:/);
+      expect(() => parser.evaluate('indexOf(123, 1)')).toThrow(/Example:/);
     });
   });
 
   describe('join()', function () {
-    it('should provide user-friendly error when second argument is not an array', function () {
+    it('should provide user-friendly error when first argument is not an array', function () {
       const parser = new Parser();
-      expect(() => parser.evaluate('join(", ", "not array")')).toThrow(
-        /join\(separator, array\) expects an array as second argument, got string/
+      expect(() => parser.evaluate('join("not array", ", ")')).toThrow(
+        /join\(array, separator\) expects an array as first argument, got string/
       );
-      expect(() => parser.evaluate('join(", ", "not array")')).toThrow(/Example:/);
+      expect(() => parser.evaluate('join("not array", ", ")')).toThrow(/Example:/);
     });
   });
 

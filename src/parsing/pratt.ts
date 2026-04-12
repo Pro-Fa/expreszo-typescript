@@ -32,11 +32,11 @@ import {
   TSEMICOLON, TKEYWORD, TBRACE, Token, TokenType
 } from './token.js';
 import {
-  type Node, type CaseArm, type ObjectProperty,
+  type Node, type CaseArm, type ObjectEntry, type ArrayEntry,
   mkNumber, mkString, mkBool, mkNull, mkUndefined, mkRaw,
   mkArray, mkObject, mkIdent, mkNameRef, mkMember,
   mkUnary, mkBinary, mkTernary, mkCall, mkLambda, mkFunctionDef,
-  mkCase, mkSequence, mkParen
+  mkCase, mkSequence, mkParen, mkArraySpread, mkObjectSpread
 } from '../ast/nodes.js';
 import { ParseError, AccessError } from '../types/errors.js';
 import type { OperatorFunction } from '../types/parser.js';
@@ -616,11 +616,19 @@ export class PrattParser {
     // rather than "Expected ]" from a direct `expect` call — matches legacy
     // error messages the language service's diagnostics assertions depend on.
     if (this.accept(TBRACKET, '[')) {
-      const elements: Node[] = [];
+      const elements: ArrayEntry[] = [];
       while (!this.accept(TBRACKET, ']')) {
-        elements.push(this.parseExpression());
-        while (this.accept(TCOMMA)) {
+        if (this.accept(TOP, '...')) {
+          elements.push(mkArraySpread(this.parseConditionalExpression()));
+        } else {
           elements.push(this.parseExpression());
+        }
+        while (this.accept(TCOMMA)) {
+          if (this.accept(TOP, '...')) {
+            elements.push(mkArraySpread(this.parseConditionalExpression()));
+          } else {
+            elements.push(this.parseExpression());
+          }
         }
       }
       return mkArray(elements);
@@ -757,7 +765,7 @@ export class PrattParser {
   // --- Object literal -----------------------------------------------------
 
   private parseObjectLiteral(): Node {
-    const properties: ObjectProperty[] = [];
+    const properties: ObjectEntry[] = [];
 
     if (this.accept(TBRACE, '}')) {
       return mkObject(properties);
@@ -768,21 +776,38 @@ export class PrattParser {
         if (!this.accept(TCOMMA)) {
           throw new Error('invalid object definition');
         }
-        // Trailing comma.
         if (this.accept(TBRACE, '}')) {
           return mkObject(properties);
         }
       }
 
+      // Spread syntax: { ...expr }
+      if (this.accept(TOP, '...')) {
+        properties.push(mkObjectSpread(this.parseConditionalExpression()));
+        if (this.accept(TBRACE, '}')) {
+          return mkObject(properties);
+        }
+        continue;
+      }
+
       const nameToken = this.peek();
-      if (!this.accept(TNAME)) {
+      let key: string;
+      let quoted = false;
+
+      if (this.accept(TNAME)) {
+        key = String(nameToken.value);
+      } else if (this.accept(TSTRING)) {
+        key = String(nameToken.value);
+        quoted = true;
+      } else {
         throw new Error('invalid object definition');
       }
+
       if (!this.accept(TOP, ':')) {
         throw new Error('invalid object definition');
       }
       const value = this.parseExpression();
-      properties.push({ key: String(nameToken.value), value });
+      properties.push({ key, value, quoted });
 
       if (this.accept(TBRACE, '}')) {
         return mkObject(properties);

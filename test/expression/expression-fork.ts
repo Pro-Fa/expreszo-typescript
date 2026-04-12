@@ -148,7 +148,7 @@ describe('Expression Fork Features TypeScript Test', () => {
             when x > y then "gt"
             when x < y then "lt"
             else "eq"
-          end + "$"
+          end | "$"
         `;
         expect(parser.evaluate(expr, { x: 2, y: 1 })).toBe('gt$');
         expect(parser.evaluate(expr, { x: 1, y: 2 })).toBe('lt$');
@@ -261,7 +261,7 @@ describe('Expression Fork Features TypeScript Test', () => {
       const expr = `{
         a: x * 3,
         b: {
-          x: "first" + "_" + "second",
+          x: "first" | "_" | "second",
           y: min(x, 0),
         },
         c: [0, 1, 2, x],

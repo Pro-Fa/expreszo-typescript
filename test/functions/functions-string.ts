@@ -61,10 +61,15 @@ describe('String Functions TypeScript Test', function () {
       assert.strictEqual(parser.evaluate('contains("test", undefined)'), undefined);
     });
 
-    it('should throw error for non-string arguments', function () {
+    it('should throw error for non-string/array first argument', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('contains(123, "test")'), /First argument.*must be a string/);
-      assert.throws(() => parser.evaluate('contains("test", 123)'), /Second argument.*must be a string/);
+      assert.throws(() => parser.evaluate('contains(123, "test")'), /First argument.*must be a string or array/);
+    });
+
+    it('should auto-stringify non-string needle for string haystack', function () {
+      const parser = new Parser();
+      assert.strictEqual(parser.evaluate('contains("test123", 123)'), true);
+      assert.strictEqual(parser.evaluate('contains("test", 123)'), false);
     });
   });
 

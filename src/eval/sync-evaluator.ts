@@ -106,9 +106,17 @@ function evalArray(
   values: Values,
   resolver: VariableResolver | undefined
 ): Value {
-  const result: Value[] = new Array(node.elements.length);
-  for (let i = 0; i < node.elements.length; i++) {
-    result[i] = evalNode(node.elements[i], expr, values, resolver);
+  const result: Value[] = [];
+  for (const el of node.elements) {
+    if (el.type === 'ArraySpread') {
+      const arr = evalNode(el.argument, expr, values, resolver);
+      if (!Array.isArray(arr)) {
+        throw new Error('Spread argument must be an array');
+      }
+      result.push(...(arr as Value[]));
+    } else {
+      result.push(evalNode(el, expr, values, resolver));
+    }
   }
   return result;
 }
@@ -120,9 +128,19 @@ function evalObject(
   resolver: VariableResolver | undefined
 ): Value {
   const obj: Record<string, Value> = {};
-  for (const prop of node.properties) {
-    ExpressionValidator.validateMemberAccess(prop.key, expr.toString());
-    obj[prop.key] = evalNode(prop.value, expr, values, resolver);
+  for (const entry of node.properties) {
+    if ('type' in entry && (entry as any).type === 'ObjectSpread') {
+      const s = entry as import('../ast/nodes.js').ObjectSpread;
+      const spread = evalNode(s.argument, expr, values, resolver);
+      if (spread === null || typeof spread !== 'object' || Array.isArray(spread)) {
+        throw new Error('Spread argument must be an object');
+      }
+      Object.assign(obj, spread);
+    } else {
+      const prop = entry as import('../ast/nodes.js').ObjectProperty;
+      ExpressionValidator.validateMemberAccess(prop.key, expr.toString());
+      obj[prop.key] = evalNode(prop.value, expr, values, resolver);
+    }
   }
   return obj as Value;
 }
@@ -256,6 +274,19 @@ function evalCall(
   values: Values,
   resolver: VariableResolver | undefined
 ): Value {
+  // Lazy if(): only evaluate the matching branch
+  if (
+    !expr.legacy &&
+    node.callee.type === 'Ident' &&
+    node.callee.name === 'if' &&
+    node.args.length === 3
+  ) {
+    const cond = evalNode(node.args[0], expr, values, resolver);
+    return cond
+      ? evalNode(node.args[1], expr, values, resolver)
+      : evalNode(node.args[2], expr, values, resolver);
+  }
+
   const callee = evalNode(node.callee, expr, values, resolver);
   const args: Value[] = new Array(node.args.length);
   for (let i = 0; i < node.args.length; i++) {

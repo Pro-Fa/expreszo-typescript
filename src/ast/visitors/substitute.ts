@@ -37,15 +37,23 @@ function substituteNode(node: Node, variable: string, replacement: Node): Node {
       return node.name === variable ? replacement : node;
     case 'ArrayLit':
       return mkArray(
-        node.elements.map((e) => substituteNode(e, variable, replacement)),
+        node.elements.map((e) =>
+          e.type === 'ArraySpread'
+            ? { type: 'ArraySpread' as const, argument: substituteNode(e.argument, variable, replacement), span: e.span }
+            : substituteNode(e, variable, replacement)
+        ),
         node.span
       );
     case 'ObjectLit':
       return mkObject(
-        node.properties.map((p) => ({
-          key: p.key,
-          value: substituteNode(p.value, variable, replacement)
-        })),
+        node.properties.map((entry) => {
+          if ('type' in entry && (entry as any).type === 'ObjectSpread') {
+            const s = entry as import('../nodes.js').ObjectSpread;
+            return { type: 'ObjectSpread' as const, argument: substituteNode(s.argument, variable, replacement), span: s.span };
+          }
+          const p = entry as import('../nodes.js').ObjectProperty;
+          return { key: p.key, value: substituteNode(p.value, variable, replacement), quoted: p.quoted };
+        }),
         node.span
       );
     case 'Member':

@@ -105,8 +105,8 @@ describe('Trigonometric Functions TypeScript Test', () => {
       assertCloseTo(parser.evaluate('atan(PI/4)') as number, 0.6657737500283538, delta);
       assertCloseTo(parser.evaluate('atan PI') as number, 1.2626272556789118, delta);
       assertCloseTo(parser.evaluate('atan -PI') as number, -1.2626272556789118, delta);
-      expect(parser.evaluate('atan(1/0)') as number).toBe(Math.PI / 2);
-      expect(parser.evaluate('atan(-1/0)') as number).toBe(-Math.PI / 2);
+      expect(parser.evaluate('atan(Infinity)') as number).toBe(Math.PI / 2);
+      expect(parser.evaluate('atan(-Infinity)') as number).toBe(-Math.PI / 2);
       assertCloseTo(parser.evaluate('atan 10') as number, 1.4711276743037347, delta);
       assertCloseTo(1.5607966601082315, parser.evaluate('atan 100') as number, delta);
       assertCloseTo(1.5697963271282298, parser.evaluate('atan 1000') as number, delta);
@@ -130,8 +130,8 @@ describe('Trigonometric Functions TypeScript Test', () => {
       assertCloseTo(-11.548739357257748, parser.evaluate('sinh -PI') as number, delta * 10);
       assertCloseTo(55.65439759941754, parser.evaluate('sinh(3*PI/2)') as number, delta * 100);
       assertCloseTo(1634508.6862359024, parser.evaluate('sinh 15') as number, delta * 1000000);
-      expect(parser.evaluate('sinh(1 / 0)') as number).toBe(Infinity);
-      expect(parser.evaluate('sinh(-1 / 0)') as number).toBe(-Infinity);
+      expect(parser.evaluate('sinh(Infinity)') as number).toBe(Infinity);
+      expect(parser.evaluate('sinh(-Infinity)') as number).toBe(-Infinity);
     });
   });
 
@@ -151,8 +151,8 @@ describe('Trigonometric Functions TypeScript Test', () => {
       assertCloseTo(11.591953275521522, parser.evaluate('cosh -PI') as number, delta * 10);
       assertCloseTo(55.663380890438695, parser.evaluate('cosh(3*PI/2)') as number, delta * 100);
       assertCloseTo(1634508.6862362078, parser.evaluate('cosh 15') as number, delta * 1e7);
-      expect(parser.evaluate('cosh(1 / 0)') as number).toBe(Infinity);
-      expect(parser.evaluate('cosh(-1 / 0)') as number).toBe(Infinity);
+      expect(parser.evaluate('cosh(Infinity)') as number).toBe(Infinity);
+      expect(parser.evaluate('cosh(-Infinity)') as number).toBe(Infinity);
     });
   });
 
@@ -180,8 +180,8 @@ describe('Trigonometric Functions TypeScript Test', () => {
       expect(parser.evaluate('tanh -20') as number).toBe(-1);
       expect(parser.evaluate('tanh 100') as number).toBe(1);
       expect(parser.evaluate('tanh -100') as number).toBe(-1);
-      expect(parser.evaluate('tanh(1 / 0)') as number).toBe(1);
-      expect(parser.evaluate('tanh(-1 / 0)') as number).toBe(-1);
+      expect(parser.evaluate('tanh(Infinity)') as number).toBe(1);
+      expect(parser.evaluate('tanh(-Infinity)') as number).toBe(-1);
     });
   });
 
@@ -203,8 +203,8 @@ describe('Trigonometric Functions TypeScript Test', () => {
       assertCloseTo(3.4023066454805946, parser.evaluate('asinh 15') as number, delta);
       assertCloseTo(5.298342365610589, parser.evaluate('asinh 100') as number, delta);
       assertCloseTo(7.600902709541988, parser.evaluate('asinh 1000') as number, delta);
-      expect(parser.evaluate('asinh(1 / 0)') as number).toBe(Infinity);
-      expect(parser.evaluate('asinh(-1 / 0)') as number).toBe(-Infinity);
+      expect(parser.evaluate('asinh(Infinity)') as number).toBe(Infinity);
+      expect(parser.evaluate('asinh(-Infinity)') as number).toBe(-Infinity);
     });
   });
 
@@ -224,8 +224,8 @@ describe('Trigonometric Functions TypeScript Test', () => {
       assertCloseTo(3.4000844141133393, parser.evaluate('acosh 15') as number, delta);
       assertCloseTo(5.298292365610485, parser.evaluate('acosh 100') as number, delta);
       assertCloseTo(7.600902209541989, parser.evaluate('acosh 1000') as number, delta);
-      expect(parser.evaluate('acosh(1 / 0)') as number).toBe(Infinity);
-      expect(isNaN(parser.evaluate('acosh(-1 / 0)') as number)).toBe(true);
+      expect(parser.evaluate('acosh(Infinity)') as number).toBe(Infinity);
+      expect(isNaN(parser.evaluate('acosh(-Infinity)') as number)).toBe(true);
     });
   });
 
@@ -241,8 +241,8 @@ describe('Trigonometric Functions TypeScript Test', () => {
       expect(parser.evaluate('atanh -1') as number).toBe(-Infinity);
       expect(isNaN(parser.evaluate('atanh 1.001') as number)).toBe(true);
       expect(isNaN(parser.evaluate('atanh -1.001') as number)).toBe(true);
-      expect(isNaN(parser.evaluate('atanh(1 / 0)') as number)).toBe(true);
-      expect(isNaN(parser.evaluate('atanh(-1 / 0)') as number)).toBe(true);
+      expect(isNaN(parser.evaluate('atanh(Infinity)') as number)).toBe(true);
+      expect(isNaN(parser.evaluate('atanh(-Infinity)') as number)).toBe(true);
     });
   });
 });

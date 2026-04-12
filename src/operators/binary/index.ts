@@ -6,9 +6,11 @@
 // Arithmetic operators
 export {
   add,
+  addLegacy,
   sub,
   mul,
   div,
+  divLegacy,
   mod,
   pow
 } from './arithmetic';
@@ -20,7 +22,11 @@ export {
   greaterThan,
   lessThan,
   greaterThanEqual,
-  lessThanEqual
+  lessThanEqual,
+  greaterThanLegacy,
+  lessThanLegacy,
+  greaterThanEqualLegacy,
+  lessThanEqualLegacy
 } from './comparison';
 
 // Logical operators
@@ -34,6 +40,7 @@ export {
 // Utility operators
 export {
   concat,
+  concatLegacy,
   setVar,
   arrayIndexOrProperty,
   coalesce,

@@ -22,8 +22,8 @@ import {
   trim, toUpper, toLower, toTitle, split, repeat, reverse, left, right,
   replace, replaceFirst, naturalSort, toNumber, toBoolean,
   padLeft, padRight, padBoth, slice, urlEncode, base64Encode, base64Decode,
-  coalesceString, merge, keys, values, flatten, count,
-  clamp, reduce, find, some, every, unique, distinct,
+  coalesceString, merge, keys, values, count,
+  clamp, reduce, find, some, every, unique, distinct, sort, flattenArray, mapValues,
   isArray, isObject, isNumber, isString, isBoolean, isNull, isUndefined, isFunctionValue
 } from '../../functions/index.js';
 import { pow } from '../../operators/binary/index.js';
@@ -86,11 +86,15 @@ const RAW_BUILTIN_FUNCTIONS: readonly Omit<FunctionDescriptor, 'docs'>[] = [
   { name: 'base64Decode', category: 'string', pure: true, safe: true, async: false, impl: base64Decode },
   { name: 'coalesce',     category: 'string', pure: true, safe: true, async: false, impl: coalesceString },
 
+  // Array (continued)
+  { name: 'sort',      category: 'array', pure: true, safe: true, async: false, impl: sort },
+  { name: 'flatten',   category: 'array', pure: true, safe: true, async: false, impl: flattenArray },
+
   // Object
-  { name: 'merge',   category: 'object', pure: true, safe: true, async: false, impl: merge },
-  { name: 'keys',    category: 'object', pure: true, safe: true, async: false, impl: keys },
-  { name: 'values',  category: 'object', pure: true, safe: true, async: false, impl: values },
-  { name: 'flatten', category: 'object', pure: true, safe: true, async: false, impl: flatten },
+  { name: 'merge',     category: 'object', pure: true, safe: true, async: false, impl: merge },
+  { name: 'keys',      category: 'object', pure: true, safe: true, async: false, impl: keys },
+  { name: 'values',    category: 'object', pure: true, safe: true, async: false, impl: values },
+  { name: 'mapValues', category: 'object', pure: true, safe: true, async: false, impl: mapValues },
 
   // Utility
   { name: 'if',   category: 'utility', pure: true, safe: true, async: false, impl: condition },

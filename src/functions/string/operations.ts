@@ -36,17 +36,17 @@ export function isEmpty(str: string | null | undefined): boolean | undefined {
 /**
  * Checks if a string contains a substring
  */
-export function stringContains(str: string | undefined, substring: string | undefined): boolean | undefined {
-  if (str === undefined || substring === undefined) {
+export function stringContains(haystack: any, needle: any): boolean | undefined {
+  if (haystack === undefined || needle === undefined) {
     return undefined;
   }
-  if (typeof str !== 'string') {
-    throw new Error('First argument to contains must be a string');
+  if (Array.isArray(haystack)) {
+    return haystack.includes(needle);
   }
-  if (typeof substring !== 'string') {
-    throw new Error('Second argument to contains must be a string');
+  if (typeof haystack === 'string') {
+    return haystack.includes(String(needle));
   }
-  return str.includes(substring);
+  throw new Error('First argument to contains must be a string or array');
 }
 
 /**
@@ -234,18 +234,21 @@ export function repeat(str: string | undefined, times: number | undefined): stri
 /**
  * Reverses a string
  */
-export function reverse(str: string | undefined): string | undefined {
-  if (str === undefined) {
+export function reverse(val: any): any {
+  if (val === undefined) {
     return undefined;
   }
-  if (typeof str !== 'string') {
-    throw new Error('Argument to reverse must be a string');
+  if (Array.isArray(val)) {
+    return [...val].reverse();
   }
-  let result = '';
-  for (let i = str.length - 1; i >= 0; i--) {
-    result += str[i];
+  if (typeof val === 'string') {
+    let result = '';
+    for (let i = val.length - 1; i >= 0; i--) {
+      result += val[i];
+    }
+    return result;
   }
-  return result;
+  throw new Error('Argument to reverse must be a string or array');
 }
 
 /**

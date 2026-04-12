@@ -3,21 +3,28 @@ import { PrattParser } from './pratt.js';
 import { Expression } from '../core/expression.js';
 import type { Value, VariableResolveResult, VariableResolver, Values } from '../types/values.js';
 import type { OperatorFunction } from '../types/parser.js';
-import { atan2, condition, fac, filter, fold, gamma, hypot, indexOf, join, map, max, min, random, roundTo, sum, json, stringLength, isEmpty, stringContains, startsWith, endsWith, searchCount, trim, toUpper, toLower, toTitle, split, repeat, reverse, left, right, replace, replaceFirst, naturalSort, toNumber, toBoolean, padLeft, padRight, padBoth, slice, urlEncode, base64Encode, base64Decode, coalesceString, merge, keys, values, flatten, count, clamp, reduce, find, some, every, unique, distinct, isArray, isObject, isNumber, isString, isBoolean, isNull, isUndefined, isFunctionValue } from '../functions/index.js';
+import { atan2, condition, fac, filter, fold, gamma, hypot, indexOf, indexOfLegacy, join, joinLegacy, map, max, min, random, roundTo, sum, json, stringLength, isEmpty, stringContains, startsWith, endsWith, searchCount, trim, toUpper, toLower, toTitle, split, repeat, reverse, left, right, replace, replaceFirst, naturalSort, toNumber, toBoolean, padLeft, padRight, padBoth, slice, urlEncode, base64Encode, base64Decode, coalesceString, merge, keys, values, count, clamp, reduce, find, some, every, unique, distinct, sort, flattenArray, mapValues, isArray, isObject, isNumber, isString, isBoolean, isNull, isUndefined, isFunctionValue } from '../functions/index.js';
 import {
   add,
+  addLegacy,
   sub,
   mul,
   div,
+  divLegacy,
   mod,
   pow,
   concat,
+  concatLegacy,
   equal,
   notEqual,
   greaterThan,
   lessThan,
   greaterThanEqual,
   lessThanEqual,
+  greaterThanLegacy,
+  lessThanLegacy,
+  greaterThanEqualLegacy,
+  lessThanEqualLegacy,
   setVar,
   arrayIndexOrProperty,
   andOperator,
@@ -66,10 +73,12 @@ import {
 interface ParserOptions {
   allowMemberAccess?: boolean;
   operators?: Record<string, boolean>;
+  legacy?: boolean;
 }
 
 export class Parser {
   public options: ParserOptions;
+  public legacy: boolean;
   public keywords: string[];
   public unaryOps: Record<string, OperatorFunction>;
   public binaryOps: Record<string, OperatorFunction>;
@@ -93,6 +102,7 @@ export class Parser {
    */
   constructor(options?: ParserOptions) {
     this.options = options || { operators: { conversion: false } };
+    this.legacy = this.options.legacy ?? false;
     this.keywords = [
       'case',
       'when',
@@ -140,20 +150,19 @@ export class Parser {
     };
 
     this.binaryOps = {
-      '+': add,
+      '+': this.legacy ? addLegacy : add,
       '-': sub,
       '*': mul,
-      '/': div,
+      '/': this.legacy ? divLegacy : div,
       '%': mod,
       '^': pow,
-      '|': concat,
+      '|': this.legacy ? concatLegacy : concat,
       '==': equal,
       '!=': notEqual,
-      '>': greaterThan,
-      // 11
-      '<': lessThan,
-      '>=': greaterThanEqual,
-      '<=': lessThanEqual,
+      '>': this.legacy ? greaterThanLegacy : greaterThan,
+      '<': this.legacy ? lessThanLegacy : lessThan,
+      '>=': this.legacy ? greaterThanEqualLegacy : greaterThanEqual,
+      '<=': this.legacy ? lessThanEqualLegacy : lessThanEqual,
       '=': setVar,
       '[': arrayIndexOrProperty,
       and: andOperator,
@@ -185,9 +194,9 @@ export class Parser {
       distinct: distinct,
       gamma: gamma,
       hypot: hypot,
-      indexOf: indexOf,
+      indexOf: this.legacy ? indexOfLegacy : indexOf,
       if: condition,
-      join: join,
+      join: this.legacy ? joinLegacy : join,
       map: map,
       max: max,
       min: min,
@@ -196,6 +205,7 @@ export class Parser {
       random: random,
       roundTo: roundTo,
       sum: sum,
+      sort: sort,
       // String manipulation functions
       length: stringLength,
       isEmpty: isEmpty,
@@ -229,7 +239,8 @@ export class Parser {
       merge: merge,
       keys: keys,
       values: values,
-      flatten: flatten,
+      flatten: flattenArray,
+      mapValues: mapValues,
       // Type checking functions
       isArray: isArray,
       isObject: isObject,
@@ -243,7 +254,9 @@ export class Parser {
 
     this.numericConstants = {
       E: Math.E,
-      PI: Math.PI
+      PI: Math.PI,
+      Infinity: Infinity,
+      NaN: NaN
     };
 
     this.buildInLiterals = {

@@ -83,7 +83,21 @@ export function fold(arg1: Function | any[] | undefined, arg2: any, arg3: Functi
   }, init);
 }
 
-export function indexOf(target: any, s: string | any[] | undefined): number | undefined {
+export function indexOf(haystack: string | any[] | undefined, target: any): number | undefined {
+  if (haystack === undefined) {
+    return undefined;
+  }
+  if (!(Array.isArray(haystack) || typeof haystack === 'string')) {
+    throw new Error(
+      `indexOf(arrayOrString, target) expects a string or array as first argument, got ${getTypeName(haystack)}.\n` +
+      'Example: indexOf(["a", "b", "c"], "b") or indexOf("hello", "o")'
+    );
+  }
+
+  return haystack.indexOf(target);
+}
+
+export function indexOfLegacy(target: any, s: string | any[] | undefined): number | undefined {
   if (s === undefined) {
     return undefined;
   }
@@ -97,7 +111,21 @@ export function indexOf(target: any, s: string | any[] | undefined): number | un
   return s.indexOf(target);
 }
 
-export function join(sep: string | undefined, a: any[] | undefined): string | undefined {
+export function join(a: any[] | undefined, sep: string | undefined): string | undefined {
+  if (a === undefined || sep === undefined) {
+    return undefined;
+  }
+  if (!Array.isArray(a)) {
+    throw new Error(
+      `join(array, separator) expects an array as first argument, got ${getTypeName(a)}.\n` +
+      'Example: join(["a", "b", "c"], ", ")'
+    );
+  }
+
+  return a.join(sep);
+}
+
+export function joinLegacy(sep: string | undefined, a: any[] | undefined): string | undefined {
   if (sep === undefined || a === undefined) {
     return undefined;
   }
@@ -296,4 +324,68 @@ export function unique(a: any[] | undefined): any[] | undefined {
 export function distinct(a: any[] | undefined): any[] | undefined {
   // distinct is an alias for unique
   return unique(a);
+}
+
+export function sort(arg1: any[] | Function | undefined, arg2?: Function | any[]): any[] | undefined {
+  if (arg1 === undefined) return undefined;
+
+  let a: any[];
+  let comparator: Function | undefined;
+
+  if (Array.isArray(arg1)) {
+    a = arg1;
+    comparator = typeof arg2 === 'function' ? arg2 : undefined;
+  } else if (typeof arg1 === 'function' && Array.isArray(arg2)) {
+    comparator = arg1;
+    a = arg2;
+  } else {
+    throw new Error(
+      `sort(array, comparator?) expects an array as first argument, got ${getTypeName(arg1)}.\n` +
+      'Example: sort([3, 1, 2]) or sort([3, 1, 2], (a, b) => a - b)'
+    );
+  }
+
+  const copy = [...a];
+  if (comparator) {
+    return copy.sort((x, y) => comparator!(x, y));
+  }
+  return copy.sort((x, y) => {
+    if (x < y) return -1;
+    if (x > y) return 1;
+    return 0;
+  });
+}
+
+export function flattenArray(arr: any, depth?: number): any[] | undefined {
+  if (arr === undefined) return undefined;
+
+  if (Array.isArray(arr)) {
+    return arr.flat(depth === undefined ? Infinity : depth);
+  }
+
+  if (typeof arr === 'object' && arr !== null) {
+    return flattenObject(arr, depth);
+  }
+
+  throw new Error(
+    `flatten() expects an array or object, got ${getTypeName(arr)}.\n` +
+    'Example: flatten([1, [2, [3]]]) or flatten({a: {b: 1}}, "_")'
+  );
+}
+
+function flattenObject(obj: Record<string, any>, sep: any = '_', prefix = ''): any {
+  if (typeof sep === 'number') {
+    throw new Error('flatten() with a depth argument is only supported for arrays.');
+  }
+  const separator = typeof sep === 'string' ? sep : '_';
+  const result: Record<string, any> = {};
+  for (const key of Object.keys(obj)) {
+    const fullKey = prefix ? `${prefix}${separator}${key}` : key;
+    if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+      Object.assign(result, flattenObject(obj[key], separator, fullKey));
+    } else {
+      result[fullKey] = obj[key];
+    }
+  }
+  return result;
 }

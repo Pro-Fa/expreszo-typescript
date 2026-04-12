@@ -30,10 +30,19 @@ class NodeCounter implements NodeVisitor<void> {
         this.visit(node.object);
         break;
       case 'ArrayLit':
-        for (const el of node.elements) this.visit(el);
+        for (const el of node.elements) {
+          if (el.type === 'ArraySpread') this.visit(el.argument);
+          else this.visit(el);
+        }
         break;
       case 'ObjectLit':
-        for (const prop of node.properties) this.visit(prop.value);
+        for (const entry of node.properties) {
+          if ('type' in entry && (entry as any).type === 'ObjectSpread') {
+            this.visit((entry as any).argument);
+          } else {
+            this.visit((entry as any).value);
+          }
+        }
         break;
       case 'Ternary':
         this.visit(node.a);

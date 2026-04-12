@@ -103,10 +103,10 @@ describe('Expression Advanced Features TypeScript Test', () => {
     });
   });
 
-  describe('string concatenation with + operator', () => {
+  describe('string concatenation with | operator', () => {
     it('should concatenate strings', () => {
       const parser = new Parser();
-      expect(parser.evaluate('"abc" + "def" + "ghi"')).toBe('abcdefghi');
+      expect(parser.evaluate('"abc" | "def" | "ghi"')).toBe('abcdefghi');
     });
   });
 
@@ -356,8 +356,9 @@ describe('Expression Advanced Features TypeScript Test', () => {
       expect(parser.evaluate('y = x ?? 2 + 4', { x: 3 })).toBe(7);
     });
 
-    it('should handle (a / b * 10) ?? 0 (divide by 0)', () => {
-      expect(parser.evaluate('(a / b * 10) ?? 0', { a: 5, b: 0 })).toBe(0);
+    it('should handle Infinity ?? 0 (coalesces Infinity)', () => {
+      expect(parser.evaluate('Infinity ?? 0')).toBe(0);
+      expect(parser.evaluate('NaN ?? 0')).toBe(0);
     });
 
     it('should be disabled by the coalesce option', () => {

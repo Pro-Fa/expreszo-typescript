@@ -58,9 +58,15 @@ export function containsAsyncCall(node: Node, ctx: AsyncAnalysisContext): boolea
     case 'Sequence':
       return node.statements.some((s) => containsAsyncCall(s, ctx));
     case 'ArrayLit':
-      return node.elements.some((e) => containsAsyncCall(e, ctx));
+      return node.elements.some((e) =>
+        e.type === 'ArraySpread' ? containsAsyncCall(e.argument, ctx) : containsAsyncCall(e, ctx)
+      );
     case 'ObjectLit':
-      return node.properties.some((p) => containsAsyncCall(p.value, ctx));
+      return node.properties.some((entry) =>
+        'type' in entry && (entry as any).type === 'ObjectSpread'
+          ? containsAsyncCall((entry as import('../nodes.js').ObjectSpread).argument, ctx)
+          : containsAsyncCall((entry as import('../nodes.js').ObjectProperty).value, ctx)
+      );
     case 'Member':
       return containsAsyncCall(node.object, ctx);
     case 'Unary':

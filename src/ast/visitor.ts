@@ -124,10 +124,19 @@ export function walk(node: Node, fn: (node: Node) => void): void {
     case 'NameRef':
       break;
     case 'ArrayLit':
-      for (const el of node.elements) walk(el, fn);
+      for (const el of node.elements) {
+        if (el.type === 'ArraySpread') walk(el.argument, fn);
+        else walk(el, fn);
+      }
       break;
     case 'ObjectLit':
-      for (const prop of node.properties) walk(prop.value, fn);
+      for (const entry of node.properties) {
+        if ('type' in entry && (entry as any).type === 'ObjectSpread') {
+          walk((entry as import('./nodes.js').ObjectSpread).argument, fn);
+        } else {
+          walk((entry as import('./nodes.js').ObjectProperty).value, fn);
+        }
+      }
       break;
     case 'Member':
       walk(node.object, fn);

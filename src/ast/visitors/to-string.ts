@@ -14,6 +14,8 @@ import type {
   RawLit,
   ArrayLit,
   ObjectLit,
+  ObjectProperty,
+  ObjectSpread,
   Ident,
   NameRef,
   Member,
@@ -70,12 +72,21 @@ export class ToStringVisitor extends BaseVisitor<string> {
   }
 
   visitArrayLit(node: ArrayLit): string {
-    return '[' + node.elements.map((e) => this.visit(e)).join(', ') + ']';
+    return '[' + node.elements.map((e) =>
+      e.type === 'ArraySpread' ? '...' + this.visit(e.argument) : this.visit(e)
+    ).join(', ') + ']';
   }
 
   visitObjectLit(node: ObjectLit): string {
     if (node.properties.length === 0) return '{  }';
-    const parts = node.properties.map((p) => `${p.key}: ${this.visit(p.value)}`);
+    const parts = node.properties.map((entry) => {
+      if ('type' in entry && (entry as any).type === 'ObjectSpread') {
+        return '...' + this.visit((entry as ObjectSpread).argument);
+      }
+      const p = entry as ObjectProperty;
+      const keyStr = p.quoted ? JSON.stringify(p.key) : p.key;
+      return `${keyStr}: ${this.visit(p.value)}`;
+    });
     return '{ ' + parts.join(', ') + ' }';
   }
 

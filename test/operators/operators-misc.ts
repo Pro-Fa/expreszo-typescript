@@ -138,9 +138,9 @@ describe('x!', () => {
   });
 
   it('handles NaN and infinity correctly', () => {
-    ok(isNaN(parser.evaluate('(0/0)!') as number));
-    strictEqual(parser.evaluate('(1/0)!') as number, Infinity);
-    ok(isNaN(parser.evaluate('(-1/0)!') as number));
+    ok(isNaN(parser.evaluate('NaN!') as number));
+    strictEqual(parser.evaluate('Infinity!') as number, Infinity);
+    ok(isNaN(parser.evaluate('(-Infinity)!') as number));
   });
 });
 

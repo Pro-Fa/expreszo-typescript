@@ -30,7 +30,24 @@ export interface CaseArm {
 export interface ObjectProperty {
   readonly key: string;
   readonly value: Node;
+  readonly quoted?: boolean;
 }
+
+export interface ObjectSpread {
+  readonly type: 'ObjectSpread';
+  readonly argument: Node;
+  readonly span: Span;
+}
+
+export type ObjectEntry = ObjectProperty | ObjectSpread;
+
+export interface ArraySpread {
+  readonly type: 'ArraySpread';
+  readonly argument: Node;
+  readonly span: Span;
+}
+
+export type ArrayEntry = Node | ArraySpread;
 
 export interface NumberLit {
   readonly type: 'NumberLit';
@@ -74,13 +91,13 @@ export interface RawLit {
 
 export interface ArrayLit {
   readonly type: 'ArrayLit';
-  readonly elements: readonly Node[];
+  readonly elements: readonly ArrayEntry[];
   readonly span: Span;
 }
 
 export interface ObjectLit {
   readonly type: 'ObjectLit';
-  readonly properties: readonly ObjectProperty[];
+  readonly properties: readonly ObjectEntry[];
   readonly span: Span;
 }
 
@@ -254,12 +271,20 @@ export function mkRaw(value: unknown, span: Span = NO_SPAN): RawLit {
   return { type: 'RawLit', value, span };
 }
 
-export function mkArray(elements: readonly Node[], span: Span = NO_SPAN): ArrayLit {
+export function mkArray(elements: readonly ArrayEntry[], span: Span = NO_SPAN): ArrayLit {
   return { type: 'ArrayLit', elements, span };
 }
 
-export function mkObject(properties: readonly ObjectProperty[], span: Span = NO_SPAN): ObjectLit {
+export function mkObject(properties: readonly ObjectEntry[], span: Span = NO_SPAN): ObjectLit {
   return { type: 'ObjectLit', properties, span };
+}
+
+export function mkArraySpread(argument: Node, span: Span = NO_SPAN): ArraySpread {
+  return { type: 'ArraySpread', argument, span };
+}
+
+export function mkObjectSpread(argument: Node, span: Span = NO_SPAN): ObjectSpread {
+  return { type: 'ObjectSpread', argument, span };
 }
 
 export function mkIdent(name: string, span: Span = NO_SPAN): Ident {

@@ -611,8 +611,13 @@ export class TokenStream {
     const startPos = this.pos;
     const c = this.expression.charAt(this.pos);
 
+    // Try spread operator (...) before single-char '.'
+    if (c === '.' && this.expression.charAt(this.pos + 1) === '.' && this.expression.charAt(this.pos + 2) === '.') {
+      this.current = this.newToken(TOP, '...');
+      this.pos += 2;
+    }
     // Try single-character operators
-    if (this.tryMatchSingleCharOperator(c)) {
+    else if (this.tryMatchSingleCharOperator(c)) {
       // matched
     }
     // Try unicode multiplication symbols
@@ -662,7 +667,7 @@ export class TokenStream {
     this.pos++;
 
     // All successful branches above set this.current, so it's safe to access
-    if (this.current && this.isOperatorEnabled(this.current.value as string)) {
+    if (this.current && (this.current.value === '...' || this.isOperatorEnabled(this.current.value as string))) {
       return true;
     }
 

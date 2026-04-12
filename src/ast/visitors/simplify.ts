@@ -102,10 +102,21 @@ function simplifyNode(node: Node, ops: SimplifyOps): Node {
       }
       return node;
     case 'ArrayLit':
-      return mkArray(node.elements.map((e) => simplifyNode(e, ops)), node.span);
+      return mkArray(node.elements.map((e) =>
+        e.type === 'ArraySpread'
+          ? { type: 'ArraySpread' as const, argument: simplifyNode(e.argument, ops), span: e.span }
+          : simplifyNode(e, ops)
+      ), node.span);
     case 'ObjectLit':
       return mkObject(
-        node.properties.map((p) => ({ key: p.key, value: simplifyNode(p.value, ops) })),
+        node.properties.map((entry) => {
+          if ('type' in entry && (entry as any).type === 'ObjectSpread') {
+            const s = entry as import('../nodes.js').ObjectSpread;
+            return { type: 'ObjectSpread' as const, argument: simplifyNode(s.argument, ops), span: s.span };
+          }
+          const p = entry as import('../nodes.js').ObjectProperty;
+          return { key: p.key, value: simplifyNode(p.value, ops), quoted: p.quoted };
+        }),
         node.span
       );
     case 'Member': {

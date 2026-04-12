@@ -72,6 +72,7 @@ export type OperatorConfig = Partial<Record<OperatorConfigKey, boolean>>;
 export interface ParserOptions {
     readonly allowMemberAccess?: boolean;
     readonly operators?: OperatorConfig;
+    readonly legacy?: boolean;
 }
 
 /**
