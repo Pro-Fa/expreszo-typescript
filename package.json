@@ -1,6 +1,6 @@
 {
   "name": "expreszo",
-  "version": "7.0.0",
+  "version": "1.0.0",
   "description": "Mathematical expression evaluator",
   "keywords": [
     "expression",
