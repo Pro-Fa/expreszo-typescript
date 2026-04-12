@@ -1,7 +1,7 @@
 ExpresZo Typescript
 ==================================
 
-[![npm](https://img.shields.io/npm/v/@pro-fa/expreszo.svg?maxAge=3600)](https://www.npmjs.com/package/@pro-fa/expreszo)
+[![npm](https://img.shields.io/npm/v/expreszo.svg?maxAge=3600)](https://www.npmjs.com/package/expreszo)
 
 ## Description
 
@@ -12,13 +12,13 @@ It has built-in support for common math operators and functions. Additionally, y
 ## Installation
 
 ```bash
-npm install @pro-fa/expreszo
+npm install expreszo
 ```
 
 ## Quick Start
 
 ```js
-import { Parser } from '@pro-fa/expreszo';
+import { Parser } from 'expreszo';
 
 const parser = new Parser();
 const expr = parser.parse('2 * x + 1');

@@ -22,7 +22,7 @@ The library includes a built-in language service that provides IDE-like features
 ## Basic Usage
 
 ```js
-import { createLanguageService } from '@pro-fa/expreszo';
+import { createLanguageService } from 'expreszo';
 
 const ls = createLanguageService();
 
@@ -234,7 +234,7 @@ Creates a new language service instance.
 
 **Example:**
 ```js
-import { createLanguageService } from '@pro-fa/expreszo';
+import { createLanguageService } from 'expreszo';
 
 const ls = createLanguageService({
   operators: {
@@ -393,7 +393,7 @@ import type {
   HighlightToken,
   LanguageServiceOptions,
   ArityInfo
-} from '@pro-fa/expreszo';
+} from 'expreszo';
 ```
 
 - **`LanguageServiceApi`** - The main language service interface with `getCompletions`, `getHover`, `getHighlighting`, and `getDiagnostics` methods

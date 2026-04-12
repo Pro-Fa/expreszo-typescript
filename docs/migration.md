@@ -2,7 +2,7 @@
 
 > **Audience:** Developers upgrading from the original `expr-eval` library or previous versions.
 
-This guide helps you migrate to the current version of `@pro-fa/expreszo`.
+This guide helps you migrate to the current version of `expreszo`.
 
 ## Migrating from silentmatt/expr-eval
 
@@ -86,7 +86,7 @@ The internal instruction array is replaced by a private AST. Use the visitor pat
 expr.tokens.forEach(t => console.log(t));
 
 // AFTER (v7)
-import type { NodeVisitor } from '@pro-fa/expreszo/core';
+import type { NodeVisitor } from 'expreszo/core';
 expr.accept(myVisitor);
 ```
 
@@ -112,7 +112,7 @@ Expressions nested deeper than 256 levels now throw `ParseError`. This prevents 
 v7 introduces `defineParser()` and composable presets. The default `new Parser()` still includes all built-in operators and functions (equivalent to `fullParser`), so no migration is needed. But you can now create minimal parsers:
 
 ```typescript
-import { defineParser, coreParser, withMath, withComparison } from '@pro-fa/expreszo';
+import { defineParser, coreParser, withMath, withComparison } from 'expreszo';
 
 const parser = defineParser({
   ...coreParser,
@@ -124,8 +124,8 @@ const parser = defineParser({
 Or use subpath imports for smaller bundles:
 
 ```typescript
-import { coreParser } from '@pro-fa/expreszo/core';
-import { withMath } from '@pro-fa/expreszo/math';
+import { coreParser } from 'expreszo/core';
+import { withMath } from 'expreszo/math';
 ```
 
 **Migration steps:**
@@ -220,7 +220,7 @@ true && false           // false (logical AND)
 
 **Package renamed:**
 
-The package was renamed from `expr-eval` to `@pro-fa/expreszo` and ported to TypeScript.
+The package was renamed from `expr-eval` to `expreszo` and ported to TypeScript.
 
 ## Package Name Change
 
@@ -231,7 +231,7 @@ If you're migrating from the original package:
 npm uninstall expr-eval
 
 # Install new package
-npm install @pro-fa/expreszo
+npm install expreszo
 ```
 
 Update imports:
@@ -241,9 +241,9 @@ Update imports:
 const { Parser } = require('expr-eval');
 
 // After
-import { Parser } from '@pro-fa/expreszo';
+import { Parser } from 'expreszo';
 // or
-const { Parser } = require('@pro-fa/expreszo');
+const { Parser } = require('expreszo');
 ```
 
 ## TypeScript Support
@@ -257,7 +257,7 @@ npm uninstall @types/expr-eval
 Types are exported from the main package:
 
 ```typescript
-import { Parser, Expression, Value, Values } from '@pro-fa/expreszo';
+import { Parser, Expression, Value, Values } from 'expreszo';
 ```
 
 ## Getting Help

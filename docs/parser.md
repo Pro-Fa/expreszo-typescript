@@ -7,7 +7,7 @@ The `Parser` class is the main entry point for parsing and evaluating expression
 ## Quick Start
 
 ```js
-import { Parser } from '@pro-fa/expreszo';
+import { Parser } from 'expreszo';
 
 // Create a parser instance
 const parser = new Parser();

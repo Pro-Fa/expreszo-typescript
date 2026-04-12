@@ -9,7 +9,7 @@
 Evaluate the expression, with variables bound to the values in `{variables}`. Each variable in the expression is bound to the corresponding member of the `variables` object. If there are unbound variables, `evaluate` will throw an exception.
 
 ```js
-import { Parser } from '@pro-fa/expreszo';
+import { Parser } from 'expreszo';
 
 const expr = Parser.parse("2 ^ x");
 console.log(expr.evaluate({ x: 3 })); // 8

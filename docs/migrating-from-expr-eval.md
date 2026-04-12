@@ -1,6 +1,6 @@
 # Migrating from expr-eval
 
-> **Audience:** Developers currently using `expr-eval` or `@pro-fa/expr-eval` who want to switch to `@pro-fa/expreszo`.
+> **Audience:** Developers currently using `expr-eval` or `@pro-fa/expr-eval` who want to switch to `expreszo`.
 
 ExpresZo Typescript is a direct continuation of the `@pro-fa/expr-eval` package. The expression language, API surface, and runtime behavior are identical — only the package name and branding have changed. This page walks you through the migration and explains the **legacy mode** option for preserving older operator behavior during the transition.
 
@@ -12,7 +12,7 @@ npm uninstall expr-eval          # if you used the original silentmatt package
 npm uninstall @pro-fa/expr-eval  # if you used the Pro-Fa fork
 
 # Install ExpresZo
-npm install @pro-fa/expreszo
+npm install expreszo
 ```
 
 ## Step 2: Update Imports
@@ -27,8 +27,8 @@ const { Parser } = require('expr-eval');
 const { Parser } = require('@pro-fa/expr-eval');
 
 // After
-import { Parser } from '@pro-fa/expreszo';
-const { Parser } = require('@pro-fa/expreszo');
+import { Parser } from 'expreszo';
+const { Parser } = require('expreszo');
 ```
 
 Subpath imports follow the same pattern:
@@ -39,8 +39,8 @@ import { coreParser } from '@pro-fa/expr-eval/core';
 import { withMath } from '@pro-fa/expr-eval/math';
 
 // After
-import { coreParser } from '@pro-fa/expreszo/core';
-import { withMath } from '@pro-fa/expreszo/math';
+import { coreParser } from 'expreszo/core';
+import { withMath } from 'expreszo/math';
 ```
 
 All available subpath imports: `/core`, `/math`, `/string`, `/array`, `/object`, `/comparison`, `/logical`, `/type-check`, `/utility`, `/validation`, `/language-service`.
@@ -64,7 +64,7 @@ If your code references the diagnostic `source` field or localStorage keys from 
 
 ## That's It
 
-No expression syntax changes, no API changes, no behavior changes. If your code worked with `@pro-fa/expr-eval`, it works with `@pro-fa/expreszo` after updating the package name and imports.
+No expression syntax changes, no API changes, no behavior changes. If your code worked with `@pro-fa/expr-eval`, it works with `expreszo` after updating the package name and imports.
 
 ---
 
@@ -77,7 +77,7 @@ ExpresZo includes a **legacy mode** that preserves older operator and function b
 Pass `{ legacy: true }` when creating a Parser instance:
 
 ```typescript
-import { Parser } from '@pro-fa/expreszo';
+import { Parser } from 'expreszo';
 
 // Modern behavior (default)
 const parser = new Parser();
