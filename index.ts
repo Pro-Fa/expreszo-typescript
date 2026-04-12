@@ -12,6 +12,7 @@
 import { Expression } from './src/core/expression.js';
 import { Parser } from './src/parsing/parser.js';
 import { createLanguageService } from './src/language-service/index.js';
+import { setDeprecationHandler } from './src/utils/deprecation.js';
 import { defineParser } from './src/api/define-parser.js';
 import {
   coreParser,
@@ -66,7 +67,10 @@ export type {
 export type { ParserConfig } from './src/api/define-parser.js';
 export type { ParserPreset } from './src/api/presets.js';
 
+export type { DeprecationHandler } from './src/utils/deprecation.js';
+
 export {
+  setDeprecationHandler,
   createLanguageService,
   Expression,
   Parser,
