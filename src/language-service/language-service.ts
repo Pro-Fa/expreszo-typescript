@@ -1,4 +1,4 @@
-﻿// Lightweight language service (worker-LSP style) for expr-eval
+﻿// Lightweight language service (worker-LSP style) for ExpresZo
 // Provides: completions, hover, and syntax highlighting using the existing tokenizer
 
 import {

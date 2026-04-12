@@ -800,7 +800,7 @@ describe('Language Service', () => {
       const diagnostics = ls.getDiagnostics({ textDocument: doc });
 
       expect(diagnostics.length).toBe(1);
-      expect(diagnostics[0].source).toBe('expr-eval');
+      expect(diagnostics[0].source).toBe('expreszo');
     });
 
     it('should handle empty function calls', () => {

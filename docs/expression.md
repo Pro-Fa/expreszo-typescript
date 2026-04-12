@@ -1,6 +1,6 @@
 # Expression
 
-> **Audience:** Developers integrating expr-eval into their projects.
+> **Audience:** Developers integrating ExpresZo into their projects.
 
 `Parser.parse(str)` returns an `Expression` object. `Expression`s are similar to JavaScript functions, i.e. they can be "called" with variables bound to passed-in values. In fact, they can even be converted into JavaScript functions.
 
@@ -9,7 +9,7 @@
 Evaluate the expression, with variables bound to the values in `{variables}`. Each variable in the expression is bound to the corresponding member of the `variables` object. If there are unbound variables, `evaluate` will throw an exception.
 
 ```js
-import { Parser } from '@pro-fa/expr-eval';
+import { Parser } from '@pro-fa/expreszo';
 
 const expr = Parser.parse("2 ^ x");
 console.log(expr.evaluate({ x: 3 })); // 8

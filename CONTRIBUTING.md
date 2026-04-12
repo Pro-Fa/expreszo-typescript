@@ -1,6 +1,6 @@
-# Contributing to expr-eval
+# Contributing to ExpresZo Typescript
 
-Thank you for your interest in contributing to expr-eval! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to ExpresZo! This document provides guidelines and information for contributors.
 
 ## Getting Started
 
@@ -13,8 +13,8 @@ Thank you for your interest in contributing to expr-eval! This document provides
 
 ```bash
 # Clone the repository
-git clone https://github.com/pro-fa/expr-eval.git
-cd expr-eval
+git clone https://github.com/pro-fa/expreszo-typescript.git
+cd expreszo-typescript
 
 # Install dependencies
 npm install
@@ -75,7 +75,7 @@ npm run lint:fix
 ## Project Structure
 
 ```
-expr-eval/
+expreszo-typescript/
 ├── src/                    # Source code
 │   ├── index.ts           # Main entry point
 │   ├── config/            # Parser configuration
@@ -232,7 +232,7 @@ When reporting issues, please include:
 - A clear description of the problem
 - Steps to reproduce
 - Expected vs actual behavior
-- Version of expr-eval
+- Version of ExpresZo
 - Node.js version
 - Minimal code example demonstrating the issue
 

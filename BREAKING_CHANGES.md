@@ -76,7 +76,7 @@ The following are new in v7 and do not break existing code, but are listed for a
 
 - **`defineParser(config)`** — Create a tree-shakeable parser from descriptor arrays
 - **Presets** — `coreParser`, `withMath`, `withString`, `withArray`, `withObject`, `withComparison`, `withLogical`, `withTypeCheck`, `withUtility`, `fullParser`
-- **Subpath exports** — `@pro-fa/expr-eval/core`, `@pro-fa/expr-eval/math`, etc.
+- **Subpath exports** — `@pro-fa/expreszo/core`, `@pro-fa/expreszo/math`, etc.
 - **`Expression.accept(visitor)`** — Run a `NodeVisitor<T>` against the AST
 - **Types** — `ParserConfig`, `ParserPreset`
 
@@ -215,14 +215,14 @@ parser.evaluate('true && true');         // true
 
 ### Package Renamed
 
-The package was renamed from `expr-eval` to `@pro-fa/expr-eval` and ported to TypeScript.
+The package was renamed from `expr-eval` to `@pro-fa/expreszo` and ported to TypeScript.
 
 ```bash
 # Remove old package
 npm uninstall expr-eval
 
 # Install new package
-npm install @pro-fa/expr-eval
+npm install @pro-fa/expreszo
 ```
 
 Update imports:
@@ -231,5 +231,5 @@ Update imports:
 const { Parser } = require('expr-eval');
 
 // After
-import { Parser } from '@pro-fa/expr-eval';
+import { Parser } from '@pro-fa/expreszo';
 ```

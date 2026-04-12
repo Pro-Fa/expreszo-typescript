@@ -1,7 +1,7 @@
 /**
  * Expression evaluation library
  *
- * This is the main entry point for the reorganized expr-eval library.
+ * This is the main entry point for the ExpresZo Typescript library.
  * It provides a clean, domain-driven API for expression parsing and evaluation.
  */
 

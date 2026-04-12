@@ -1,5 +1,5 @@
 {
-  "name": "@pro-fa/expr-eval",
+  "name": "@pro-fa/expreszo",
   "version": "7.0.0",
   "description": "Mathematical expression evaluator",
   "keywords": [
@@ -10,13 +10,13 @@
     "function",
     "parser"
   ],
-  "homepage": "https://github.com/Pro-Fa/expr-eval#readme",
+  "homepage": "https://github.com/Pro-Fa/expreszo-typescript#readme",
   "bugs": {
-    "url": "https://github.com/Pro-Fa/expr-eval/issues"
+    "url": "https://github.com/Pro-Fa/expreszo-typescript/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Pro-Fa/expr-eval.git"
+    "url": "git+https://github.com/Pro-Fa/expreszo-typescript.git"
   },
   "license": "MIT",
   "author": "Matthew Crumley, Mark Sironi, Sander Toonen",

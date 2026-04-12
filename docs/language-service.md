@@ -1,8 +1,8 @@
 # Language Service
 
-> **Audience:** Developers building IDE integrations or code editors with expr-eval support.
+> **Audience:** Developers building IDE integrations or code editors with ExpresZo support.
 
-The library includes a built-in language service that provides IDE-like features for expr-eval expressions. This is useful for integrating expr-eval into code editors like Monaco Editor (used by VS Code).
+The library includes a built-in language service that provides IDE-like features for ExpresZo expressions. This is useful for integrating ExpresZo into code editors like Monaco Editor (used by VS Code).
 
 ## Features
 
@@ -22,7 +22,7 @@ The library includes a built-in language service that provides IDE-like features
 ## Basic Usage
 
 ```js
-import { createLanguageService } from '@pro-fa/expr-eval';
+import { createLanguageService } from '@pro-fa/expreszo';
 
 const ls = createLanguageService();
 
@@ -234,7 +234,7 @@ Creates a new language service instance.
 
 **Example:**
 ```js
-import { createLanguageService } from '@pro-fa/expr-eval';
+import { createLanguageService } from '@pro-fa/expreszo';
 
 const ls = createLanguageService({
   operators: {
@@ -343,7 +343,7 @@ Returns a list of diagnostics for the given text document. Currently validates f
 - `range`: `Range` - The range of the problematic function call
 - `severity`: `DiagnosticSeverity` - The severity level (Error)
 - `message`: `string` - Human-readable description of the issue
-- `source`: `string` - Always `'expr-eval'`
+- `source`: `string` - Always `'expreszo'`
 
 **Example:**
 ```js
@@ -373,7 +373,7 @@ function applyDiagnostics() {
         source: d.source
     }));
 
-    monaco.editor.setModelMarkers(model, 'expr-eval', markers);
+    monaco.editor.setModelMarkers(model, 'expreszo', markers);
 }
 ```
 
@@ -393,7 +393,7 @@ import type {
   HighlightToken,
   LanguageServiceOptions,
   ArityInfo
-} from '@pro-fa/expr-eval';
+} from '@pro-fa/expreszo';
 ```
 
 - **`LanguageServiceApi`** - The main language service interface with `getCompletions`, `getHover`, `getHighlighting`, and `getDiagnostics` methods

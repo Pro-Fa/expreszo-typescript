@@ -2,7 +2,7 @@
 
 > **Note:** This document has been reorganized. See [Advanced Features](advanced-features.md) for the main documentation.
 
-This is a modern TypeScript port of the expr-eval library, completely rewritten with contemporary build tools and development practices. Originally based on [expr-eval 2.0.2](http://silentmatt.com/javascript-expression-evaluator/), this version has been restructured with a modular architecture, TypeScript support, and comprehensive testing using Vitest. The library maintains backward compatibility while providing enhanced features and improved maintainability.
+This is a modern TypeScript port of the original expr-eval library, completely rewritten with contemporary build tools and development practices. Originally based on [expr-eval 2.0.2](http://silentmatt.com/javascript-expression-evaluator/), this version has been restructured with a modular architecture, TypeScript support, and comprehensive testing using Vitest. The library maintains backward compatibility while providing enhanced features and improved maintainability.
 
 ## Summary of Enhancements
 

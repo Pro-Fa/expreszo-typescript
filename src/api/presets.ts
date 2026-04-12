@@ -4,7 +4,7 @@
  * array concatenation — no inheritance, no builder pattern.
  *
  * ```ts
- * import { defineParser, coreParser, withMath, withString } from 'expr-eval';
+ * import { defineParser, coreParser, withMath, withString } from 'expreszo';
  *
  * const parser = defineParser({
  *   operators: [...coreParser.operators, ...withMath.operators, ...withString.operators],
@@ -92,7 +92,7 @@ export const withUtility: ParserPreset = {
 };
 
 /**
- * Everything expr-eval ships with — the v6 default. Equivalent to the legacy
+ * Everything ExpresZo ships with — the v6 default. Equivalent to the legacy
  * zero-argument `new Parser()` surface area.
  */
 export const fullParser: ParserPreset = {

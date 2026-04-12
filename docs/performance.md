@@ -1,8 +1,8 @@
 # Performance Testing Guide
 
-> **Audience:** Contributors working on expr-eval internals and performance optimization.
+> **Audience:** Contributors working on ExpresZo internals and performance optimization.
 
-This document explains how to run and interpret performance tests for the expr-eval library.
+This document explains how to run and interpret performance tests for the ExpresZo library.
 
 ## Overview
 
@@ -167,7 +167,7 @@ console.table(bench.table());
 
 ## Performance Best Practices
 
-### For expr-eval Usage
+### For ExpresZo Usage
 
 1. **Reuse Expressions**: Parse once, evaluate many times
    ```typescript
@@ -195,7 +195,7 @@ console.table(bench.table());
    parser.evaluate('((((a + b) + c) + d) + e)');
    ```
 
-### For expr-eval Development
+### For ExpresZo Development
 
 1. **Profile Before Optimizing**: Use benchmarks to identify bottlenecks
 2. **Test Edge Cases**: Include worst-case scenarios in benchmarks
@@ -262,7 +262,7 @@ Set up automated performance monitoring:
 
 ## Contributing Performance Tests
 
-When adding new features to expr-eval:
+When adding new features to ExpresZo:
 
 1. **Add Corresponding Benchmarks**: New features should include performance tests
 2. **Verify Performance Impact**: Ensure new features don't regress existing performance

@@ -1,5 +1,5 @@
 /**
- * `expr-eval/comparison` entry — `==`, `!=`, `<`, `<=`, `>`, `>=`,
+ * `expreszo/comparison` entry — `==`, `!=`, `<`, `<=`, `>`, `>=`,
  * `in`, `not in`.
  */
 export { withComparison } from '../api/presets.js';

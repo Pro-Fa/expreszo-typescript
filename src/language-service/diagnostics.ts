@@ -213,7 +213,7 @@ function createTooFewArgumentsDiagnostic(
     range,
     severity: DiagnosticSeverity.Error,
     message: `Function '${funcName}' expects at least ${min} argument${pluralize(min)}, but got ${argCount}.`,
-    source: 'expr-eval'
+    source: 'expreszo'
   };
 }
 
@@ -236,7 +236,7 @@ function createTooManyArgumentsDiagnostic(
     range,
     severity: DiagnosticSeverity.Error,
     message: `Function '${funcName}' expects at most ${max} argument${pluralize(max)}, but got ${argCount}.`,
-    source: 'expr-eval'
+    source: 'expreszo'
   };
 }
 
@@ -367,7 +367,7 @@ export function createDiagnosticFromParseError(
     range,
     severity: DiagnosticSeverity.Error,
     message: error.message,
-    source: 'expr-eval'
+    source: 'expreszo'
   };
 }
 
@@ -390,6 +390,6 @@ export function createDiagnosticFromError(
     range,
     severity: DiagnosticSeverity.Error,
     message: error.message,
-    source: 'expr-eval'
+    source: 'expreszo'
   };
 }

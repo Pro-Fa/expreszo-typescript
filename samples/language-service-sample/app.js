@@ -8,7 +8,7 @@ function getSystemTheme() {
 }
 
 function getStoredTheme() {
-    return localStorage.getItem('expr-eval-theme');
+    return localStorage.getItem('expreszo-theme');
 }
 
 function setTheme(theme) {
@@ -17,7 +17,7 @@ function setTheme(theme) {
     } else {
         html.classList.remove('dark');
     }
-    localStorage.setItem('expr-eval-theme', theme);
+    localStorage.setItem('expreszo-theme', theme);
     if (monacoReady) {
         updateMonacoTheme();
     }
@@ -213,7 +213,7 @@ function updateMonacoTheme() {
 require(['vs/editor/editor.main'], function () {
     monacoReady = true;
     
-    const languageId = 'expr-eval';
+    const languageId = 'expreszo';
     monaco.languages.register({id: languageId});
 
     // Set initial theme
@@ -246,8 +246,8 @@ require(['vs/editor/editor.main'], function () {
     }, null, 2);
 
     // Load from localStorage or use defaults
-    const savedExpression = localStorage.getItem('expr-eval-expression') || defaultExpression;
-    const savedContext = localStorage.getItem('expr-eval-context') || defaultContext;
+    const savedExpression = localStorage.getItem('expreszo-expression') || defaultExpression;
+    const savedContext = localStorage.getItem('expreszo-context') || defaultContext;
 
     // Create context editor (JSON)
     const contextModel = monaco.editor.createModel(savedContext, 'json');
@@ -276,11 +276,11 @@ require(['vs/editor/editor.main'], function () {
         wordWrap: 'on'
     });
 
-    // Access expr-eval UMD
+    // Access ExpresZo UMD
     const {createLanguageService, Parser} = window.exprEval || {};
     if (!createLanguageService) {
-        console.error('expr-eval not found. Make sure /dist/bundle.js is built.');
-        showError({message: 'expr-eval library not loaded. Please run: npm run build'}, null);
+        console.error('ExpresZo not found. Make sure /dist/bundle.js is built.');
+        showError({message: 'ExpresZo library not loaded. Please run: npm run build'}, null);
         return;
     }
 
@@ -433,12 +433,12 @@ require(['vs/editor/editor.main'], function () {
                 startColumn: startPos.column,
                 endLineNumber: endPos.lineNumber,
                 endColumn: endPos.column,
-                source: d.source || 'expr-eval'
+                source: d.source || 'expreszo'
             };
         });
 
         // Set markers on the model
-        monaco.editor.setModelMarkers(expressionModel, 'expr-eval', markers);
+        monaco.editor.setModelMarkers(expressionModel, 'expreszo', markers);
     }
 
     // Syntax highlight JSON
@@ -609,8 +609,8 @@ require(['vs/editor/editor.main'], function () {
 
     // Save functionality
     document.getElementById('saveBtn').addEventListener('click', () => {
-        localStorage.setItem('expr-eval-expression', expressionModel.getValue());
-        localStorage.setItem('expr-eval-context', contextModel.getValue());
+        localStorage.setItem('expreszo-expression', expressionModel.getValue());
+        localStorage.setItem('expreszo-context', contextModel.getValue());
 
         // Show toast
         const toast = document.getElementById('saveToast');

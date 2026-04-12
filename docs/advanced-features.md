@@ -1,12 +1,12 @@
 # Advanced Features
 
-> **Audience:** Developers integrating expr-eval who need advanced customization and features.
+> **Audience:** Developers integrating ExpresZo who need advanced customization and features.
 
 This document covers advanced integration features beyond basic parsing and evaluation. For expression syntax, see [Expression Syntax](syntax.md). For basic parser usage, see [Parser](parser.md).
 
 ## About This TypeScript Port
 
-This is a modern TypeScript port of the expr-eval library, completely rewritten with contemporary build tools and development practices. Originally based on [expr-eval 2.0.2](http://silentmatt.com/javascript-expression-evaluator/), this version has been restructured with a modular architecture, TypeScript support, and comprehensive testing using Vitest.
+This is a modern TypeScript port of the original expr-eval library, completely rewritten with contemporary build tools and development practices. Originally based on [expr-eval 2.0.2](http://silentmatt.com/javascript-expression-evaluator/), this version has been restructured with a modular architecture, TypeScript support, and comprehensive testing using Vitest.
 
 The library maintains backward compatibility while providing enhanced features and improved maintainability.
 

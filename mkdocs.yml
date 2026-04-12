@@ -1,8 +1,8 @@
-site_name: expr-eval
+site_name: ExpresZo Typescript
 site_description: A safe mathematical expression evaluator for JavaScript and TypeScript
-site_url: https://pro-fa.github.io/expr-eval/
-repo_url: https://github.com/pro-fa/expr-eval
-repo_name: pro-fa/expr-eval
+site_url: https://pro-fa.github.io/expreszo-typescript/
+repo_url: https://github.com/pro-fa/expreszo-typescript
+repo_name: pro-fa/expreszo-typescript
 
 theme:
   name: material

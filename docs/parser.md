@@ -1,13 +1,13 @@
 # Parser
 
-> **Audience:** Developers integrating expr-eval into their projects.
+> **Audience:** Developers integrating ExpresZo into their projects.
 
 The `Parser` class is the main entry point for parsing and evaluating expressions.
 
 ## Quick Start
 
 ```js
-import { Parser } from '@pro-fa/expr-eval';
+import { Parser } from '@pro-fa/expreszo';
 
 // Create a parser instance
 const parser = new Parser();

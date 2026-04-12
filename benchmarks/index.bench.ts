@@ -31,7 +31,7 @@ interface BenchmarkSuite {
 }
 
 async function runAllBenchmarks(): Promise<BenchmarkSuite[]> {
-  console.log('🚀 Starting expr-eval Performance Benchmarks...\n');
+  console.log('🚀 Starting ExpresZo Performance Benchmarks...\n');
 
   const suites: BenchmarkSuite[] = [];
 

@@ -1,6 +1,6 @@
 # Expression Syntax
 
-> **Audience:** Users writing expressions in applications powered by expr-eval.  
+> **Audience:** Users writing expressions in applications powered by ExpresZo.  
 > **For developers:** See [Parser Configuration](parser.md) to learn how to enable/disable operators.
 
 The expression language is similar to JavaScript but more math-oriented. For example, the `^` operator is exponentiation, not xor.

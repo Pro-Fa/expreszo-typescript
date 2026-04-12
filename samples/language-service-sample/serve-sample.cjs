@@ -58,5 +58,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(port, () => {
-    console.log(`[expr-eval] Sample server running at http://localhost:${port}`);
+    console.log(`[expreszo] Sample server running at http://localhost:${port}`);
 });

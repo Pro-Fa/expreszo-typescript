@@ -13,6 +13,6 @@ export function warnOnce(key: string, message: string): void {
   if (customHandler) {
     customHandler(key, message);
   } else {
-    console.warn(`[expr-eval] Deprecated: ${message}`);
+    console.warn(`[expreszo] Deprecated: ${message}`);
   }
 }

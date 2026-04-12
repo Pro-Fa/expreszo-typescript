@@ -1,6 +1,6 @@
-# Contributing to expr-eval
+# Contributing to ExpresZo Typescript
 
-Thank you for your interest in contributing to expr-eval! This guide will help you get started with development.
+Thank you for your interest in contributing to ExpresZo! This guide will help you get started with development.
 
 > **Audience**: Project contributors
 
@@ -15,8 +15,8 @@ Thank you for your interest in contributing to expr-eval! This guide will help y
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/pro-fa/expr-eval.git
-   cd expr-eval
+   git clone https://github.com/pro-fa/expreszo-typescript.git
+   cd expreszo-typescript
    ```
 
 2. **Install dependencies**
@@ -32,7 +32,7 @@ Thank you for your interest in contributing to expr-eval! This guide will help y
 ## Project Structure
 
 ```
-expr-eval/
+expreszo-typescript/
 ├── src/                    # Source code
 │   ├── index.ts           # Main entry point
 │   ├── config/            # Parser configuration

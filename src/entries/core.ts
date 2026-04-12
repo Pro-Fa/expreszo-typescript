@@ -1,12 +1,12 @@
 /**
- * `expr-eval` core entry — the minimum a caller needs to use `defineParser`
+ * `expreszo` core entry — the minimum a caller needs to use `defineParser`
  * and the `Parser`/`Expression` classes. Pulls in nothing from the optional
  * subpath modules (`math`, `string`, `array`, …). Callers compose presets
  * explicitly:
  *
  * ```ts
- * import { defineParser, coreParser } from 'expr-eval/core';
- * import { withMath } from 'expr-eval/math';
+ * import { defineParser, coreParser } from 'expreszo/core';
+ * import { withMath } from 'expreszo/math';
  *
  * const parser = defineParser({
  *   operators: [...coreParser.operators, ...withMath.operators],

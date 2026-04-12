@@ -1,6 +1,6 @@
 # Expression Quick Reference
 
-> **Audience:** Users writing expressions in applications powered by expr-eval.
+> **Audience:** Users writing expressions in applications powered by ExpresZo.
 
 This is a quick reference card. For detailed documentation, see [Expression Syntax](syntax.md).
 

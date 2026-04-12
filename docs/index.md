@@ -1,27 +1,27 @@
-# expr-eval
+# ExpresZo Typescript
 
-[![npm](https://img.shields.io/npm/v/@pro-fa/expr-eval.svg?maxAge=3600)](https://www.npmjs.com/package/@pro-fa/expr-eval)
+[![npm](https://img.shields.io/npm/v/@pro-fa/expreszo.svg?maxAge=3600)](https://www.npmjs.com/package/@pro-fa/expreszo)
 
 **A safe mathematical expression evaluator for JavaScript and TypeScript.**
 
-This is a modern TypeScript port of the expr-eval library, completely rewritten with contemporary build tools and development practices. Originally based on [expr-eval 2.0.2](http://silentmatt.com/javascript-expression-evaluator/), this version has been restructured with a modular architecture, TypeScript support, and comprehensive testing using Vitest.
+This is a modern TypeScript port of the original expr-eval library, completely rewritten with contemporary build tools and development practices. Originally based on [expr-eval 2.0.2](http://silentmatt.com/javascript-expression-evaluator/), this version has been restructured with a modular architecture, TypeScript support, and comprehensive testing using Vitest.
 
-## What is expr-eval?
+## What is ExpresZo?
 
-expr-eval parses and evaluates mathematical expressions. It's a safer and more math-oriented alternative to using JavaScript's `eval` function for mathematical expressions.
+ExpresZo parses and evaluates mathematical expressions. It's a safer and more math-oriented alternative to using JavaScript's `eval` function for mathematical expressions.
 
 It has built-in support for common math operators and functions. Additionally, you can add your own JavaScript functions. Expressions can be evaluated directly, or compiled into native JavaScript functions.
 
 ## Installation
 
 ```bash
-npm install @pro-fa/expr-eval
+npm install @pro-fa/expreszo
 ```
 
 ## Quick Start
 
 ```typescript
-import { Parser } from '@pro-fa/expr-eval';
+import { Parser } from '@pro-fa/expreszo';
 
 const parser = new Parser();
 const expr = parser.parse('2 * x + 1');
@@ -47,7 +47,7 @@ Parser.evaluate('6 * x', { x: 7 }); // 42
 
 ## Playground
 
-Try out the expression evaluator and its language server capabilities directly in your browser at the [Playground](https://pro-fa.github.io/expr-eval/). The playground provides an interactive environment with:
+Try out the expression evaluator and its language server capabilities directly in your browser at the [Playground](https://pro-fa.github.io/expreszo-typescript/). The playground provides an interactive environment with:
 
 - Live expression evaluation
 - Code completions and IntelliSense
@@ -58,14 +58,14 @@ Try out the expression evaluator and its language server capabilities directly i
 
 ### For Expression Writers
 
-If you're writing expressions in an application powered by expr-eval:
+If you're writing expressions in an application powered by ExpresZo:
 
 - [Quick Reference](quick-reference.md) - Cheat sheet of operators, functions, and syntax
 - [Expression Syntax](syntax.md) - Complete syntax reference with examples
 
 ### For Developers
 
-If you're integrating expr-eval into your project:
+If you're integrating ExpresZo into your project:
 
 - [Parser](parser.md) - Parser configuration, methods, and customization
 - [Expression](expression.md) - Expression object methods: evaluate, simplify, variables, toJSFunction
@@ -81,4 +81,4 @@ If you're integrating expr-eval into your project:
 
 ## License
 
-See [LICENSE.txt](https://github.com/pro-fa/expr-eval/blob/main/LICENSE.txt) for license information.
+See [LICENSE.txt](https://github.com/pro-fa/expreszo-typescript/blob/main/LICENSE.txt) for license information.

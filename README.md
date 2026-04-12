@@ -1,7 +1,7 @@
-Expression Evaluator
+ExpresZo Typescript
 ==================================
 
-[![npm](https://img.shields.io/npm/v/@pro-fa/expr-eval.svg?maxAge=3600)](https://www.npmjs.com/package/@pro-fa/expr-eval)
+[![npm](https://img.shields.io/npm/v/@pro-fa/expreszo.svg?maxAge=3600)](https://www.npmjs.com/package/@pro-fa/expreszo)
 
 ## Description
 
@@ -12,13 +12,13 @@ It has built-in support for common math operators and functions. Additionally, y
 ## Installation
 
 ```bash
-npm install @pro-fa/expr-eval
+npm install @pro-fa/expreszo
 ```
 
 ## Quick Start
 
 ```js
-import { Parser } from '@pro-fa/expr-eval';
+import { Parser } from '@pro-fa/expreszo';
 
 const parser = new Parser();
 const expr = parser.parse('2 * x + 1');
@@ -30,7 +30,7 @@ Parser.evaluate('6 * x', { x: 7 }); // 42
 
 ## Playground Example
 
-Try out the expression evaluator and its language server capabilities directly in your browser at the [Playground](https://pro-fa.github.io/expr-eval/). The playground provides an interactive environment with:
+Try out the expression evaluator and its language server capabilities directly in your browser at the [Playground](https://pro-fa.github.io/expreszo-typescript/). The playground provides an interactive environment with:
 - Live expression evaluation
 - Code completions and IntelliSense
 - Syntax highlighting
@@ -40,7 +40,7 @@ Try out the expression evaluator and its language server capabilities directly i
 
 ### For Expression Writers
 
-If you're writing expressions in an application powered by expr-eval:
+If you're writing expressions in an application powered by ExpresZo:
 
 | Document | Description |
 |:---------|:------------|
@@ -49,7 +49,7 @@ If you're writing expressions in an application powered by expr-eval:
 
 ### For Developers
 
-If you're integrating expr-eval into your project:
+If you're integrating ExpresZo into your project:
 
 | Document | Description |
 |:---------|:------------|
