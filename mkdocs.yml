@@ -60,7 +60,6 @@ nav:
     - Expression: expression.md
     - Advanced Features: advanced-features.md
     - Language Service: language-service.md
-    - Migrating from expr-eval: migrating-from-expr-eval.md
     - Migration Guide: migration.md
   - For Contributors:
     - Contributing: contributing.md

@@ -2,15 +2,28 @@
 
 [![npm](https://img.shields.io/npm/v/expreszo.svg?maxAge=3600)](https://www.npmjs.com/package/expreszo)
 
-**A safe mathematical expression evaluator for JavaScript and TypeScript.**
+**A fast, safe, and extensible expression evaluator for JavaScript and TypeScript.**
 
-This is a modern TypeScript port of the original expr-eval library, completely rewritten with contemporary build tools and development practices. Originally based on [expr-eval 2.0.2](http://silentmatt.com/javascript-expression-evaluator/), this version has been restructured with a modular architecture, TypeScript support, and comprehensive testing using Vitest.
+ExpresZo parses and evaluates expressions at runtime — a configurable alternative to `eval()` that won't execute arbitrary code. Use it to power user-facing formula editors, rule engines, template systems, or any place you need to evaluate dynamic expressions safely.
 
-## What is ExpresZo?
+## Why ExpresZo?
 
-ExpresZo parses and evaluates mathematical expressions. It's a safer and more math-oriented alternative to using JavaScript's `eval` function for mathematical expressions.
+### Fast
 
-It has built-in support for common math operators and functions. Additionally, you can add your own JavaScript functions. Expressions can be evaluated directly, or compiled into native JavaScript functions.
+ExpresZo uses a **Pratt parser** — a top-down operator-precedence parsing algorithm that processes tokens in a single pass with no backtracking. Compared to the recursive-descent parser in the original expr-eval, this means significantly faster parsing, predictable linear performance scaling, and better error messages with precise diagnostics.
+
+Parsed expressions compile to an **immutable AST** that can be evaluated repeatedly against different variable sets with near-zero overhead.
+
+### Safe
+
+- **No code execution** — expressions can only call explicitly registered functions
+- **Prototype pollution protection** — access to `__proto__`, `prototype`, and `constructor` is blocked
+- **Recursion depth limit** — deeply nested expressions are rejected at parse time
+- **No `eval()` or `new Function()`** — evaluation runs on a stack-based AST walker
+
+### Extensible
+
+Build exactly the parser you need with tree-shakeable presets, or use the full kitchen-sink parser with zero configuration.
 
 ## Installation
 
@@ -26,59 +39,32 @@ import { Parser } from 'expreszo';
 const parser = new Parser();
 const expr = parser.parse('2 * x + 1');
 console.log(expr.evaluate({ x: 3 })); // 7
-
-// or evaluate directly
-Parser.evaluate('6 * x', { x: 7 }); // 42
 ```
 
-## Key Features
-
-- **Mathematical Expressions** - Full support for arithmetic, comparison, and logical operators
-- **Built-in Functions** - Trigonometry, logarithms, min/max, array operations, string manipulation
-- **Custom Functions** - Add your own JavaScript functions
-- **Variable Support** - Evaluate expressions with dynamic variable values
-- **Expression Compilation** - Convert expressions to native JavaScript functions
-- **TypeScript Support** - Full type definitions included
-- **Undefined Support** - Graceful handling of undefined values
-- **Coalesce Operator** - `??` operator for null/undefined fallback
-- **SQL Case Blocks** - SQL-style CASE/WHEN/THEN/ELSE expressions
-- **Object Construction** - Create objects and arrays in expressions
-- **Language Service** - IDE integration with completions, hover info, and highlighting
-
-## Playground
-
-Try out the expression evaluator and its language server capabilities directly in your browser at the [Playground](https://pro-fa.github.io/expreszo-typescript/). The playground provides an interactive environment with:
-
-- Live expression evaluation
-- Code completions and IntelliSense
-- Syntax highlighting
-- Hover information for functions and variables
-
-## Documentation Overview
+## Documentation
 
 ### For Expression Writers
-
-If you're writing expressions in an application powered by ExpresZo:
 
 - [Quick Reference](quick-reference.md) - Cheat sheet of operators, functions, and syntax
 - [Expression Syntax](syntax.md) - Complete syntax reference with examples
 
 ### For Developers
 
-If you're integrating ExpresZo into your project:
-
 - [Parser](parser.md) - Parser configuration, methods, and customization
-- [Expression](expression.md) - Expression object methods: evaluate, simplify, variables, toJSFunction
+- [Expression](expression.md) - Expression object methods: evaluate, simplify, variables
 - [Advanced Features](advanced-features.md) - Promises, custom resolution, type conversion, operator customization
 - [Language Service](language-service.md) - IDE integration: completions, hover info, diagnostics, Monaco Editor
-- [Migrating from expr-eval](migrating-from-expr-eval.md) - Switching from `expr-eval` / `@pro-fa/expr-eval` to ExpresZo, legacy mode
-- [Migration Guide](migration.md) - Upgrading between major versions
+- [Migration Guide](migration.md) - Migrating from expr-eval, legacy mode, version history
 
 ### For Contributors
 
 - [Contributing](contributing.md) - Development setup, code style, and PR guidelines
 - [Performance Testing](performance.md) - Benchmarks, profiling, and optimization guidance
 - [Breaking Changes](breaking-changes.md) - Version-by-version breaking change documentation
+
+## Playground
+
+Try it live at the [Playground](https://pro-fa.github.io/expreszo-typescript/) — an interactive environment with code completions, syntax highlighting, and real-time evaluation.
 
 ## License
 

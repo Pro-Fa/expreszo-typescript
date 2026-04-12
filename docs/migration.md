@@ -1,21 +1,67 @@
 # Migration Guide
 
-> **Audience:** Developers upgrading from the original `expr-eval` library or previous versions.
+> **Audience:** Developers migrating from `expr-eval` or `@pro-fa/expr-eval`, or upgrading between ExpresZo versions.
 
-This guide helps you migrate to the current version of `expreszo`.
+## Migrating from expr-eval
 
-## Migrating from silentmatt/expr-eval
+ExpresZo Typescript is a direct continuation of the `@pro-fa/expr-eval` package — a complete TypeScript rewrite of the original [expr-eval](https://github.com/silentmatt/expr-eval) library. Most expressions work without changes. This section walks you through the package swap and explains the **legacy mode** option for preserving older behavior during the transition.
 
-This library is a TypeScript port of the original [expr-eval](https://github.com/silentmatt/expr-eval) library. Most expressions will work without changes, but there are some differences to be aware of.
+### Step 1: Swap the Package
+
+```bash
+# Remove the old package
+npm uninstall expr-eval          # if you used the original silentmatt package
+npm uninstall @pro-fa/expr-eval  # if you used the Pro-Fa fork
+
+# Install ExpresZo
+npm install expreszo
+```
+
+If you had the community TypeScript types installed, remove them too — ExpresZo ships its own declarations:
+
+```bash
+npm uninstall @types/expr-eval
+```
+
+### Step 2: Update Imports
+
+Find and replace across your codebase:
+
+```typescript
+// Before
+import { Parser } from 'expr-eval';
+import { Parser } from '@pro-fa/expr-eval';
+
+// After
+import { Parser } from 'expreszo';
+```
+
+Subpath imports follow the same pattern:
+
+```typescript
+// Before
+import { coreParser } from '@pro-fa/expr-eval/core';
+import { withMath } from '@pro-fa/expr-eval/math';
+
+// After
+import { coreParser } from 'expreszo/core';
+import { withMath } from 'expreszo/math';
+```
+
+All available subpath imports: `/core`, `/math`, `/string`, `/array`, `/object`, `/comparison`, `/logical`, `/type-check`, `/utility`, `/validation`, `/language-service`.
 
 ### What's the Same
 
 - Core expression syntax (arithmetic, comparison, logical operators)
 - Built-in math functions (sin, cos, sqrt, etc.)
-- Expression methods (evaluate, simplify, variables, toJSFunction)
+- Expression methods (evaluate, simplify, variables)
 - Parser configuration for enabling/disabling operators
+- All types are exported from the main package:
+  ```typescript
+  import { Parser, Expression, Value, Values } from 'expreszo';
+  ```
 
-### What's New
+### What's New Compared to the Original expr-eval
 
 | Feature | Description |
 |---------|-------------|
@@ -29,124 +75,121 @@ This library is a TypeScript port of the original [expr-eval](https://github.com
 | Promise support | Async custom functions |
 | String concatenation with `+` | `"a" + "b"` works |
 | Language service | IDE integration (completions, hover, diagnostics) |
+| Pratt parser | Faster parsing, better error messages, 256-level depth limit |
+| Tree-shakeable presets | Compose minimal parsers with `defineParser()` |
 
-### Behavior Changes
+### Behavior Changes from the Original
 
-#### Undefined Handling
-
-The original library would throw errors for undefined values. This version handles them gracefully:
-
-```js
-// Original: throws error
-// New: returns undefined
-parser.evaluate('x + 1', { x: undefined }); // undefined
-
-// Use coalesce for fallback
-parser.evaluate('x ?? 0 + 1', { x: undefined }); // 1
-```
-
-#### Property Access
-
-Missing properties now return `undefined` instead of throwing:
+**Undefined handling** — the original library threw errors for undefined values. ExpresZo handles them gracefully:
 
 ```js
-const obj = { user: { name: 'Ada' } };
-
-// Original: throws error
-// New: returns undefined
-parser.evaluate('user.email', obj); // undefined
-parser.evaluate('user.profile.photo', obj); // undefined
+parser.evaluate('x + 1', { x: undefined }); // undefined (original: error)
+parser.evaluate('x ?? 0 + 1', { x: undefined }); // 1 (coalesce fallback)
 ```
 
-## Migrating Between Major Versions
-
-### Version 7.0.0
-
-v7 replaces the stack-based bytecode interpreter with an AST-based architecture, adds a Pratt parser, and introduces descriptor-driven parser composition. Most expression syntax and the core `Parser`/`Expression` API are unchanged.
-
-**`Expression.toJSFunction()` removed:**
-
-```typescript
-// BEFORE (v6)
-const fn = parser.parse('x + y').toJSFunction('x, y');
-fn(2, 3); // 5
-
-// AFTER (v7) — wrap evaluate() in a closure
-const expr = parser.parse('x + y');
-const fn = (x: number, y: number) => expr.evaluate({ x, y });
-fn(2, 3); // 5
-```
-
-**`Expression.tokens` removed:**
-
-The internal instruction array is replaced by a private AST. Use the visitor pattern:
-
-```typescript
-// BEFORE (v6)
-expr.tokens.forEach(t => console.log(t));
-
-// AFTER (v7)
-import type { NodeVisitor } from 'expreszo/core';
-expr.accept(myVisitor);
-```
-
-**Static `Parser.parse()` / `Parser.evaluate()` removed:**
-
-```typescript
-// BEFORE (v6)
-Parser.parse('x + 1');
-Parser.evaluate('x + 1', { x: 4 });
-
-// AFTER (v7)
-const parser = new Parser();
-parser.parse('x + 1');
-parser.evaluate('x + 1', { x: 4 });
-```
-
-**Parser recursion depth limit:**
-
-Expressions nested deeper than 256 levels now throw `ParseError`. This prevents stack overflow DoS attacks. Normal expressions are not affected.
-
-**New: tree-shakeable parser composition (optional):**
-
-v7 introduces `defineParser()` and composable presets. The default `new Parser()` still includes all built-in operators and functions (equivalent to `fullParser`), so no migration is needed. But you can now create minimal parsers:
-
-```typescript
-import { defineParser, coreParser, withMath, withComparison } from 'expreszo';
-
-const parser = defineParser({
-  ...coreParser,
-  operators: [...coreParser.operators, ...withMath.operators, ...withComparison.operators],
-  functions: [...coreParser.functions, ...withMath.functions, ...withComparison.functions],
-});
-```
-
-Or use subpath imports for smaller bundles:
-
-```typescript
-import { coreParser } from 'expreszo/core';
-import { withMath } from 'expreszo/math';
-```
-
-**Migration steps:**
-
-1. Search for `toJSFunction` — replace with closures over `evaluate()`
-2. Search for `Expression.tokens` or `Instruction` — migrate to visitor pattern
-3. Search for `Parser.parse(` or `Parser.evaluate(` (static calls) — create an instance
-4. Test deeply nested expressions (unlikely to be affected unless programmatically generated)
-
-### Version 6.0.0
-
-**`null` comparison changed:**
+**Property access** — missing properties return `undefined` instead of throwing:
 
 ```js
-// Before 6.0: null was cast to 0
-null == 0  // true (before)
-null == 0  // false (after)
-
-// Now null equals null
-null == someNullVariable  // true (after)
+parser.evaluate('user.email', { user: { name: 'Ada' } }); // undefined
 ```
+
+---
+
+## Legacy Mode
+
+ExpresZo includes a **legacy mode** that preserves older operator and function behavior from the original expr-eval library. This is useful when you have existing expressions that depend on the original semantics and you want to migrate incrementally.
+
+### Enabling Legacy Mode
+
+```typescript
+import { Parser } from 'expreszo';
+
+const parser = new Parser();                    // modern behavior (default)
+const legacyParser = new Parser({ legacy: true }); // legacy behavior
+```
+
+### What Legacy Mode Changes
+
+#### Arithmetic: `+` (addition)
+
+| Scenario | Modern | Legacy |
+|----------|--------|--------|
+| `"3" + "4"` (non-numeric strings) | `NaN` | `"34"` (string concatenation with deprecation warning) |
+| `[1, 2] + [3, 4]` | Throws error | `[1, 2, 3, 4]` (array concatenation with deprecation warning) |
+| `{a: 1} + {b: 2}` | Throws error | `{a: 1, b: 2}` (object merge with deprecation warning) |
+
+In modern mode, use `|` for concatenation and `merge()` for objects.
+
+#### Arithmetic: `/` (division)
+
+| Scenario | Modern | Legacy |
+|----------|--------|--------|
+| `1 / 0` | Throws `"Division by zero"` | `Infinity` (with deprecation warning) |
+| `0 / 0` | Throws `"Division by zero"` | `NaN` (with deprecation warning) |
+
+In modern mode, use the `??` operator for fallback: `(a / b) ?? 0`.
+
+#### Concatenation: `|` (pipe)
+
+| Scenario | Modern | Legacy |
+|----------|--------|--------|
+| `42 | " items"` | `"42 items"` (mixed types coerced to string) | `undefined` (strict: both must be strings or both arrays) |
+
+#### Comparison: `>`, `<`, `>=`, `<=`
+
+| Scenario | Modern | Legacy |
+|----------|--------|--------|
+| `undefined > 5` | `undefined` | `false` (JavaScript coercion) |
+| `undefined < 5` | `undefined` | `false` |
+
+Modern mode propagates `undefined` through comparisons. Legacy mode performs JavaScript's default coercion, which can produce surprising results.
+
+#### Function: `indexOf()` and `join()`
+
+The parameter order is reversed in legacy mode:
+
+| Function | Modern | Legacy |
+|----------|--------|--------|
+| `indexOf` | `indexOf(arrayOrString, target)` | `indexOf(target, arrayOrString)` |
+| `join` | `join(array, separator)` | `join(separator, array)` |
+
+#### Function: `if()`
+
+| Mode | Behavior |
+|------|----------|
+| Modern | **Lazy evaluation** — only the matching branch is evaluated |
+| Legacy | **Eager evaluation** — all three arguments are evaluated before the condition is checked |
+
+```typescript
+// Modern: safe — the else branch is never evaluated
+parser.evaluate('if(true, x, 1 / y)', { x: 42, y: 0 }); // 42
+
+// Legacy: throws — all branches are evaluated eagerly
+const legacy = new Parser({ legacy: true });
+legacy.evaluate('if(true, x, 1 / y)', { x: 42, y: 0 }); // Error!
+```
+
+### Migration Strategy
+
+1. **Start with legacy mode** if you have many existing expressions:
+   ```typescript
+   const parser = new Parser({ legacy: true });
+   ```
+
+2. **Run your test suite** — everything should pass unchanged.
+
+3. **Switch to modern mode** and fix any failing tests. The most common issues are:
+   - `+` used for string/array concatenation → replace with `|`
+   - `indexOf` / `join` argument order → swap the arguments
+   - Division by zero returning `Infinity` → add a `?? 0` fallback
+
+4. **Remove the legacy flag** once all expressions are updated.
+
+Legacy mode emits deprecation warnings to the console for behaviors that differ from modern mode, helping you find expressions that need updating.
+
+---
+
+## Version History
 
 ### Version 5.0.0
 
@@ -157,7 +200,6 @@ This addresses several security vulnerabilities (CVE-2025-12735, CVE-2025-13204)
 ```js
 // BEFORE (vulnerable, no longer works)
 parser.evaluate('customFunc()', { customFunc: () => 'result' });
-parser.evaluate('obj.method()', { obj: { method: () => 'danger' } });
 
 // AFTER (secure)
 parser.functions.customFunc = () => 'result';
@@ -171,99 +213,26 @@ parser.evaluate('customFunc()');
 - Inline function definitions: `(f(x) = x * 2)(5)`
 - Functions registered in `parser.functions`
 
-**Migration steps:**
-
-1. Search your code for `evaluate('...', { fn: ... })` patterns where `fn` is a function
-2. Move those functions to `parser.functions`:
-
-```js
-// Before
-const myFunc = (x) => x * 2;
-parser.evaluate('myFunc(5)', { myFunc });
-
-// After
-parser.functions.myFunc = (x) => x * 2;
-parser.evaluate('myFunc(5)');
-```
-
-**Protected properties:**
-
-Access to these properties is now blocked:
-- `__proto__`
-- `prototype`
-- `constructor`
+**Protected properties** — access to `__proto__`, `prototype`, and `constructor` is blocked.
 
 ### Version 4.0.0
 
 **Concatenation operator changed from `||` to `|`:**
 
-The `||` operator was repurposed for logical OR (JavaScript-style), and a new `|` operator was introduced for concatenation.
-
 ```js
 // BEFORE (original expr-eval 2.x)
 "hello" || " world"     // "hello world" (concatenation)
-[1, 2] || [3, 4]        // [1, 2, 3, 4] (concatenation)
-true || false           // Not supported or different behavior
 
 // AFTER (v4.0.0+)
 "hello" | " world"      // "hello world" (concatenation with |)
-[1, 2] | [3, 4]         // [1, 2, 3, 4] (concatenation with |)
-true || false           // true (logical OR)
-true && false           // false (logical AND)
-```
-
-**Migration steps:**
-
-1. Search your expressions for `||` used for string or array concatenation
-2. Replace `||` with `|` for concatenation operations
-3. `||` now works as logical OR, and `&&` was added as logical AND
-
-**Package renamed:**
-
-The package was renamed from `expr-eval` to `expreszo` and ported to TypeScript.
-
-## Package Name Change
-
-If you're migrating from the original package:
-
-```bash
-# Remove old package
-npm uninstall expr-eval
-
-# Install new package
-npm install expreszo
-```
-
-Update imports:
-
-```js
-// Before
-const { Parser } = require('expr-eval');
-
-// After
-import { Parser } from 'expreszo';
-// or
-const { Parser } = require('expreszo');
-```
-
-## TypeScript Support
-
-This version includes full TypeScript type definitions. If you were using `@types/expr-eval`, you can remove it:
-
-```bash
-npm uninstall @types/expr-eval
-```
-
-Types are exported from the main package:
-
-```typescript
-import { Parser, Expression, Value, Values } from 'expreszo';
+true || false           // true (logical OR — new)
+true && false           // false (logical AND — new)
 ```
 
 ## Getting Help
 
 If you encounter issues during migration:
 
-1. Check the [Breaking Changes](breaking-changes.md) for detailed breaking change information
+1. Check the [Breaking Changes](breaking-changes.md) for detailed version-by-version changes
 2. Review the documentation for the feature you're using
 3. Open an issue on GitHub with a minimal reproduction case
