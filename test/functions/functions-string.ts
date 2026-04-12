@@ -43,7 +43,7 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string argument', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('isEmpty(0)'), /must be a string/);
+      assert.throws(() => parser.evaluate('isEmpty(0)'), /isEmpty\(\) expects a string, got/);
     });
   });
 
@@ -63,7 +63,7 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string/array first argument', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('contains(123, "test")'), /First argument.*must be a string or array/);
+      assert.throws(() => parser.evaluate('contains(123, "test")'), /contains\(\) expects a string or array as first argument, got/);
     });
 
     it('should auto-stringify non-string needle for string haystack', function () {
@@ -89,7 +89,7 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string arguments', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('startsWith(123, "test")'), /First argument.*must be a string/);
+      assert.throws(() => parser.evaluate('startsWith(123, "test")'), /startsWith\(\) expects a string as first argument, got/);
     });
   });
 
@@ -109,7 +109,7 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string arguments', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('endsWith(123, "test")'), /First argument.*must be a string/);
+      assert.throws(() => parser.evaluate('endsWith(123, "test")'), /endsWith\(\) expects a string as first argument, got/);
     });
   });
 
@@ -134,7 +134,7 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string arguments', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('searchCount(123, "test")'), /First argument.*must be a string/);
+      assert.throws(() => parser.evaluate('searchCount(123, "test")'), /searchCount\(\) expects a string as first argument, got/);
     });
   });
 
@@ -165,12 +165,12 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string argument', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('trim(123)'), /First argument.*must be a string/);
+      assert.throws(() => parser.evaluate('trim(123)'), /trim\(\) expects a string as first argument, got/);
     });
 
     it('should throw error for non-string second argument', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('trim("test", 123)'), /Second argument.*must be a string/);
+      assert.throws(() => parser.evaluate('trim("test", 123)'), /trim\(\) expects a string as second argument, got/);
     });
   });
 
@@ -189,7 +189,7 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string argument', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('toUpper(123)'), /must be a string/);
+      assert.throws(() => parser.evaluate('toUpper(123)'), /toUpper\(\) expects a string, got/);
     });
   });
 
@@ -208,7 +208,7 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string argument', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('toLower(123)'), /must be a string/);
+      assert.throws(() => parser.evaluate('toLower(123)'), /toLower\(\) expects a string, got/);
     });
   });
 
@@ -227,7 +227,7 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string argument', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('toTitle(123)'), /must be a string/);
+      assert.throws(() => parser.evaluate('toTitle(123)'), /toTitle\(\) expects a string, got/);
     });
   });
 
@@ -247,8 +247,8 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string arguments', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('split(123, ",")'), /First argument.*must be a string/);
-      assert.throws(() => parser.evaluate('split("test", 123)'), /Second argument.*must be a string/);
+      assert.throws(() => parser.evaluate('split(123, ",")'), /split\(\) expects a string as first argument, got/);
+      assert.throws(() => parser.evaluate('split("test", 123)'), /split\(\) expects a string as second argument, got/);
     });
   });
 
@@ -268,14 +268,14 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for negative or non-integer times', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('repeat("test", -1)'), /non-negative integer/);
-      assert.throws(() => parser.evaluate('repeat("test", 2.5)'), /non-negative integer/);
+      assert.throws(() => parser.evaluate('repeat("test", -1)'), /repeat\(\) expects a non-negative integer as second argument, got/);
+      assert.throws(() => parser.evaluate('repeat("test", 2.5)'), /repeat\(\) expects a non-negative integer as second argument, got/);
     });
 
     it('should throw error for non-string or non-number arguments', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('repeat(123, 3)'), /First argument.*must be a string/);
-      assert.throws(() => parser.evaluate('repeat("test", "3")'), /Second argument.*must be a number/);
+      assert.throws(() => parser.evaluate('repeat(123, 3)'), /repeat\(\) expects a string as first argument, got/);
+      assert.throws(() => parser.evaluate('repeat("test", "3")'), /repeat\(\) expects a number as second argument, got/);
     });
   });
 
@@ -294,7 +294,7 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string argument', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('reverse(123)'), /must be a string/);
+      assert.throws(() => parser.evaluate('reverse(123)'), /reverse\(\) expects a string or array, got/);
     });
   });
 
@@ -314,13 +314,13 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for negative count', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('left("test", -1)'), /non-negative/);
+      assert.throws(() => parser.evaluate('left("test", -1)'), /left\(\) expects a non-negative number as second argument, got/);
     });
 
     it('should throw error for non-string or non-number arguments', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('left(123, 3)'), /First argument.*must be a string/);
-      assert.throws(() => parser.evaluate('left("test", "3")'), /Second argument.*must be a number/);
+      assert.throws(() => parser.evaluate('left(123, 3)'), /left\(\) expects a string as first argument, got/);
+      assert.throws(() => parser.evaluate('left("test", "3")'), /left\(\) expects a number as second argument, got/);
     });
   });
 
@@ -340,13 +340,13 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for negative count', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('right("test", -1)'), /non-negative/);
+      assert.throws(() => parser.evaluate('right("test", -1)'), /right\(\) expects a non-negative number as second argument, got/);
     });
 
     it('should throw error for non-string or non-number arguments', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('right(123, 3)'), /First argument.*must be a string/);
-      assert.throws(() => parser.evaluate('right("test", "3")'), /Second argument.*must be a number/);
+      assert.throws(() => parser.evaluate('right(123, 3)'), /right\(\) expects a string as first argument, got/);
+      assert.throws(() => parser.evaluate('right("test", "3")'), /right\(\) expects a number as second argument, got/);
     });
   });
 
@@ -367,9 +367,9 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string arguments', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('replace(123, "old", "new")'), /First argument.*must be a string/);
-      assert.throws(() => parser.evaluate('replace("test", 123, "new")'), /Second argument.*must be a string/);
-      assert.throws(() => parser.evaluate('replace("test", "old", 123)'), /Third argument.*must be a string/);
+      assert.throws(() => parser.evaluate('replace(123, "old", "new")'), /replace\(\) expects a string as first argument, got/);
+      assert.throws(() => parser.evaluate('replace("test", 123, "new")'), /replace\(\) expects a string as second argument, got/);
+      assert.throws(() => parser.evaluate('replace("test", "old", 123)'), /replace\(\) expects a string as third argument, got/);
     });
   });
 
@@ -390,7 +390,7 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string arguments', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('replaceFirst(123, "old", "new")'), /First argument.*must be a string/);
+      assert.throws(() => parser.evaluate('replaceFirst(123, "old", "new")'), /replaceFirst\(\) expects a string as first argument, got/);
     });
   });
 
@@ -422,7 +422,7 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-array argument', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('naturalSort("test")'), /must be an array/);
+      assert.throws(() => parser.evaluate('naturalSort("test")'), /naturalSort\(\) expects an array, got/);
     });
   });
 
@@ -441,13 +441,13 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for invalid number strings', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('toNumber("abc")'), /Cannot convert.*to a number/);
-      assert.throws(() => parser.evaluate('toNumber("12abc")'), /Cannot convert.*to a number/);
+      assert.throws(() => parser.evaluate('toNumber("abc")'), /toNumber\(\) cannot convert.*to a number/);
+      assert.throws(() => parser.evaluate('toNumber("12abc")'), /toNumber\(\) cannot convert.*to a number/);
     });
 
     it('should throw error for non-string argument', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('toNumber(123)'), /must be a string/);
+      assert.throws(() => parser.evaluate('toNumber(123)'), /toNumber\(\) expects a string, got/);
     });
   });
 
@@ -484,13 +484,13 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for invalid boolean strings', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('toBoolean("maybe")'), /Cannot convert.*to a boolean/);
-      assert.throws(() => parser.evaluate('toBoolean("2")'), /Cannot convert.*to a boolean/);
+      assert.throws(() => parser.evaluate('toBoolean("maybe")'), /toBoolean\(\) cannot convert.*to a boolean/);
+      assert.throws(() => parser.evaluate('toBoolean("2")'), /toBoolean\(\) cannot convert.*to a boolean/);
     });
 
     it('should throw error for non-string argument', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('toBoolean(1)'), /must be a string/);
+      assert.throws(() => parser.evaluate('toBoolean(1)'), /toBoolean\(\) expects a string, got/);
     });
   });
 
@@ -526,19 +526,19 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for negative or non-integer target length', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('padLeft("test", -1)'), /non-negative integer/);
-      assert.throws(() => parser.evaluate('padLeft("test", 2.5)'), /non-negative integer/);
+      assert.throws(() => parser.evaluate('padLeft("test", -1)'), /padLeft\(\) expects a non-negative integer as second argument, got/);
+      assert.throws(() => parser.evaluate('padLeft("test", 2.5)'), /padLeft\(\) expects a non-negative integer as second argument, got/);
     });
 
     it('should throw error for non-string or non-number arguments', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('padLeft(123, 5)'), /First argument.*must be a string/);
-      assert.throws(() => parser.evaluate('padLeft("test", "5")'), /Second argument.*must be a number/);
+      assert.throws(() => parser.evaluate('padLeft(123, 5)'), /padLeft\(\) expects a string as first argument, got/);
+      assert.throws(() => parser.evaluate('padLeft("test", "5")'), /padLeft\(\) expects a number as second argument, got/);
     });
 
     it('should throw error for non-string padding character', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('padLeft("test", 5, 0)'), /Third argument.*must be a string/);
+      assert.throws(() => parser.evaluate('padLeft("test", 5, 0)'), /padLeft\(\) expects a string as third argument, got/);
     });
   });
 
@@ -574,19 +574,19 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for negative or non-integer target length', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('padRight("test", -1)'), /non-negative integer/);
-      assert.throws(() => parser.evaluate('padRight("test", 2.5)'), /non-negative integer/);
+      assert.throws(() => parser.evaluate('padRight("test", -1)'), /padRight\(\) expects a non-negative integer as second argument, got/);
+      assert.throws(() => parser.evaluate('padRight("test", 2.5)'), /padRight\(\) expects a non-negative integer as second argument, got/);
     });
 
     it('should throw error for non-string or non-number arguments', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('padRight(123, 5)'), /First argument.*must be a string/);
-      assert.throws(() => parser.evaluate('padRight("test", "5")'), /Second argument.*must be a number/);
+      assert.throws(() => parser.evaluate('padRight(123, 5)'), /padRight\(\) expects a string as first argument, got/);
+      assert.throws(() => parser.evaluate('padRight("test", "5")'), /padRight\(\) expects a number as second argument, got/);
     });
 
     it('should throw error for non-string padding character', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('padRight("test", 5, 0)'), /Third argument.*must be a string/);
+      assert.throws(() => parser.evaluate('padRight("test", 5, 0)'), /padRight\(\) expects a string as third argument, got/);
     });
   });
 
@@ -628,19 +628,19 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for negative or non-integer target length', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('padBoth("test", -1)'), /non-negative integer/);
-      assert.throws(() => parser.evaluate('padBoth("test", 2.5)'), /non-negative integer/);
+      assert.throws(() => parser.evaluate('padBoth("test", -1)'), /padBoth\(\) expects a non-negative integer as second argument, got/);
+      assert.throws(() => parser.evaluate('padBoth("test", 2.5)'), /padBoth\(\) expects a non-negative integer as second argument, got/);
     });
 
     it('should throw error for non-string or non-number arguments', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('padBoth(123, 5)'), /First argument.*must be a string/);
-      assert.throws(() => parser.evaluate('padBoth("test", "5")'), /Second argument.*must be a number/);
+      assert.throws(() => parser.evaluate('padBoth(123, 5)'), /padBoth\(\) expects a string as first argument, got/);
+      assert.throws(() => parser.evaluate('padBoth("test", "5")'), /padBoth\(\) expects a number as second argument, got/);
     });
 
     it('should throw error for non-string padding character', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('padBoth("test", 5, 0)'), /Third argument.*must be a string/);
+      assert.throws(() => parser.evaluate('padBoth("test", 5, 0)'), /padBoth\(\) expects a string as third argument, got/);
     });
   });
 
@@ -678,17 +678,17 @@ describe('String Functions TypeScript Test', function () {
 
       it('should throw error for non-string and non-array first argument', function () {
         const parser = new Parser();
-        assert.throws(() => parser.evaluate('slice(123, 0, 5)'), /First argument.*must be a string or array/);
+        assert.throws(() => parser.evaluate('slice(123, 0, 5)'), /slice\(\) expects a string or array as first argument, got/);
       });
 
       it('should throw error for non-number start', function () {
         const parser = new Parser();
-        assert.throws(() => parser.evaluate('slice("hello", "0", 5)'), /Second argument.*must be a number/);
+        assert.throws(() => parser.evaluate('slice("hello", "0", 5)'), /slice\(\) expects a number as second argument, got/);
       });
 
       it('should throw error for non-number end', function () {
         const parser = new Parser();
-        assert.throws(() => parser.evaluate('slice("hello", 0, "5")'), /Third argument.*must be a number/);
+        assert.throws(() => parser.evaluate('slice("hello", 0, "5")'), /slice\(\) expects a number as third argument, got/);
       });
     });
 
@@ -739,7 +739,7 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string argument', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('urlEncode(123)'), /must be a string/);
+      assert.throws(() => parser.evaluate('urlEncode(123)'), /urlEncode\(\) expects a string, got/);
     });
   });
 
@@ -769,7 +769,7 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string argument', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('base64Encode(123)'), /must be a string/);
+      assert.throws(() => parser.evaluate('base64Encode(123)'), /base64Encode\(\) expects a string, got/);
     });
   });
 
@@ -799,12 +799,12 @@ describe('String Functions TypeScript Test', function () {
 
     it('should throw error for non-string argument', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('base64Decode(123)'), /must be a string/);
+      assert.throws(() => parser.evaluate('base64Decode(123)'), /base64Decode\(\) expects a string, got/);
     });
 
     it('should throw error for invalid base64 string', function () {
       const parser = new Parser();
-      assert.throws(() => parser.evaluate('base64Decode("!!invalid!!")'), /Invalid base64 string/);
+      assert.throws(() => parser.evaluate('base64Decode("!!invalid!!")'), /base64Decode\(\) received an invalid base64 string/);
     });
 
     it('should roundtrip with base64Encode', function () {

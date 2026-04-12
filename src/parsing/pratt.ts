@@ -298,12 +298,12 @@ export class PrattParser {
           this.error('function definition is not permitted');
         }
         if (left.callee.type !== 'Ident') {
-          throw new Error('expected variable for assignment');
+          throw new Error('Function name must be an identifier in definition. Example: f(x) = x * 2');
         }
         const params: string[] = [];
         for (const arg of left.args) {
           if (arg.type !== 'Ident') {
-            throw new Error('expected variable for assignment');
+            throw new Error('Function parameters must be identifiers. Example: f(x, y) = x + y');
           }
           params.push(arg.name);
         }
@@ -323,7 +323,7 @@ export class PrattParser {
           mkBinary('=', mkNameRef(left.property), wrappedRhs)
         ]);
       } else {
-        throw new Error('expected variable for assignment');
+        throw new Error('Left side of assignment must be a variable name. Example: x = 5');
       }
     }
 
@@ -529,7 +529,7 @@ export class PrattParser {
     while (true) {
       if (this.accept(TOP, '.')) {
         if (!this.allowMemberAccess) {
-          throw new AccessError('member access is not permitted', {
+          throw new AccessError('Member access (dot notation) is not permitted. Enable it with: new Parser({ allowMemberAccess: true })', {
             expression: this.cursor.expression
           });
         }
@@ -537,7 +537,7 @@ export class PrattParser {
         expr = mkMember(expr, String(name.value));
       } else if (this.accept(TBRACKET, '[')) {
         if (!this.parser.isOperatorEnabled('[')) {
-          throw new AccessError('Array access is disabled', {
+          throw new AccessError('Array/bracket access is disabled. Enable it with: new Parser({ operators: { array: true } })', {
             expression: this.cursor.expression
           });
         }
@@ -745,7 +745,7 @@ export class PrattParser {
     while (this.accept(TKEYWORD, 'when')) {
       const when = this.parseConditionalExpression();
       if (!this.accept(TKEYWORD, 'then')) {
-        throw new Error('case block missing when');
+        throw new Error("Expected 'then' after 'when' condition in case block. Example: case x when 1 then 'one' end");
       }
       const then = this.parseConditionalExpression();
       arms.push({ when, then });
@@ -756,7 +756,7 @@ export class PrattParser {
     }
 
     if (!this.accept(TKEYWORD, 'end')) {
-      throw new Error('invalid case block');
+      throw new Error("Case block must be closed with 'end'. Example: case x when 1 then 'one' else 'other' end");
     }
 
     return mkCase(subject, arms, elseNode);
@@ -774,7 +774,7 @@ export class PrattParser {
     for (let first = true; ; first = false) {
       if (!first) {
         if (!this.accept(TCOMMA)) {
-          throw new Error('invalid object definition');
+          throw new Error('Expected comma between object properties. Example: { a: 1, b: 2 }');
         }
         if (this.accept(TBRACE, '}')) {
           return mkObject(properties);
@@ -800,11 +800,11 @@ export class PrattParser {
         key = String(nameToken.value);
         quoted = true;
       } else {
-        throw new Error('invalid object definition');
+        throw new Error('Object property key must be an identifier or quoted string. Example: { name: "value" } or { "my-key": 1 }');
       }
 
       if (!this.accept(TOP, ':')) {
-        throw new Error('invalid object definition');
+        throw new Error(`Expected ':' after property name '${key}'. Example: { ${key}: value }`);
       }
       const value = this.parseExpression();
       properties.push({ key, value, quoted });

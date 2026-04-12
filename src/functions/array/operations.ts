@@ -3,14 +3,7 @@
  * Handles array manipulation and processing operations
  */
 
-/**
- * Get a user-friendly type name for a value
- */
-function getTypeName(value: unknown): string {
-  if (value === null) return 'null';
-  if (Array.isArray(value)) return 'array';
-  return typeof value;
-}
+import { getTypeName } from '../../types/values.js';
 
 export function filter(arg1: Function | any[] | undefined, arg2: Function | any[] | undefined): any[] | undefined {
   // Support both filter(array, fn) and filter(fn, array) for backwards compatibility

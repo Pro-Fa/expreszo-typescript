@@ -113,7 +113,7 @@ export class ExpressionValidator {
   ): void {
     if (typeof fn === 'function' && !this.isAllowedFunction(fn, registeredFunctions)) {
       throw new FunctionError(
-        'Calling unregistered functions is not allowed for security reasons',
+        'Calling unregistered functions is not allowed for security reasons. Register custom functions via parser.functions.myFn = fn before evaluating.',
         { expression: expressionString }
       );
     }
@@ -122,7 +122,9 @@ export class ExpressionValidator {
   static validateFunctionCall(functionValue: unknown, functionName: string, expressionString: string): void {
     if (typeof functionValue !== 'function') {
       throw new FunctionError(
-        `${functionValue} is not a function`,
+        functionValue === undefined
+          ? `${functionName} is not defined. Check the function name or register it via parser.functions.${functionName} = fn`
+          : `${functionName} is not a function (got ${typeof functionValue})`,
         { functionName: String(functionValue), expression: expressionString }
       );
     }
@@ -130,7 +132,7 @@ export class ExpressionValidator {
 
   static validateArrayAccess(parent: unknown, index: unknown): void {
     if (Array.isArray(parent) && !Number.isInteger(index)) {
-      throw new Error(`Array can only be indexed with integers. Received: ${index}`);
+      throw new Error(`Array can only be indexed with integers, got ${index}. Use round() or floor() to convert: array[floor(index)]`);
     }
   }
 
@@ -142,7 +144,7 @@ export class ExpressionValidator {
 
   static validateStackParity(stackLength: number): void {
     if (stackLength > 1) {
-      throw new Error('invalid Expression (parity)');
+      throw new Error('Malformed expression: evaluation produced multiple values instead of one. Check for missing operators between terms.');
     }
   }
 }

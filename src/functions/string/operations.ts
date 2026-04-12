@@ -2,6 +2,7 @@
  * String manipulation functions
  * Provides comprehensive string operations for the expression parser
  */
+import { getTypeName } from '../../types/values.js';
 
 /**
  * Returns the length of a string
@@ -11,7 +12,7 @@ export function stringLength(str: string | undefined): number | undefined {
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('Argument to stringLength must be a string');
+    throw new Error(`length() expects a string, got ${getTypeName(str)}`);
   }
   return str.length;
 }
@@ -27,7 +28,7 @@ export function isEmpty(str: string | null | undefined): boolean | undefined {
     return true;
   }
   if (typeof str !== 'string') {
-    throw new Error('Argument to isEmpty must be a string');
+    throw new Error(`isEmpty() expects a string, got ${getTypeName(str)}`);
   }
 
   return str.length === 0;
@@ -46,7 +47,7 @@ export function stringContains(haystack: any, needle: any): boolean | undefined 
   if (typeof haystack === 'string') {
     return haystack.includes(String(needle));
   }
-  throw new Error('First argument to contains must be a string or array');
+  throw new Error(`contains() expects a string or array as first argument, got ${getTypeName(haystack)}`);
 }
 
 /**
@@ -57,10 +58,10 @@ export function startsWith(str: string | undefined, substring: string | undefine
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('First argument to startsWith must be a string');
+    throw new Error(`startsWith() expects a string as first argument, got ${getTypeName(str)}`);
   }
   if (typeof substring !== 'string') {
-    throw new Error('Second argument to startsWith must be a string');
+    throw new Error(`startsWith() expects a string as second argument, got ${getTypeName(substring)}`);
   }
   return str.startsWith(substring);
 }
@@ -73,10 +74,10 @@ export function endsWith(str: string | undefined, substring: string | undefined)
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('First argument to endsWith must be a string');
+    throw new Error(`endsWith() expects a string as first argument, got ${getTypeName(str)}`);
   }
   if (typeof substring !== 'string') {
-    throw new Error('Second argument to endsWith must be a string');
+    throw new Error(`endsWith() expects a string as second argument, got ${getTypeName(substring)}`);
   }
   return str.endsWith(substring);
 }
@@ -89,10 +90,10 @@ export function searchCount(text: string | undefined, substring: string | undefi
     return undefined;
   }
   if (typeof text !== 'string') {
-    throw new Error('First argument to searchCount must be a string');
+    throw new Error(`searchCount() expects a string as first argument, got ${getTypeName(text)}`);
   }
   if (typeof substring !== 'string') {
-    throw new Error('Second argument to searchCount must be a string');
+    throw new Error(`searchCount() expects a string as second argument, got ${getTypeName(substring)}`);
   }
   if (substring.length === 0) {
     return 0;
@@ -115,10 +116,10 @@ export function trim(str: string | undefined, chars?: string): string | undefine
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('First argument to trim must be a string');
+    throw new Error(`trim() expects a string as first argument, got ${getTypeName(str)}`);
   }
   if (chars !== undefined && typeof chars !== 'string') {
-    throw new Error('Second argument to trim must be a string');
+    throw new Error(`trim() expects a string as second argument, got ${getTypeName(chars)}`);
   }
 
   if (chars === undefined) {
@@ -148,7 +149,7 @@ export function toUpper(str: string | undefined): string | undefined {
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('Argument to toUpper must be a string');
+    throw new Error(`toUpper() expects a string, got ${getTypeName(str)}`);
   }
   return str.toUpperCase();
 }
@@ -161,7 +162,7 @@ export function toLower(str: string | undefined): string | undefined {
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('Argument to toLower must be a string');
+    throw new Error(`toLower() expects a string, got ${getTypeName(str)}`);
   }
   return str.toLowerCase();
 }
@@ -174,7 +175,7 @@ export function toTitle(str: string | undefined): string | undefined {
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('Argument to toTitle must be a string');
+    throw new Error(`toTitle() expects a string, got ${getTypeName(str)}`);
   }
   return str.replace(/\b\w/g, (char) => char.toUpperCase());
 }
@@ -188,10 +189,10 @@ export function stringJoin(arr: string[] | undefined, glue: string | undefined):
     return undefined;
   }
   if (!Array.isArray(arr)) {
-    throw new Error('First argument to join must be an array');
+    throw new Error(`join() expects an array as first argument, got ${getTypeName(arr)}`);
   }
   if (typeof glue !== 'string') {
-    throw new Error('Second argument to join must be a string');
+    throw new Error(`join() expects a string as second argument, got ${getTypeName(glue)}`);
   }
   return arr.join(glue);
 }
@@ -204,10 +205,10 @@ export function split(str: string | undefined, delimiter: string | undefined): s
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('First argument to split must be a string');
+    throw new Error(`split() expects a string as first argument, got ${getTypeName(str)}`);
   }
   if (typeof delimiter !== 'string') {
-    throw new Error('Second argument to split must be a string');
+    throw new Error(`split() expects a string as second argument, got ${getTypeName(delimiter)}`);
   }
   return str.split(delimiter);
 }
@@ -220,13 +221,13 @@ export function repeat(str: string | undefined, times: number | undefined): stri
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('First argument to repeat must be a string');
+    throw new Error(`repeat() expects a string as first argument, got ${getTypeName(str)}`);
   }
   if (typeof times !== 'number') {
-    throw new Error('Second argument to repeat must be a number');
+    throw new Error(`repeat() expects a number as second argument, got ${getTypeName(times)}`);
   }
   if (times < 0 || !Number.isInteger(times)) {
-    throw new Error('Second argument to repeat must be a non-negative integer');
+    throw new Error(`repeat() expects a non-negative integer as second argument, got ${times}`);
   }
   return str.repeat(times);
 }
@@ -248,7 +249,7 @@ export function reverse(val: any): any {
     }
     return result;
   }
-  throw new Error('Argument to reverse must be a string or array');
+  throw new Error(`reverse() expects a string or array, got ${getTypeName(val)}`);
 }
 
 /**
@@ -259,13 +260,13 @@ export function left(str: string | undefined, count: number | undefined): string
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('First argument to left must be a string');
+    throw new Error(`left() expects a string as first argument, got ${getTypeName(str)}`);
   }
   if (typeof count !== 'number') {
-    throw new Error('Second argument to left must be a number');
+    throw new Error(`left() expects a number as second argument, got ${getTypeName(count)}`);
   }
   if (count < 0) {
-    throw new Error('Second argument to left must be non-negative');
+    throw new Error(`left() expects a non-negative number as second argument, got ${count}`);
   }
   return str.slice(0, count);
 }
@@ -278,13 +279,13 @@ export function right(str: string | undefined, count: number | undefined): strin
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('First argument to right must be a string');
+    throw new Error(`right() expects a string as first argument, got ${getTypeName(str)}`);
   }
   if (typeof count !== 'number') {
-    throw new Error('Second argument to right must be a number');
+    throw new Error(`right() expects a number as second argument, got ${getTypeName(count)}`);
   }
   if (count < 0) {
-    throw new Error('Second argument to right must be non-negative');
+    throw new Error(`right() expects a non-negative number as second argument, got ${count}`);
   }
   if (count === 0) {
     return '';
@@ -300,13 +301,13 @@ export function replace(str: string | undefined, oldValue: string | undefined, n
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('First argument to replace must be a string');
+    throw new Error(`replace() expects a string as first argument, got ${getTypeName(str)}`);
   }
   if (typeof oldValue !== 'string') {
-    throw new Error('Second argument to replace must be a string');
+    throw new Error(`replace() expects a string as second argument, got ${getTypeName(oldValue)}`);
   }
   if (typeof newValue !== 'string') {
-    throw new Error('Third argument to replace must be a string');
+    throw new Error(`replace() expects a string as third argument, got ${getTypeName(newValue)}`);
   }
   // Use split and join for compatibility with older JS targets
   return str.split(oldValue).join(newValue);
@@ -320,13 +321,13 @@ export function replaceFirst(str: string | undefined, oldValue: string | undefin
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('First argument to replaceFirst must be a string');
+    throw new Error(`replaceFirst() expects a string as first argument, got ${getTypeName(str)}`);
   }
   if (typeof oldValue !== 'string') {
-    throw new Error('Second argument to replaceFirst must be a string');
+    throw new Error(`replaceFirst() expects a string as second argument, got ${getTypeName(oldValue)}`);
   }
   if (typeof newValue !== 'string') {
-    throw new Error('Third argument to replaceFirst must be a string');
+    throw new Error(`replaceFirst() expects a string as third argument, got ${getTypeName(newValue)}`);
   }
   return str.replace(oldValue, newValue);
 }
@@ -344,7 +345,7 @@ export function naturalSort(arr: string[] | undefined): string[] | undefined {
     return undefined;
   }
   if (!Array.isArray(arr)) {
-    throw new Error('Argument to naturalSort must be an array');
+    throw new Error(`naturalSort() expects an array, got ${getTypeName(arr)}`);
   }
 
   return [...arr].sort(naturalSortCollator.compare);
@@ -358,11 +359,11 @@ export function toNumber(str: string | undefined): number | undefined {
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('Argument to toNumber must be a string');
+    throw new Error(`toNumber() expects a string, got ${getTypeName(str)}`);
   }
   const num = Number(str);
   if (isNaN(num)) {
-    throw new Error(`Cannot convert "${str}" to a number`);
+    throw new Error(`toNumber() cannot convert "${str}" to a number. The string must be a valid numeric value.`);
   }
   return num;
 }
@@ -377,7 +378,7 @@ export function toBoolean(str: string | undefined): boolean | undefined {
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('Argument to toBoolean must be a string');
+    throw new Error(`toBoolean() expects a string, got ${getTypeName(str)}`);
   }
 
   const lower = str.toLowerCase().trim();
@@ -389,7 +390,7 @@ export function toBoolean(str: string | undefined): boolean | undefined {
     return false;
   }
 
-  throw new Error(`Cannot convert "${str}" to a boolean`);
+  throw new Error(`toBoolean() cannot convert "${str}" to a boolean. Recognized values: 'true', '1', 'yes', 'on', 'false', '0', 'no', 'off'`);
 }
 
 /**
@@ -400,16 +401,16 @@ export function padLeft(str: string | undefined, targetLength: number | undefine
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('First argument to padLeft must be a string');
+    throw new Error(`padLeft() expects a string as first argument, got ${getTypeName(str)}`);
   }
   if (typeof targetLength !== 'number') {
-    throw new Error('Second argument to padLeft must be a number');
+    throw new Error(`padLeft() expects a number as second argument, got ${getTypeName(targetLength)}`);
   }
   if (targetLength < 0 || !Number.isInteger(targetLength)) {
-    throw new Error('Second argument to padLeft must be a non-negative integer');
+    throw new Error(`padLeft() expects a non-negative integer as second argument, got ${targetLength}`);
   }
   if (padString !== undefined && typeof padString !== 'string') {
-    throw new Error('Third argument to padLeft must be a string');
+    throw new Error(`padLeft() expects a string as third argument, got ${getTypeName(padString)}`);
   }
   return str.padStart(targetLength, padString);
 }
@@ -422,16 +423,16 @@ export function padRight(str: string | undefined, targetLength: number | undefin
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('First argument to padRight must be a string');
+    throw new Error(`padRight() expects a string as first argument, got ${getTypeName(str)}`);
   }
   if (typeof targetLength !== 'number') {
-    throw new Error('Second argument to padRight must be a number');
+    throw new Error(`padRight() expects a number as second argument, got ${getTypeName(targetLength)}`);
   }
   if (targetLength < 0 || !Number.isInteger(targetLength)) {
-    throw new Error('Second argument to padRight must be a non-negative integer');
+    throw new Error(`padRight() expects a non-negative integer as second argument, got ${targetLength}`);
   }
   if (padString !== undefined && typeof padString !== 'string') {
-    throw new Error('Third argument to padRight must be a string');
+    throw new Error(`padRight() expects a string as third argument, got ${getTypeName(padString)}`);
   }
   return str.padEnd(targetLength, padString);
 }
@@ -445,16 +446,16 @@ export function padBoth(str: string | undefined, targetLength: number | undefine
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('First argument to padBoth must be a string');
+    throw new Error(`padBoth() expects a string as first argument, got ${getTypeName(str)}`);
   }
   if (typeof targetLength !== 'number') {
-    throw new Error('Second argument to padBoth must be a number');
+    throw new Error(`padBoth() expects a number as second argument, got ${getTypeName(targetLength)}`);
   }
   if (targetLength < 0 || !Number.isInteger(targetLength)) {
-    throw new Error('Second argument to padBoth must be a non-negative integer');
+    throw new Error(`padBoth() expects a non-negative integer as second argument, got ${targetLength}`);
   }
   if (padString !== undefined && typeof padString !== 'string') {
-    throw new Error('Third argument to padBoth must be a string');
+    throw new Error(`padBoth() expects a string as third argument, got ${getTypeName(padString)}`);
   }
 
   const totalPadding = targetLength - str.length;
@@ -488,13 +489,13 @@ export function slice(
     return undefined;
   }
   if (typeof s !== 'string' && !Array.isArray(s)) {
-    throw new Error('First argument to slice must be a string or array');
+    throw new Error(`slice() expects a string or array as first argument, got ${getTypeName(s)}`);
   }
   if (typeof start !== 'number') {
-    throw new Error('Second argument to slice must be a number');
+    throw new Error(`slice() expects a number as second argument, got ${getTypeName(start)}`);
   }
   if (end !== undefined && typeof end !== 'number') {
-    throw new Error('Third argument to slice must be a number');
+    throw new Error(`slice() expects a number as third argument, got ${getTypeName(end)}`);
   }
 
   return s.slice(start, end);
@@ -509,7 +510,7 @@ export function urlEncode(str: string | undefined): string | undefined {
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('Argument to urlEncode must be a string');
+    throw new Error(`urlEncode() expects a string, got ${getTypeName(str)}`);
   }
   return encodeURIComponent(str);
 }
@@ -527,7 +528,7 @@ export function base64Encode(str: string | undefined): string | undefined {
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('Argument to base64Encode must be a string');
+    throw new Error(`base64Encode() expects a string, got ${getTypeName(str)}`);
   }
   // Encode UTF-8 string to base64 using btoa
   // First encode as UTF-8 bytes, then convert to binary string for btoa
@@ -544,14 +545,14 @@ export function base64Decode(str: string | undefined): string | undefined {
     return undefined;
   }
   if (typeof str !== 'string') {
-    throw new Error('Argument to base64Decode must be a string');
+    throw new Error(`base64Decode() expects a string, got ${getTypeName(str)}`);
   }
   try {
     // Decode base64 to binary string, then decode UTF-8
     const binaryStr = atob(str);
     return decodeURIComponent(escape(binaryStr));
   } catch {
-    throw new Error('Invalid base64 string');
+    throw new Error('base64Decode() received an invalid base64 string. Ensure the input contains only valid base64 characters (A-Z, a-z, 0-9, +, /, =).');
   }
 }
 

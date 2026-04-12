@@ -885,7 +885,7 @@ describe('Language Service', () => {
 
         expect(diagnostics.length).toBeGreaterThanOrEqual(1);
         // Parser reports invalid object definition
-        const braceDiag = diagnostics.find(d => d.message.includes('invalid object definition'));
+        const braceDiag = diagnostics.find(d => d.message.includes('Object property key must be') || d.message.includes('Expected comma between'));
         expect(braceDiag).toBeDefined();
       });
 

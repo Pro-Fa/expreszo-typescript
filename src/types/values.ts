@@ -54,3 +54,10 @@ export type VariableResolveResult = VariableAlias | VariableValue | Value | unde
  * or `undefined` to indicate that this resolver does not handle the variable.
  */
 export type VariableResolver = (token: string) => VariableResolveResult;
+
+export function getTypeName(value: unknown): string {
+  if (value === null) return 'null';
+  if (value === undefined) return 'undefined';
+  if (Array.isArray(value)) return 'array';
+  return typeof value;
+}

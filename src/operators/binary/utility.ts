@@ -61,7 +61,7 @@ export function arrayIndexOrProperty(parent: any, index: number | string | undef
 
   // When parent is array and index is not a round number: Throw error.
   if (Array.isArray(parent) && !Number.isInteger(index)) {
-    throw new Error(`Array can only be indexed with integers. Received: ${index}`);
+    throw new Error(`Array can only be indexed with integers, got ${index}. Use round() or floor() to convert: array[floor(index)]`);
   }
 
   return parent[index];
@@ -88,5 +88,5 @@ export function asOperator(a: any, b: string | undefined): any {
     }
   }
 
-  throw new Error(`unknown type: ${b}`);
+  throw new Error(`Cannot convert to unknown type '${b}'. Supported types: 'number', 'int'/'integer', 'boolean'. Example: "3.14" as "number"`);
 }

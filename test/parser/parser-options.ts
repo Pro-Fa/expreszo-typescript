@@ -270,10 +270,10 @@ describe('Parser Options TypeScript Test', () => {
   describe('member access configuration', () => {
     it('should disallow member access', () => {
       const parser = new Parser({ allowMemberAccess: false });
-      expect(() => parser.evaluate('min.bind')).toThrow(/member access is not permitted/);
-      expect(() => parser.evaluate('min.bind()')).toThrow(/member access is not permitted/);
-      expect(() => parser.evaluate('32 + min.bind')).toThrow(/member access is not permitted/);
-      expect(() => parser.evaluate('a.b', { a: { b: 2 } })).toThrow(/member access is not permitted/);
+      expect(() => parser.evaluate('min.bind')).toThrow(/[Mm]ember access.*is not permitted/);
+      expect(() => parser.evaluate('min.bind()')).toThrow(/[Mm]ember access.*is not permitted/);
+      expect(() => parser.evaluate('32 + min.bind')).toThrow(/[Mm]ember access.*is not permitted/);
+      expect(() => parser.evaluate('a.b', { a: { b: 2 } })).toThrow(/[Mm]ember access.*is not permitted/);
     });
   });
 

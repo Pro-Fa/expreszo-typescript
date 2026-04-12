@@ -175,23 +175,23 @@ describe('Expression Fork Features TypeScript Test', () => {
 
     describe('invalid case block', () => {
       it('should throw error for missing when', () => {
-        expect(() => parser.evaluate('case true then 5 end')).toThrow(/invalid case block/);
-        expect(() => parser.evaluate('case then 5 end')).toThrow(/invalid case block/);
+        expect(() => parser.evaluate('case true then 5 end')).toThrow(/closed with 'end'/);
+        expect(() => parser.evaluate('case then 5 end')).toThrow(/closed with 'end'/);
       });
 
       it('should throw error for missing then', () => {
-        expect(() => parser.evaluate('case true when 5 end')).toThrow(/case block missing when/);
-        expect(() => parser.evaluate('case when 5 end')).toThrow(/case block missing when/);
+        expect(() => parser.evaluate('case true when 5 end')).toThrow(/Expected 'then' after 'when'/);
+        expect(() => parser.evaluate('case when 5 end')).toThrow(/Expected 'then' after 'when'/);
       });
 
       it('should throw error for missing end', () => {
-        expect(() => parser.evaluate('case true when 5 then 6')).toThrow(/invalid case block/);
-        expect(() => parser.evaluate('case when 5 then 6')).toThrow(/invalid case block/);
+        expect(() => parser.evaluate('case true when 5 then 6')).toThrow(/closed with 'end'/);
+        expect(() => parser.evaluate('case when 5 then 6')).toThrow(/closed with 'end'/);
       });
 
       it('should throw error for else followed by when', () => {
-        expect(() => parser.evaluate('case true else "abc" when true then "def" end')).toThrow(/invalid case block/);
-        expect(() => parser.evaluate('case else "abc" when true then "def" end')).toThrow(/invalid case block/);
+        expect(() => parser.evaluate('case true else "abc" when true then "def" end')).toThrow(/closed with 'end'/);
+        expect(() => parser.evaluate('case else "abc" when true then "def" end')).toThrow(/closed with 'end'/);
       });
     });
   });

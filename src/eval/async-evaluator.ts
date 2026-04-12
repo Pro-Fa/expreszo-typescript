@@ -106,7 +106,7 @@ async function evalArray(
     if (el.type === 'ArraySpread') {
       const arr = await evalNode(el.argument, expr, values, resolver);
       if (!Array.isArray(arr)) {
-        throw new Error('Spread argument must be an array');
+        throw new Error(`Spread in array literal expects an array, got ${typeof arr}. Example: [...myArray, 4]`);
       }
       result.push(...(arr as Value[]));
     } else {
@@ -128,7 +128,7 @@ async function evalObject(
       const s = entry as import('../ast/nodes.js').ObjectSpread;
       const spread = await evalNode(s.argument, expr, values, resolver);
       if (spread === null || typeof spread !== 'object' || Array.isArray(spread)) {
-        throw new Error('Spread argument must be an object');
+        throw new Error(`Spread in object literal expects an object, got ${typeof spread}. Example: {...myObj, key: value}`);
       }
       Object.assign(obj, spread);
     } else {

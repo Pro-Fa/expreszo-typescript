@@ -127,7 +127,7 @@ export class ToStringVisitor extends BaseVisitor<string> {
     if (node.op === '?') {
       return '(' + n1 + ' ? ' + n2 + ' : ' + n3 + ')';
     }
-    throw new Error('invalid Expression');
+    throw new Error(`Unsupported ternary operator '${node.op}' in toString conversion`);
   }
 
   visitCall(node: Call): string {

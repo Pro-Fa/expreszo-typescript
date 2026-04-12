@@ -82,7 +82,7 @@ export function mul(a: number | undefined, b: number | undefined): number | unde
 
 export function div(a: number | undefined, b: number | undefined): number | undefined {
   if (a === undefined || b === undefined) return undefined;
-  if (b === 0) throw new Error('Division by zero');
+  if (b === 0) throw new Error('Division by zero. Check the divisor or use the ?? operator to provide a fallback: (a / b) ?? 0');
   return a / b;
 }
 

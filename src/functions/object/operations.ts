@@ -3,7 +3,7 @@
  * Provides comprehensive object operations for the expression parser
  */
 
-import { Value, ValueObject } from '../../types/values.js';
+import { Value, ValueObject, getTypeName } from '../../types/values.js';
 
 /**
  * Merges two or more objects together.
@@ -21,7 +21,7 @@ export function merge(...objects: (ValueObject | undefined)[]): ValueObject | un
       return undefined;
     }
     if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
-      throw new Error('Arguments to merge must be objects');
+      throw new Error(`merge() expects objects as arguments, got ${getTypeName(obj)}`);
     }
   }
 
@@ -38,7 +38,7 @@ export function keys(obj: ValueObject | undefined): string[] | undefined {
     return undefined;
   }
   if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
-    throw new Error('Argument to keys must be an object');
+    throw new Error(`keys() expects an object, got ${getTypeName(obj)}`);
   }
   return Object.keys(obj);
 }
@@ -53,7 +53,7 @@ export function values(obj: ValueObject | undefined): Value[] | undefined {
     return undefined;
   }
   if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
-    throw new Error('Argument to values must be an object');
+    throw new Error(`values() expects an object, got ${getTypeName(obj)}`);
   }
   return Object.values(obj);
 }
@@ -73,10 +73,10 @@ export function flatten(
     return undefined;
   }
   if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
-    throw new Error('First argument to flatten must be an object');
+    throw new Error(`flatten() expects an object as first argument, got ${getTypeName(obj)}`);
   }
   if (typeof separator !== 'string') {
-    throw new Error('Second argument to flatten must be a string');
+    throw new Error(`flatten() expects a string separator as second argument, got ${getTypeName(separator)}`);
   }
 
   const result: ValueObject = {};
@@ -104,10 +104,10 @@ export function flatten(
 export function mapValues(obj: any, fn: any): ValueObject | undefined {
   if (obj === undefined) return undefined;
   if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
-    throw new Error('mapValues() expects an object as first argument');
+    throw new Error(`mapValues() expects an object as first argument, got ${getTypeName(obj)}`);
   }
   if (typeof fn !== 'function') {
-    throw new Error('mapValues() expects a function as second argument');
+    throw new Error(`mapValues() expects a function as second argument, got ${getTypeName(fn)}. Example: mapValues(obj, (value, key) => value * 2)`);
   }
   const result: ValueObject = {};
   for (const [key, value] of Object.entries(obj)) {

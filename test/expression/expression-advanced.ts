@@ -98,8 +98,8 @@ describe('Expression Advanced Features TypeScript Test', () => {
     });
 
     it('should fail to parse undefined as a custom function', () => {
-      expect(() => parser.evaluate('undefined()')).toThrow(/undefined is not a function/);
-      expect(() => parser.evaluate('x = undefined(); x')).toThrow(/undefined is not a function/);
+      expect(() => parser.evaluate('undefined()')).toThrow(/undefined is not defined/);
+      expect(() => parser.evaluate('x = undefined(); x')).toThrow(/undefined is not defined/);
     });
   });
 

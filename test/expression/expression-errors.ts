@@ -196,7 +196,7 @@ describe('Expression Error Types Test', () => {
         expect(error).toBeInstanceOf(FunctionError);
         const funcError = error as FunctionError;
         expect(funcError.functionName).toBe('42');
-        expect(funcError.message).toMatch(/42 is not a function/);
+        expect(funcError.message).toMatch(/is not a function/);
       }
     });
 
@@ -243,7 +243,7 @@ describe('Expression Error Types Test', () => {
       } catch (error: unknown) {
         expect(error).toBeInstanceOf(AccessError);
         const accessError = error as AccessError;
-        expect(accessError.message).toMatch(/member access is not permitted/);
+        expect(accessError.message).toMatch(/[Mm]ember access.*is not permitted/);
       }
     });
 
@@ -309,7 +309,7 @@ describe('Expression Error Types Test', () => {
         restrictiveParser.evaluate('obj.prop');
       } catch (error: unknown) {
         const accessError = error as AccessError;
-        expect(accessError.message).toBe('member access is not permitted');
+        expect(accessError.message).toMatch(/Member access.*is not permitted/);
       }
     });
 
@@ -318,7 +318,7 @@ describe('Expression Error Types Test', () => {
         parser.evaluate('notFunc()', { notFunc: 123 });
       } catch (error: unknown) {
         const funcError = error as FunctionError;
-        expect(funcError.message).toBe('123 is not a function');
+        expect(funcError.message).toMatch(/is not a function/);
       }
     });
   });

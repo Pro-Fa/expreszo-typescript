@@ -152,7 +152,7 @@ describe('[] operator', () => {
   it('a[0.1] on array', () => {
     throws(() => {
       parser.evaluate('a[0.1]', { a: [4, 3, 2, 1] });
-    }, 'Array can only be indexed with integers. Received: 0.1');
+    }, 'Array can only be indexed with integers, got 0.1. Use round() or floor() to convert: array[floor(index)]');
   });
 
   it('a[0.1] on object', () => {
