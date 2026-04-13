@@ -117,13 +117,22 @@ export function toTruncatedJsonString(value: unknown, maxLines = 3, maxWidth = 5
   if (!text) {
     return '<empty>';
   }
-  const lines: string[] = [];
-  for (let i = 0, lineAmount = 0; i < text.length && lineAmount < maxLines; i += maxWidth, lineAmount++) {
-    lines.push(text.slice(i, i + maxWidth));
-  }
-  const maxChars = maxLines * maxWidth;
-  const exceededMaxLength = text.length > maxChars;
-  return exceededMaxLength ? lines.join('\n\n') + '...' : lines.join('\n\n');
+
+  const sourceLines = text.split('\n');
+  const truncatedLineCount = sourceLines.length > maxLines;
+  const kept = sourceLines.slice(0, maxLines);
+
+  let truncatedAnyLine = false;
+  const clipped = kept.map((line) => {
+    if (line.length > maxWidth) {
+      truncatedAnyLine = true;
+      return line.slice(0, maxWidth) + '...';
+    }
+    return line;
+  });
+
+  const joined = clipped.join('\n');
+  return truncatedLineCount || truncatedAnyLine ? joined + '...' : joined;
 }
 
 /**

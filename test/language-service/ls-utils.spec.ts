@@ -32,12 +32,44 @@ describe('ls-utils', () => {
     expect(s).toBe('<unserializable>');
   });
 
-  it('toTruncatedJsonString truncates to maxLines*maxWidth and appends ellipsis', () => {
-    const long = { text: 'x'.repeat(200) };
-    const out = toTruncatedJsonString(long, 2, 10);
+  it('toTruncatedJsonString returns readable JSON for small objects within limits', () => {
+    const out = toTruncatedJsonString({ a: 1, b: 2 }, 10, 100);
+    // Output should be parseable JSON without mid-token splits
+    expect(() => JSON.parse(out)).not.toThrow();
+    expect(JSON.parse(out)).toEqual({ a: 1, b: 2 });
+  });
+
+  it('toTruncatedJsonString uses single newlines matching JSON formatting', () => {
+    const long = { description: 'alpha beta gamma delta epsilon' };
+    const out = toTruncatedJsonString(long, 10, 8);
+    // JSON.stringify uses single \n between lines; the output should preserve
+    // that structure rather than injecting synthetic \n\n breaks mid-content.
+    expect(out).not.toContain('\n\n');
+  });
+
+  it('toTruncatedJsonString truncates when exceeding maxLines and appends ellipsis', () => {
+    const big: Record<string, number> = {};
+    for (let i = 0; i < 20; i++) big['key' + i] = i;
+    const out = toTruncatedJsonString(big, 3, 100);
     expect(out.endsWith('...')).toBe(true);
-    const parts = out.split('\n\n');
-    expect(parts.length).toBe(2);
+    // Should contain at most maxLines real lines (plus the ellipsis line)
+    const lines = out.split('\n');
+    expect(lines.length).toBeLessThanOrEqual(4);
+    // First real line should be the opening brace, intact
+    expect(lines[0]).toBe('{');
+  });
+
+  it('toTruncatedJsonString truncates overlong individual lines with ellipsis', () => {
+    const long = { text: 'x'.repeat(200) };
+    const out = toTruncatedJsonString(long, 10, 20);
+    // Long value line should be clipped, with ellipsis, not split across \n\n
+    expect(out).toContain('"text"');
+    expect(out).toContain('...');
+    const lines = out.split('\n');
+    for (const line of lines) {
+      // Each line (after truncation) should respect maxWidth + ellipsis allowance
+      expect(line.length).toBeLessThanOrEqual(23);
+    }
   });
 
   it('iterateTokens can stop early with untilPos', () => {

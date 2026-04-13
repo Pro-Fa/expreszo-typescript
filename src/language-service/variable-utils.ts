@@ -276,10 +276,11 @@ export function tryVariableHoverUsingSpans(
     return undefined;
   }
 
-  const span = spans[nameIndex];
+  const hoveredSpan = spans[nameIndex];
+  const firstSpan = spans[firstIndex];
   const range: Range = {
-    start: textDocument.positionAt(span.start),
-    end: textDocument.positionAt(span.end)
+    start: textDocument.positionAt(firstSpan.start),
+    end: textDocument.positionAt(hoveredSpan.end)
   };
 
   const fullPath = partsUpToHovered.join('.');

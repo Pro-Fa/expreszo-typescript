@@ -287,6 +287,40 @@ describe('Language Service', () => {
       expect(newText).toContain(']');
       expect(newText).toContain('${1}');
     });
+
+    it('should not include built-in functions, constants, or keywords after a dot', () => {
+      const text = 'foo.';
+      const doc = TextDocument.create('file://test', 'plaintext', 1, text);
+      const completions = ls.getCompletions({
+        textDocument: doc,
+        variables: { foo: { bar: 1 } },
+        position: { line: 0, character: text.length }
+      });
+
+      const labels = completions.map(c => c.label);
+      // Should only suggest variable children (foo.bar), not builtins
+      expect(labels).toContain('foo.bar');
+      expect(labels).not.toContain('sin');
+      expect(labels).not.toContain('max');
+      expect(labels).not.toContain('PI');
+      expect(labels).not.toContain('case');
+    });
+
+    it('should filter variable children by partial after a dot', () => {
+      const text = 'user.fi';
+      const doc = TextDocument.create('file://test', 'plaintext', 1, text);
+      const completions = ls.getCompletions({
+        textDocument: doc,
+        variables: { user: { first: 'a', last: 'b' } },
+        position: { line: 0, character: text.length }
+      });
+
+      const labels = completions.map(c => c.label);
+      expect(labels).toContain('user.first');
+      expect(labels).not.toContain('user.last');
+      // And no builtins should leak in
+      expect(labels.some(l => l === 'sin' || l === 'PI' || l === 'case')).toBe(false);
+    });
   });
 
   describe('getHover', () => {

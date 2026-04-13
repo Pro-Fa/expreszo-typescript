@@ -109,7 +109,7 @@ describe('variable-utils', () => {
       expect(hover).toBeUndefined();
     });
 
-    it('range equals hovered segment span', () => {
+    it('range spans full dotted path up to hovered segment', () => {
       const text = '$user.name';
       const doc = TextDocument.create('file://test', 'plaintext', 1, text);
       const spans = iterateTokens(makeTokenStream(parser, text));
@@ -120,8 +120,22 @@ describe('variable-utils', () => {
       const range = hover.range!;
       expect(range.start.line).toBe(0);
       expect(range.end.line).toBe(0);
-      // The hovered token span should cover exactly 'name'
-      expect(range.end.character - range.start.character).toBe(4);
+      // Range should cover the entire '$user.name' path, matching the displayed content
+      expect(range.start.character).toBe(0);
+      expect(range.end.character).toBe(text.length);
+    });
+
+    it('range spans from first part to hovered middle segment', () => {
+      const text = '$test.person.age';
+      const doc = TextDocument.create('file://test', 'plaintext', 1, text);
+      const spans = iterateTokens(makeTokenStream(parser, text));
+      const personStart = text.indexOf('person');
+      const pos = { line: 0, character: personStart + 1 };
+      const hover = tryVariableHoverUsingSpans(doc, pos, { $test: { person: { age: 21 } } }, spans)!;
+      const range = hover.range!;
+      // Range should cover '$test.person' (start of $test to end of person)
+      expect(range.start.character).toBe(0);
+      expect(range.end.character).toBe(personStart + 'person'.length);
     });
   });
 

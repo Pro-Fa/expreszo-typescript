@@ -199,6 +199,12 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
       end: position
     };
 
+    // Inside a dotted path, only offer variable path completions.
+    // Built-in functions, constants, and keywords don't live on object paths.
+    if (prefix.includes('.')) {
+      return pathVariableCompletions(variables, prefix, rangePartial);
+    }
+
     const all: CompletionItem[] = [
       ...functionCompletions(rangeFull),
       ...constantCompletions(rangeFull),
@@ -206,7 +212,7 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
       ...pathVariableCompletions(variables, prefix, rangePartial)
     ];
 
-    return prefix.includes('.') ? all : filterByPrefix(all, prefix);
+    return filterByPrefix(all, prefix);
   }
 
   function getHover(params: GetHoverParams): HoverV2 {
