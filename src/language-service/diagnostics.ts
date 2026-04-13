@@ -213,7 +213,8 @@ function createTooFewArgumentsDiagnostic(
     range,
     severity: DiagnosticSeverity.Error,
     message: `Function '${funcName}' expects at least ${min} argument${pluralize(min)}, but got ${argCount}.`,
-    source: 'expreszo'
+    source: 'expreszo',
+    code: 'arity-too-few'
   };
 }
 
@@ -236,7 +237,8 @@ function createTooManyArgumentsDiagnostic(
     range,
     severity: DiagnosticSeverity.Error,
     message: `Function '${funcName}' expects at most ${max} argument${pluralize(max)}, but got ${argCount}.`,
-    source: 'expreszo'
+    source: 'expreszo',
+    code: 'arity-too-many'
   };
 }
 

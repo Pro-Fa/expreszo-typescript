@@ -22,6 +22,7 @@ import type {
   GetCompletionsParams,
   GetHoverParams,
   GetDiagnosticsParams,
+  GetCodeActionsParams,
   LanguageServiceApi,
   HoverV2
 } from './language-service.types';
@@ -34,7 +35,8 @@ import type {
   Location,
   Position,
   SignatureHelp,
-  SemanticTokens
+  SemanticTokens,
+  CodeAction
 } from 'vscode-languageserver-types';
 import { CompletionItemKind, MarkupKind, InsertTextFormat } from 'vscode-languageserver-types';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -61,6 +63,8 @@ import { getDefinition as computeDefinition, getReferences as computeReferences 
 import { getSignatureHelp as computeSignatureHelp } from './signature-help';
 import { encodeSemanticTokens } from './semantic-tokens';
 import { getUnknownIdentDiagnostics } from './unknown-ident';
+import { getTypeMismatchDiagnostics } from './type-check';
+import { getCodeActions as computeCodeActions } from './code-actions';
 
 export function createLanguageService(options: LanguageServiceOptions | undefined = undefined): LanguageServiceApi {
   // Build a parser instance to access keywords/operators/functions/consts
@@ -382,6 +386,9 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
       ...getUnknownIdentDiagnostics(textDocument, parser, parseCache, params.variables)
     );
 
+    // Type-mismatch diagnostics — literals-only, always on
+    diagnostics.push(...getTypeMismatchDiagnostics(textDocument, parseCache));
+
     return diagnostics;
   }
 
@@ -410,6 +417,10 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
     return encodeSemanticTokens(params.textDocument, highlight);
   }
 
+  function getCodeActions(params: GetCodeActionsParams): CodeAction[] {
+    return computeCodeActions(params, parser, functionNamesSet());
+  }
+
   return {
     getCompletions,
     getHover,
@@ -420,7 +431,8 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
     getDefinition,
     getReferences,
     getSignatureHelp,
-    getSemanticTokens
+    getSemanticTokens,
+    getCodeActions
   };
 
 }

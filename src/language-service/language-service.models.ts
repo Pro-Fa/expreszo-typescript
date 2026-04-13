@@ -12,7 +12,7 @@ export class FunctionDetails {
     this.docBlock = BUILTIN_FUNCTIONS_BY_NAME.get(this.name)?.docs;
   }
 
-  private params(): readonly FunctionParamDoc[] {
+  public params(): readonly FunctionParamDoc[] {
     return this.docBlock?.params ?? [];
   }
 

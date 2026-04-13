@@ -17,6 +17,25 @@ const positionSchema = z.union([
 
 const variablesSchema = z.record(z.string(), z.unknown());
 
+const rangeSchema = z.object({
+  start: z.object({
+    line: z.number().int().min(0),
+    character: z.number().int().min(0)
+  }).strict(),
+  end: z.object({
+    line: z.number().int().min(0),
+    character: z.number().int().min(0)
+  }).strict()
+}).strict();
+
+const diagnosticSchema = z.object({
+  range: rangeSchema,
+  severity: z.number().int().optional(),
+  message: z.string(),
+  code: z.union([z.string(), z.number()]).optional(),
+  source: z.string().optional()
+}).passthrough();
+
 const baseShape = {
   expression: z.string().min(1).describe('The expreszo expression source text.'),
   uri: z.string().optional().describe('Optional document URI. Defaults to "expreszo://inline".')
@@ -270,6 +289,39 @@ export function registerTools(server: McpServer, ls: LanguageServiceApi): void {
         const result = ls.getSignatureHelp({
           textDocument: doc,
           position: resolvePosition(doc, position as PositionInput)
+        });
+        return jsonResult(result);
+      } catch (err) {
+        return errorResult(err);
+      }
+    }
+  );
+
+  server.registerTool(
+    'expreszo_get_code_actions',
+    {
+      title: 'Expreszo: get code actions',
+      description:
+        'Returns LSP CodeAction quick fixes for the diagnostics supplied in `context.diagnostics`. Handles arity-too-few (adds placeholder arguments) and unknown-ident (Levenshtein "did you mean" replacement).',
+      inputSchema: {
+        ...baseShape,
+        range: rangeSchema.describe('Range the editor is requesting actions for.'),
+        context: z.object({
+          diagnostics: z.array(diagnosticSchema),
+          variables: variablesSchema.optional()
+        }).describe('LSP CodeActionContext: the diagnostics to act on and optional variables.')
+      }
+    },
+    async ({ expression, uri, range, context }) => {
+      try {
+        const doc = buildDocument(expression, uri);
+        const result = ls.getCodeActions({
+          textDocument: doc,
+          range,
+          context: {
+            diagnostics: context.diagnostics,
+            variables: context.variables as Values | undefined
+          }
         });
         return jsonResult(result);
       } catch (err) {

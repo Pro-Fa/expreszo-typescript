@@ -9,7 +9,9 @@ import type {
   FoldingRange,
   Location,
   SignatureHelp,
-  SemanticTokens
+  SemanticTokens,
+  CodeAction,
+  Range
 } from 'vscode-languageserver-types';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 
@@ -78,6 +80,22 @@ export interface LanguageServiceApi {
      * exported from `./semantic-tokens`.
      */
     getSemanticTokens(params: { textDocument: TextDocument }): SemanticTokens;
+
+    /**
+     * Returns LSP CodeAction quick fixes for the diagnostics in the supplied
+     * context. Currently handles `arity-too-few` (inserts placeholder args)
+     * and `unknown-ident` (Levenshtein "did you mean" suggestions).
+     */
+    getCodeActions(params: GetCodeActionsParams): CodeAction[];
+}
+
+export interface GetCodeActionsParams {
+    textDocument: TextDocument;
+    range: Range;
+    context: {
+        diagnostics: readonly Diagnostic[];
+        variables?: Values;
+    };
 }
 
 export interface HighlightToken {

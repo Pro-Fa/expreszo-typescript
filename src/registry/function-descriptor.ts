@@ -23,6 +23,19 @@ export type FunctionCategory =
   | 'type-check';
 
 /**
+ * Parameter type used by the type-aware diagnostic pass in the language
+ * service. `'any'` (the default when `type` is omitted) disables checking.
+ */
+export type ParamType =
+  | 'number'
+  | 'string'
+  | 'boolean'
+  | 'array'
+  | 'object'
+  | 'function'
+  | 'any';
+
+/**
  * Human-readable docs for a single function parameter. Consumed by the
  * language service for hover/completion arity and placeholder rendering.
  */
@@ -31,6 +44,7 @@ export interface FunctionParamDoc {
   readonly description: string;
   readonly optional?: boolean;
   readonly isVariadic?: boolean;
+  readonly type?: ParamType;
 }
 
 /**
