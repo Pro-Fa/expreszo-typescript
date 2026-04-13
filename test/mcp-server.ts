@@ -48,7 +48,9 @@ describe('MCP server', () => {
       'expreszo_get_folding_ranges',
       'expreszo_get_highlighting',
       'expreszo_get_hover',
-      'expreszo_get_references'
+      'expreszo_get_references',
+      'expreszo_get_semantic_tokens',
+      'expreszo_get_signature_help'
     ]);
   });
 

@@ -7,7 +7,9 @@ import type {
   Diagnostic,
   DocumentSymbol,
   FoldingRange,
-  Location
+  Location,
+  SignatureHelp,
+  SemanticTokens
 } from 'vscode-languageserver-types';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 
@@ -64,6 +66,18 @@ export interface LanguageServiceApi {
      * the expression, including the definition itself.
      */
     getReferences(params: { textDocument: TextDocument; position: Position }): Location[];
+
+    /**
+     * Returns signature help for the function call enclosing the given
+     * position, or null if the cursor is not inside a recognized call.
+     */
+    getSignatureHelp(params: { textDocument: TextDocument; position: Position }): SignatureHelp | null;
+
+    /**
+     * Returns LSP SemanticTokens for the document, using the stable legend
+     * exported from `./semantic-tokens`.
+     */
+    getSemanticTokens(params: { textDocument: TextDocument }): SemanticTokens;
 }
 
 export interface HighlightToken {
@@ -97,6 +111,12 @@ export interface HoverV2 extends Hover {
 
 export interface GetDiagnosticsParams {
     textDocument: TextDocument;
+    /**
+     * Optional map of known variables. When provided, identifier nodes whose
+     * name is not a built-in and not found in this map surface as an
+     * `unknown-ident` warning. Omitting this map disables the check entirely.
+     */
+    variables?: Values;
 }
 
 /**

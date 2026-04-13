@@ -32,7 +32,9 @@ import type {
   DocumentSymbol,
   FoldingRange,
   Location,
-  Position
+  Position,
+  SignatureHelp,
+  SemanticTokens
 } from 'vscode-languageserver-types';
 import { CompletionItemKind, MarkupKind, InsertTextFormat } from 'vscode-languageserver-types';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -56,6 +58,9 @@ import { createParseCache } from './shared/parse-cache';
 import { getDocumentSymbols as computeDocumentSymbols } from './document-symbols';
 import { getFoldingRanges as computeFoldingRanges } from './folding';
 import { getDefinition as computeDefinition, getReferences as computeReferences } from './references';
+import { getSignatureHelp as computeSignatureHelp } from './signature-help';
+import { encodeSemanticTokens } from './semantic-tokens';
+import { getUnknownIdentDiagnostics } from './unknown-ident';
 
 export function createLanguageService(options: LanguageServiceOptions | undefined = undefined): LanguageServiceApi {
   // Build a parser instance to access keywords/operators/functions/consts
@@ -372,6 +377,11 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
     const functionDiagnostics = getDiagnosticsForDocument(params, spans, functionNamesSet(), funcDetailsMap);
     diagnostics.push(...functionDiagnostics);
 
+    // Unknown identifier diagnostics (opt-in via `variables`)
+    diagnostics.push(
+      ...getUnknownIdentDiagnostics(textDocument, parser, parseCache, params.variables)
+    );
+
     return diagnostics;
   }
 
@@ -391,6 +401,15 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
     return computeReferences(params.textDocument, parseCache, params.position);
   }
 
+  function getSignatureHelp(params: { textDocument: TextDocument; position: Position }): SignatureHelp | null {
+    return computeSignatureHelp(params.textDocument, parser, params.position, functionNamesSet());
+  }
+
+  function getSemanticTokens(params: { textDocument: TextDocument }): SemanticTokens {
+    const highlight = getHighlighting(params.textDocument);
+    return encodeSemanticTokens(params.textDocument, highlight);
+  }
+
   return {
     getCompletions,
     getHover,
@@ -399,7 +418,9 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
     getDocumentSymbols,
     getFoldingRanges,
     getDefinition,
-    getReferences
+    getReferences,
+    getSignatureHelp,
+    getSemanticTokens
   };
 
 }

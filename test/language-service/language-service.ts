@@ -1022,5 +1022,43 @@ describe('Language Service', () => {
         expect(diagnostics[0].severity).toBe(DiagnosticSeverity.Error);
       });
     });
+
+    describe('unknown-identifier diagnostics', () => {
+      it('emits no warnings when variables is omitted (opt-in)', () => {
+        const doc = TextDocument.create('file://test', 'plaintext', 1, 'foo + 1');
+        const diagnostics = ls.getDiagnostics({ textDocument: doc });
+        expect(diagnostics.filter(d => d.code === 'unknown-ident')).toEqual([]);
+      });
+
+      it('warns on unknown identifier when variables is provided but empty', () => {
+        const doc = TextDocument.create('file://test', 'plaintext', 1, 'foo + 1');
+        const diagnostics = ls.getDiagnostics({ textDocument: doc, variables: {} });
+        const unknown = diagnostics.filter(d => d.code === 'unknown-ident');
+        expect(unknown.length).toBe(1);
+        expect(unknown[0].severity).toBe(DiagnosticSeverity.Warning);
+        expect(unknown[0].message).toContain('foo');
+      });
+
+      it('does not warn when the identifier is a declared variable', () => {
+        const doc = TextDocument.create('file://test', 'plaintext', 1, 'foo + 1');
+        const diagnostics = ls.getDiagnostics({ textDocument: doc, variables: { foo: 42 } });
+        expect(diagnostics.filter(d => d.code === 'unknown-ident')).toEqual([]);
+      });
+
+      it('does not warn on built-in functions or constants', () => {
+        const doc = TextDocument.create('file://test', 'plaintext', 1, 'sin(x) + PI');
+        const diagnostics = ls.getDiagnostics({ textDocument: doc, variables: { x: 1 } });
+        expect(diagnostics.filter(d => d.code === 'unknown-ident')).toEqual([]);
+      });
+
+      it('recognizes a member chain when its root variable is declared', () => {
+        const doc = TextDocument.create('file://test', 'plaintext', 1, 'user.age');
+        const diagnostics = ls.getDiagnostics({
+          textDocument: doc,
+          variables: { user: { age: 21 } }
+        });
+        expect(diagnostics.filter(d => d.code === 'unknown-ident')).toEqual([]);
+      });
+    });
   });
 });

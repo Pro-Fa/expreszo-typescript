@@ -2,6 +2,8 @@ import { Parser } from '../parsing/parser';
 import { BUILTIN_FUNCTIONS_BY_NAME } from '../registry/builtin/functions.js';
 import type { FunctionDocs, FunctionParamDoc } from '../registry/function-descriptor.js';
 import type { ArityInfo } from './language-service.types';
+import type { SignatureInformation, ParameterInformation } from 'vscode-languageserver-types';
+import { MarkupKind } from 'vscode-languageserver-types';
 
 export class FunctionDetails {
   private readonly docBlock: FunctionDocs | undefined;
@@ -83,5 +85,43 @@ export class FunctionDetails {
     return arity != null
       ? `${this.name}(${Array.from({ length: arity }).map((_, i) => `\${${i + 1}}`).join(', ')})`
       : `${this.name}(…)`;
+  }
+
+  /**
+   * Build an LSP SignatureInformation object for this function, including
+   * per-parameter labels computed against the rendered signature string.
+   */
+  public signatureInformation(): SignatureInformation {
+    const params = this.params();
+    const label = this.details();
+
+    const parameters: ParameterInformation[] = [];
+    if (params.length > 0) {
+      // Walk the rendered label and find `(start, end)` character offsets for
+      // each parameter name in order. This lets the editor underline the
+      // active parameter accurately regardless of whether names were quoted.
+      let cursor = label.indexOf('(');
+      if (cursor >= 0) cursor += 1;
+      for (const p of params) {
+        const start = label.indexOf(p.name, cursor);
+        if (start < 0) {
+          parameters.push({ label: p.name, documentation: p.description });
+          continue;
+        }
+        const end = start + p.name.length;
+        parameters.push({
+          label: [start, end],
+          documentation: p.description
+        });
+        cursor = end;
+      }
+    }
+
+    const doc = this.docs();
+    return {
+      label,
+      documentation: doc ? { kind: MarkupKind.Markdown, value: doc } : undefined,
+      parameters
+    };
   }
 }

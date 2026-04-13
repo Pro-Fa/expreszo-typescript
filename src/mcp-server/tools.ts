@@ -141,15 +141,19 @@ export function registerTools(server: McpServer, ls: LanguageServiceApi): void {
     {
       title: 'Expreszo: get diagnostics',
       description:
-        'Returns diagnostics (parse errors, invalid function arity) for an expreszo expression as LSP Diagnostic objects.',
+        'Returns diagnostics (parse errors, invalid function arity, unknown identifiers) for an expreszo expression as LSP Diagnostic objects. Passing `variables` enables the unknown-identifier check.',
       inputSchema: {
-        ...baseShape
+        ...baseShape,
+        ...variablesFieldShape
       }
     },
-    async ({ expression, uri }) => {
+    async ({ expression, uri, variables }) => {
       try {
         const doc = buildDocument(expression, uri);
-        const result = ls.getDiagnostics({ textDocument: doc });
+        const result = ls.getDiagnostics({
+          textDocument: doc,
+          variables: variables as Values | undefined
+        });
         return jsonResult(result);
       } catch (err) {
         return errorResult(err);
@@ -242,6 +246,52 @@ export function registerTools(server: McpServer, ls: LanguageServiceApi): void {
           textDocument: doc,
           position: resolvePosition(doc, position as PositionInput)
         });
+        return jsonResult(result);
+      } catch (err) {
+        return errorResult(err);
+      }
+    }
+  );
+
+  server.registerTool(
+    'expreszo_get_signature_help',
+    {
+      title: 'Expreszo: get signature help',
+      description:
+        'Returns LSP SignatureHelp for the function call enclosing the given cursor position, including the active parameter index. Returns null when the cursor is not inside a recognized call.',
+      inputSchema: {
+        ...baseShape,
+        ...positionFieldShape
+      }
+    },
+    async ({ expression, uri, position }) => {
+      try {
+        const doc = buildDocument(expression, uri);
+        const result = ls.getSignatureHelp({
+          textDocument: doc,
+          position: resolvePosition(doc, position as PositionInput)
+        });
+        return jsonResult(result);
+      } catch (err) {
+        return errorResult(err);
+      }
+    }
+  );
+
+  server.registerTool(
+    'expreszo_get_semantic_tokens',
+    {
+      title: 'Expreszo: get semantic tokens',
+      description:
+        'Returns LSP SemanticTokens (delta-encoded 5-tuples) for the expression. Decode with the legend exported from the language service package.',
+      inputSchema: {
+        ...baseShape
+      }
+    },
+    async ({ expression, uri }) => {
+      try {
+        const doc = buildDocument(expression, uri);
+        const result = ls.getSemanticTokens({ textDocument: doc });
         return jsonResult(result);
       } catch (err) {
         return errorResult(err);
