@@ -1,6 +1,6 @@
 # ExpresZo Typescript
 
-[![npm](https://img.shields.io/npm/v/expreszo.svg?maxAge=3600)](https://www.npmjs.com/package/expreszo)
+[![npm](https://img.shields.io/npm/v/@pro-fa/expreszo.svg?maxAge=3600)](https://www.npmjs.com/package/@pro-fa/expreszo)
 
 **A fast, safe, and extensible expression evaluator for JavaScript and TypeScript.**
 
@@ -28,13 +28,13 @@ Build exactly the parser you need with tree-shakeable presets, or use the full k
 ## Installation
 
 ```bash
-npm install expreszo
+npm install @pro-fa/expreszo
 ```
 
 ## Quick Start
 
 ```typescript
-import { Parser } from 'expreszo';
+import { Parser } from '@pro-fa/expreszo';
 
 const parser = new Parser();
 const expr = parser.parse('2 * x + 1');

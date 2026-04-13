@@ -1,5 +1,5 @@
 /**
- * `expreszo/type-check` entry — runtime type-check predicates
+ * `@pro-fa/expreszo/type-check` entry — runtime type-check predicates
  * (`isArray`, `isNumber`, …).
  */
 export { withTypeCheck } from '../api/presets.js';

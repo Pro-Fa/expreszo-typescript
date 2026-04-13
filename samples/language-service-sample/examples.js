@@ -85,7 +85,7 @@ const exampleCases = [
         id: 'data-transform',
         title: 'Data Transformation',
         description: 'Flatten nested objects and transform rows',
-        expression: "map(f(row) = {_id: row.rowId} + flatten(row.data, ''), $event)",
+        expression: "map(f(row) = {_id: row.rowId, ...flatten(row.data, '')}, $event)",
         context: {
             "$event": [
                 {"rowId": 1, "state": "saved", "data": { "InventoryId": 1256, "Description": "Bal", "Weight": { "Unit": "g", "Amount": 120 } }},

@@ -1,5 +1,5 @@
 /**
- * `expreszo/logical` entry — `and` / `or` / `not` and their symbolic
+ * `@pro-fa/expreszo/logical` entry — `and` / `or` / `not` and their symbolic
  * aliases.
  */
 export { withLogical } from '../api/presets.js';

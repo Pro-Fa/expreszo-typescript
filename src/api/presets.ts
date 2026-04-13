@@ -4,7 +4,7 @@
  * array concatenation — no inheritance, no builder pattern.
  *
  * ```ts
- * import { defineParser, coreParser, withMath, withString } from 'expreszo';
+ * import { defineParser, coreParser, withMath, withString } from '@pro-fa/expreszo';
  *
  * const parser = defineParser({
  *   operators: [...coreParser.operators, ...withMath.operators, ...withString.operators],

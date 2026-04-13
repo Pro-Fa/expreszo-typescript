@@ -11,7 +11,7 @@ import { withUtility } from '../../src/entries/utility.js';
 
 /**
  * Subpath entries must be importable in isolation so a consumer can do
- * `import { withMath } from 'expreszo/math'` and get only the math preset.
+ * `import { withMath } from '@pro-fa/expreszo/math'` and get only the math preset.
  * This test imports each shim and exercises it with `defineParser` built
  * from the core shim alone.
  */

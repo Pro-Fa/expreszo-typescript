@@ -1,5 +1,5 @@
 // Tree-shaking test file
-import { Parser } from 'expreszo';
+import { Parser } from '@pro-fa/expreszo';
 
 // Only import and use Parser, not Expression
 const parser = new Parser();

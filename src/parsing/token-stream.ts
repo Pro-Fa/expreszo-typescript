@@ -383,6 +383,11 @@ export class TokenStream {
       }
       return true;
     }
+    if (c === '/' && this.expression.charAt(this.pos + 1) === '/') {
+      const newline = this.expression.indexOf('\n', this.pos + 2);
+      this.pos = newline < 0 ? this.expression.length : newline + 1;
+      return true;
+    }
     return false;
   }
 

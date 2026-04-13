@@ -14,7 +14,7 @@ npm uninstall expr-eval          # if you used the original silentmatt package
 npm uninstall @pro-fa/expr-eval  # if you used the Pro-Fa fork
 
 # Install ExpresZo
-npm install expreszo
+npm install @pro-fa/expreszo
 ```
 
 If you had the community TypeScript types installed, remove them too — ExpresZo ships its own declarations:
@@ -33,7 +33,7 @@ import { Parser } from 'expr-eval';
 import { Parser } from '@pro-fa/expr-eval';
 
 // After
-import { Parser } from 'expreszo';
+import { Parser } from '@pro-fa/expreszo';
 ```
 
 Subpath imports follow the same pattern:
@@ -44,8 +44,8 @@ import { coreParser } from '@pro-fa/expr-eval/core';
 import { withMath } from '@pro-fa/expr-eval/math';
 
 // After
-import { coreParser } from 'expreszo/core';
-import { withMath } from 'expreszo/math';
+import { coreParser } from '@pro-fa/expreszo/core';
+import { withMath } from '@pro-fa/expreszo/math';
 ```
 
 All available subpath imports: `/core`, `/math`, `/string`, `/array`, `/object`, `/comparison`, `/logical`, `/type-check`, `/utility`, `/validation`, `/language-service`.
@@ -58,7 +58,7 @@ All available subpath imports: `/core`, `/math`, `/string`, `/array`, `/object`,
 - Parser configuration for enabling/disabling operators
 - All types are exported from the main package:
   ```typescript
-  import { Parser, Expression, Value, Values } from 'expreszo';
+  import { Parser, Expression, Value, Values } from '@pro-fa/expreszo';
   ```
 
 ### What's New Compared to the Original expr-eval
@@ -102,7 +102,7 @@ ExpresZo includes a **legacy mode** that preserves older operator and function b
 ### Enabling Legacy Mode
 
 ```typescript
-import { Parser } from 'expreszo';
+import { Parser } from '@pro-fa/expreszo';
 
 const parser = new Parser();                    // modern behavior (default)
 const legacyParser = new Parser({ legacy: true }); // legacy behavior

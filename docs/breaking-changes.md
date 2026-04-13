@@ -1,6 +1,6 @@
 # Breaking Changes
 
-This document lists breaking changes between versions of `expreszo`.
+This document lists breaking changes between versions of `@pro-fa/expreszo`.
 
 > **Audience**: Developers upgrading between versions
 
@@ -41,7 +41,7 @@ The parser now enforces a maximum nesting depth of 256. Extremely deep expressio
 
 - `defineParser(config)` — Descriptor-driven, tree-shakeable parser creation
 - Composable presets: `coreParser`, `withMath`, `withString`, `withArray`, `withObject`, `withComparison`, `withLogical`, `withTypeCheck`, `withUtility`, `fullParser`
-- Subpath exports: `expreszo/core`, `/math`, `/string`, etc.
+- Subpath exports: `@pro-fa/expreszo/core`, `/math`, `/string`, etc.
 - `Expression.accept(visitor)` — AST visitor pattern
 - Types: `ParserConfig`, `ParserPreset`
 
@@ -121,14 +121,14 @@ parser.evaluate('true && true');         // true
 
 ### Package Renamed
 
-The package was renamed from `expr-eval` to `expreszo` and ported to TypeScript.
+The package was renamed from `expr-eval` to `@pro-fa/expreszo` and ported to TypeScript.
 
 ```bash
 # Remove old package
 npm uninstall expr-eval
 
 # Install new package
-npm install expreszo
+npm install @pro-fa/expreszo
 ```
 
 Update imports:
@@ -137,5 +137,5 @@ Update imports:
 const { Parser } = require('expr-eval');
 
 // After
-import { Parser } from 'expreszo';
+import { Parser } from '@pro-fa/expreszo';
 ```

@@ -1,5 +1,5 @@
 /**
- * `expreszo/string` entry — string manipulation functions plus the
+ * `@pro-fa/expreszo/string` entry — string manipulation functions plus the
  * `length` unary prefix.
  */
 export { withString } from '../api/presets.js';

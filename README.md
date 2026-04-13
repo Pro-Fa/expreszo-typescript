@@ -1,13 +1,13 @@
 # ExpresZo Typescript
 
-[![npm](https://img.shields.io/npm/v/expreszo.svg?maxAge=3600)](https://www.npmjs.com/package/expreszo)
+[![npm](https://img.shields.io/npm/v/@pro-fa/expreszo.svg?maxAge=3600)](https://www.npmjs.com/package/@pro-fa/expreszo)
 
 **A fast, safe, and extensible expression evaluator for JavaScript and TypeScript.**
 
 ExpresZo parses and evaluates expressions at runtime — a configurable alternative to `eval()` that won't execute arbitrary code. Use it to power user-facing formula editors, rule engines, template systems, or any place you need to evaluate dynamic expressions safely.
 
 ```js
-import { Parser } from 'expreszo';
+import { Parser } from '@pro-fa/expreszo';
 
 const parser = new Parser();
 parser.evaluate('price * (1 - discount)', { price: 100, discount: 0.2 }); // 80
@@ -40,7 +40,7 @@ ExpresZo is designed to be safe by default:
 Build exactly the parser you need:
 
 ```typescript
-import { defineParser, coreParser, withMath, withString } from 'expreszo';
+import { defineParser, coreParser, withMath, withString } from '@pro-fa/expreszo';
 
 // Tree-shakeable: only include what you use
 const parser = defineParser({
@@ -58,13 +58,13 @@ const parser = new Parser(); // all built-in operators and functions included
 ## Installation
 
 ```bash
-npm install expreszo
+npm install @pro-fa/expreszo
 ```
 
 ## Quick Start
 
 ```typescript
-import { Parser } from 'expreszo';
+import { Parser } from '@pro-fa/expreszo';
 
 const parser = new Parser();
 
@@ -93,7 +93,7 @@ parser.evaluate('CASE WHEN score >= 90 THEN "A" WHEN score >= 80 THEN "B" ELSE "
 | **Async support** | Custom functions can return Promises; `evaluate()` auto-awaits |
 | **Language service** | Completions, hover docs, diagnostics, syntax highlighting for IDE integration |
 | **TypeScript** | Full type definitions, strict mode, no `any` leaks |
-| **Tree-shakeable** | Subpath imports (`expreszo/math`, `expreszo/string`, ...) for minimal bundles |
+| **Tree-shakeable** | Subpath imports (`@pro-fa/expreszo/math`, `@pro-fa/expreszo/string`, ...) for minimal bundles |
 
 ## Playground
 

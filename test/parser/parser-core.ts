@@ -11,11 +11,19 @@ describe('Parser Core Functionality TypeScript Test', () => {
   ].forEach(({ name, parser }) => {
     describe(name, () => {
       describe('comments and whitespace', () => {
-        it('should skip comments', () => {
+        it('should skip block comments', () => {
           expect(parser.evaluate('2/* comment */+/* another comment */3')).toBe(5);
-          expect(parser.evaluate('2/* comment *///* another comment */3')).toBe(2 / 3);
+          expect(parser.evaluate('2/* comment */ / /* another comment */3')).toBe(2 / 3);
           expect(parser.evaluate('/* comment at the beginning */2 + 3/* unterminated comment')).toBe(5);
           expect(parser.evaluate('2 +/* comment\n with\n multiple\n lines */3')).toBe(5);
+        });
+
+        it('should skip line comments', () => {
+          expect(parser.evaluate('2 + 3 // trailing comment')).toBe(5);
+          expect(parser.evaluate('// leading comment\n2 + 3')).toBe(5);
+          expect(parser.evaluate('2 // first line\n+ 3 // second line')).toBe(5);
+          expect(parser.evaluate('2 +// no space\n3')).toBe(5);
+          expect(parser.evaluate('// only a comment\n42')).toBe(42);
         });
 
         it('should ignore whitespace', () => {
