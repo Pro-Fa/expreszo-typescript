@@ -11,3 +11,6 @@ coverage
 
 # MkDocs
 site/
+
+# Tools
+.claude/

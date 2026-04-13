@@ -22,7 +22,7 @@
     "composite": false,
 
     // Disable testing types for production
-    "types": []
+    "types": ["node"]
   },
   "include": [
     "src/**/*",

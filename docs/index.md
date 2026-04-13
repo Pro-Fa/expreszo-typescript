@@ -54,6 +54,7 @@ console.log(expr.evaluate({ x: 3 })); // 7
 - [Expression](expression.md) - Expression object methods: evaluate, simplify, variables
 - [Advanced Features](advanced-features.md) - Promises, custom resolution, type conversion, operator customization
 - [Language Service](language-service.md) - IDE integration: completions, hover info, diagnostics, Monaco Editor
+- [MCP Server](mcp-server.md) - Expose the language service to AI assistants (Claude Desktop, Claude Code, Cursor)
 - [Migration Guide](migration.md) - Migrating from expr-eval, legacy mode, version history
 
 ### For Contributors
