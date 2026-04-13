@@ -60,6 +60,7 @@ export interface TokenCursorCoordinates {
 export class TokenCursor {
   private constructor(
     public readonly tokens: readonly Token[],
+    public readonly ends: readonly number[],
     public readonly index: number,
     public readonly expression: string
   ) {}
@@ -77,15 +78,29 @@ export class TokenCursor {
   static from(parser: ParserLike, expression: string): TokenCursor {
     const stream = new TokenStream(parser, expression);
     const tokens: Token[] = [];
+    const ends: number[] = [];
     // `TokenStream.next()` returns a fresh TEOF token forever once the end
     // of the expression is reached, so the first TEOF we see is the
     // terminator and anything beyond that would be a duplicate.
     for (;;) {
       const token = stream.next();
       tokens.push(token);
+      ends.push(stream.pos);
       if (token.type === TEOF) break;
     }
-    return new TokenCursor(tokens, 0, expression);
+    return new TokenCursor(tokens, ends, 0, expression);
+  }
+
+  /** End offset (exclusive) of the token at the current cursor position. */
+  peekEnd(): number {
+    return this.ends[this.index];
+  }
+
+  /** End offset (exclusive) of the token at `offset` positions ahead. */
+  peekEndAt(offset: number): number {
+    const i = this.index + offset;
+    if (i >= this.ends.length) return this.ends[this.ends.length - 1];
+    return this.ends[i];
   }
 
   /** Return the token at the current cursor position without advancing. */
@@ -111,7 +126,14 @@ export class TokenCursor {
    */
   advance(): TokenCursor {
     if (this.atEnd()) return this;
-    return new TokenCursor(this.tokens, this.index + 1, this.expression);
+    return new TokenCursor(this.tokens, this.ends, this.index + 1, this.expression);
+  }
+
+  /** Return the end offset (exclusive) of the most recently consumed token. */
+  previousEnd(): number {
+    const i = this.index - 1;
+    if (i < 0) return this.ends[0];
+    return this.ends[i];
   }
 
   /** True when the cursor is parked on the terminating TEOF token. */

@@ -156,4 +156,96 @@ export function registerTools(server: McpServer, ls: LanguageServiceApi): void {
       }
     }
   );
+
+  server.registerTool(
+    'expreszo_get_document_symbols',
+    {
+      title: 'Expreszo: get document symbols',
+      description:
+        'Returns LSP DocumentSymbol entries for every unique identifier, function call, and member chain used in the expression.',
+      inputSchema: {
+        ...baseShape
+      }
+    },
+    async ({ expression, uri }) => {
+      try {
+        const doc = buildDocument(expression, uri);
+        const result = ls.getDocumentSymbols({ textDocument: doc });
+        return jsonResult(result);
+      } catch (err) {
+        return errorResult(err);
+      }
+    }
+  );
+
+  server.registerTool(
+    'expreszo_get_folding_ranges',
+    {
+      title: 'Expreszo: get folding ranges',
+      description:
+        'Returns LSP FoldingRange entries for multi-line case blocks, array literals, and object literals.',
+      inputSchema: {
+        ...baseShape
+      }
+    },
+    async ({ expression, uri }) => {
+      try {
+        const doc = buildDocument(expression, uri);
+        const result = ls.getFoldingRanges({ textDocument: doc });
+        return jsonResult(result);
+      } catch (err) {
+        return errorResult(err);
+      }
+    }
+  );
+
+  server.registerTool(
+    'expreszo_get_definition',
+    {
+      title: 'Expreszo: get definition',
+      description:
+        'Returns the LSP Location of the definition of the identifier at the given position (first occurrence within the expression), or null if the position is not on a named symbol.',
+      inputSchema: {
+        ...baseShape,
+        ...positionFieldShape
+      }
+    },
+    async ({ expression, uri, position }) => {
+      try {
+        const doc = buildDocument(expression, uri);
+        const result = ls.getDefinition({
+          textDocument: doc,
+          position: resolvePosition(doc, position as PositionInput)
+        });
+        return jsonResult(result);
+      } catch (err) {
+        return errorResult(err);
+      }
+    }
+  );
+
+  server.registerTool(
+    'expreszo_get_references',
+    {
+      title: 'Expreszo: get references',
+      description:
+        'Returns every LSP Location where the identifier at the given position is referenced in the expression, including the definition itself.',
+      inputSchema: {
+        ...baseShape,
+        ...positionFieldShape
+      }
+    },
+    async ({ expression, uri, position }) => {
+      try {
+        const doc = buildDocument(expression, uri);
+        const result = ls.getReferences({
+          textDocument: doc,
+          position: resolvePosition(doc, position as PositionInput)
+        });
+        return jsonResult(result);
+      } catch (err) {
+        return errorResult(err);
+      }
+    }
+  );
 }

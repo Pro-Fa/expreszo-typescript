@@ -25,7 +25,15 @@ import type {
   LanguageServiceApi,
   HoverV2
 } from './language-service.types';
-import type { CompletionItem, Range, Diagnostic } from 'vscode-languageserver-types';
+import type {
+  CompletionItem,
+  Range,
+  Diagnostic,
+  DocumentSymbol,
+  FoldingRange,
+  Location,
+  Position
+} from 'vscode-languageserver-types';
 import { CompletionItemKind, MarkupKind, InsertTextFormat } from 'vscode-languageserver-types';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { BUILTIN_KEYWORD_DOCS, DEFAULT_CONSTANT_DOCS } from './language-service.documentation';
@@ -44,12 +52,18 @@ import {
   createDiagnosticFromError
 } from './diagnostics';
 import { ParseError } from '../types/errors';
+import { createParseCache } from './shared/parse-cache';
+import { getDocumentSymbols as computeDocumentSymbols } from './document-symbols';
+import { getFoldingRanges as computeFoldingRanges } from './folding';
+import { getDefinition as computeDefinition, getReferences as computeReferences } from './references';
 
 export function createLanguageService(options: LanguageServiceOptions | undefined = undefined): LanguageServiceApi {
   // Build a parser instance to access keywords/operators/functions/consts
   const parser = new Parser({
     operators: options?.operators
   });
+
+  const parseCache = createParseCache(parser);
 
   const constantDocs = {
     ...DEFAULT_CONSTANT_DOCS
@@ -361,11 +375,31 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
     return diagnostics;
   }
 
+  function getDocumentSymbols(params: { textDocument: TextDocument }): DocumentSymbol[] {
+    return computeDocumentSymbols(params.textDocument, parseCache);
+  }
+
+  function getFoldingRanges(params: { textDocument: TextDocument }): FoldingRange[] {
+    return computeFoldingRanges(params.textDocument, parseCache);
+  }
+
+  function getDefinition(params: { textDocument: TextDocument; position: Position }): Location | null {
+    return computeDefinition(params.textDocument, parseCache, params.position);
+  }
+
+  function getReferences(params: { textDocument: TextDocument; position: Position }): Location[] {
+    return computeReferences(params.textDocument, parseCache, params.position);
+  }
+
   return {
     getCompletions,
     getHover,
     getHighlighting,
-    getDiagnostics
+    getDiagnostics,
+    getDocumentSymbols,
+    getFoldingRanges,
+    getDefinition,
+    getReferences
   };
 
 }

@@ -35,16 +35,20 @@ function parsePayload(result: ToolResult): unknown {
 }
 
 describe('MCP server', () => {
-  it('registers all four expreszo tools', () => {
+  it('registers all expreszo tools', () => {
     const server = createMcpServer();
     const registry = (server as unknown as { _registeredTools: Record<string, unknown> })
       ._registeredTools;
     const names = Object.keys(registry).sort();
     expect(names).toEqual([
       'expreszo_get_completions',
+      'expreszo_get_definition',
       'expreszo_get_diagnostics',
+      'expreszo_get_document_symbols',
+      'expreszo_get_folding_ranges',
       'expreszo_get_highlighting',
-      'expreszo_get_hover'
+      'expreszo_get_hover',
+      'expreszo_get_references'
     ]);
   });
 

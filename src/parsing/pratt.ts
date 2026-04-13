@@ -32,12 +32,16 @@ import {
   TSEMICOLON, TKEYWORD, TBRACE, Token, TokenType
 } from './token.js';
 import {
-  type Node, type CaseArm, type ObjectEntry, type ArrayEntry,
+  type Node, type CaseArm, type ObjectEntry, type ArrayEntry, type Span,
   mkNumber, mkString, mkBool, mkNull, mkUndefined, mkRaw,
   mkArray, mkObject, mkIdent, mkNameRef, mkMember,
   mkUnary, mkBinary, mkTernary, mkCall, mkLambda, mkFunctionDef,
   mkCase, mkSequence, mkParen, mkArraySpread, mkObjectSpread
 } from '../ast/nodes.js';
+
+function spanBetween(start: number, end: number): Span {
+  return { start, end };
+}
 import { ParseError, AccessError } from '../types/errors.js';
 import type { OperatorFunction } from '../types/parser.js';
 
@@ -79,6 +83,11 @@ function isEndStatement(n: Node): boolean {
   return n.type === 'RawLit' && n.value === END_STATEMENT_SYMBOL;
 }
 
+function unionSpans(nodes: readonly Node[]): Span {
+  if (nodes.length === 0) return { start: 0, end: 0 };
+  return { start: nodes[0].span.start, end: nodes[nodes.length - 1].span.end };
+}
+
 /** Build a Sequence (or a single node) from an accumulator that may contain END_STATEMENT sentinels. */
 function buildFromInstr(instr: Node[]): Node {
   // Mirrors the legacy `fromInstructions` handling of IENDSTATEMENT: each
@@ -94,7 +103,7 @@ function buildFromInstr(instr: Node[]): Node {
       // Multiple nodes without a separating sentinel — wrap as a Sequence
       // so the caller still sees a single root. This matches the legacy
       // `flushStatement` behavior at the tail of the instruction stream.
-      statements.push(mkSequence(accum));
+      statements.push(mkSequence(accum, unionSpans(accum)));
     }
     accum = [];
   };
@@ -108,7 +117,7 @@ function buildFromInstr(instr: Node[]): Node {
   flushAccum();
   if (statements.length === 0) return mkUndefined();
   if (statements.length === 1) return statements[0];
-  return mkSequence(statements);
+  return mkSequence(statements, unionSpans(statements));
 }
 
 export class PrattParser {
@@ -144,6 +153,11 @@ export class PrattParser {
   private peek(): Token { return this.cursor.peek(); }
   private peekAt(offset: number): Token { return this.cursor.peekAt(offset); }
   private atEnd(): boolean { return this.cursor.atEnd(); }
+
+  private peekStart(): number { return this.cursor.peek().index; }
+  private peekEnd(): number { return this.cursor.peekEnd(); }
+  /** End offset (exclusive) of the most recently consumed token. */
+  private prevEnd(): number { return this.cursor.previousEnd(); }
 
   private check(
     type: TokenType,
@@ -238,7 +252,8 @@ export class PrattParser {
    * legacy IEXPR wrap performed by `processStatementTermination`.
    */
   private finalizeStatements(exprInstr: Node[]): Node {
-    return mkParen(buildFromInstr(exprInstr));
+    const inner = buildFromInstr(exprInstr);
+    return mkParen(inner, inner.span);
   }
 
   /**
@@ -290,7 +305,8 @@ export class PrattParser {
       // `=` is right-associative. Right-hand side is itself a full assignment
       // expression, then wrapped in Paren to mirror the legacy IEXPR wrap.
       const rhs = this.parseVariableAssignmentExpression();
-      const wrappedRhs = mkParen(rhs);
+      const wrappedRhs = mkParen(rhs, rhs.span);
+      const sp = spanBetween(left.span.start, rhs.span.end);
 
       if (left.type === 'Call') {
         // Function definition: `f(a, b) = body`
@@ -307,9 +323,9 @@ export class PrattParser {
           }
           params.push(arg.name);
         }
-        left = mkFunctionDef(left.callee.name, params, wrappedRhs);
+        left = mkFunctionDef(left.callee.name, params, wrappedRhs, sp);
       } else if (left.type === 'Ident') {
-        left = mkBinary('=', mkNameRef(left.name), wrappedRhs);
+        left = mkBinary('=', mkNameRef(left.name, left.span), wrappedRhs, sp);
       } else if (left.type === 'Member') {
         // Legacy emits a malformed sequence for member assignment (IVAR(obj)
         // still on stack, IVARNAME(property), IEXPR(value), `=`). Matching it
@@ -320,8 +336,8 @@ export class PrattParser {
         // that the Phase 3 evaluator can diagnose it cleanly later.
         left = mkSequence([
           left.object,
-          mkBinary('=', mkNameRef(left.property), wrappedRhs)
-        ]);
+          mkBinary('=', mkNameRef(left.property, left.span), wrappedRhs, sp)
+        ], sp);
       } else {
         throw new Error('Left side of assignment must be a variable name. Example: x = 5');
       }
@@ -341,7 +357,14 @@ export class PrattParser {
       const trueBranch = this.parseConditionalExpression();
       this.expect(TOP, ':');
       const falseBranch = this.parseConditionalExpression();
-      expr = mkTernary('?', expr, mkParen(trueBranch), mkParen(falseBranch));
+      const sp = spanBetween(expr.span.start, falseBranch.span.end);
+      expr = mkTernary(
+        '?',
+        expr,
+        mkParen(trueBranch, trueBranch.span),
+        mkParen(falseBranch, falseBranch.span),
+        sp
+      );
     }
 
     this.depth--;
@@ -356,7 +379,8 @@ export class PrattParser {
       const op = this.peek().value as string;
       this.cursor = this.cursor.advance();
       const right = this.parseAndExpression();
-      left = mkBinary(op, left, mkParen(right));
+      const sp = spanBetween(left.span.start, right.span.end);
+      left = mkBinary(op, left, mkParen(right, right.span), sp);
     }
     return left;
   }
@@ -367,7 +391,8 @@ export class PrattParser {
       const op = this.peek().value as string;
       this.cursor = this.cursor.advance();
       const right = this.parseComparison();
-      left = mkBinary(op, left, mkParen(right));
+      const sp = spanBetween(left.span.start, right.span.end);
+      left = mkBinary(op, left, mkParen(right, right.span), sp);
     }
     return left;
   }
@@ -383,7 +408,7 @@ export class PrattParser {
       const op = this.peek().value as string;
       this.cursor = this.cursor.advance();
       const right = this.parseAddSub();
-      left = mkBinary(op, left, right);
+      left = mkBinary(op, left, right, spanBetween(left.span.start, right.span.end));
     }
     return left;
   }
@@ -400,7 +425,7 @@ export class PrattParser {
       if (v === '||') break; // exclude: `||` is handled by parseOrExpression
       this.cursor = this.cursor.advance();
       const right = this.parseTerm();
-      left = mkBinary(v, left, right);
+      left = mkBinary(v, left, right, spanBetween(left.span.start, right.span.end));
     }
     return left;
   }
@@ -413,7 +438,7 @@ export class PrattParser {
       const op = this.peek().value as string;
       this.cursor = this.cursor.advance();
       const right = this.parseFactor();
-      left = mkBinary(op, left, right);
+      left = mkBinary(op, left, right, spanBetween(left.span.start, right.span.end));
     }
     return left;
   }
@@ -426,7 +451,7 @@ export class PrattParser {
       const op = this.peek().value as string;
       this.cursor = this.cursor.advance();
       const right = this.parseFactor();
-      left = mkBinary(op, left, right);
+      left = mkBinary(op, left, right, spanBetween(left.span.start, right.span.end));
     }
     return left;
   }
@@ -440,6 +465,7 @@ export class PrattParser {
 
     if (t.type === TOP && this.isPrefixOperator(t)) {
       // Speculatively consume the prefix op and look at the next token.
+      const tStart = t.index;
       this.cursor = this.cursor.advance();
       const v = t.value as string;
       if (v !== '-' && v !== '+') {
@@ -464,7 +490,7 @@ export class PrattParser {
       // Genuine prefix unary: recurse right-associatively.
       const operand = this.parseFactor();
       this.depth--;
-      return mkUnary(v, operand);
+      return mkUnary(v, operand, spanBetween(tStart, operand.span.end));
     }
 
     this.depth--;
@@ -477,7 +503,7 @@ export class PrattParser {
     let left = this.parsePostfixExpression();
     while (this.accept(TOP, '^')) {
       const right = this.parseFactor();
-      left = mkBinary('^', left, right);
+      left = mkBinary('^', left, right, spanBetween(left.span.start, right.span.end));
     }
     return left;
   }
@@ -487,7 +513,8 @@ export class PrattParser {
   private parsePostfixExpression(): Node {
     let expr = this.parseFunctionCall();
     while (this.accept(TOP, '!')) {
-      expr = mkUnary('!', expr);
+      const end = this.prevEnd();
+      expr = mkUnary('!', expr, spanBetween(expr.span.start, end));
     }
     return expr;
   }
@@ -499,9 +526,10 @@ export class PrattParser {
     if (t.type === TOP && this.isPrefixOperator(t)) {
       // `sin(x)` (restored-path): `sin` is a prefix op; consume it and parse
       // the operand as an atom, emitting a unary. Matches legacy behavior.
+      const tStart = t.index;
       this.cursor = this.cursor.advance();
       const operand = this.parseAtom();
-      return mkUnary(t.value as string, operand);
+      return mkUnary(t.value as string, operand, spanBetween(tStart, operand.span.end));
     }
 
     let expr = this.parseMemberExpression();
@@ -515,7 +543,8 @@ export class PrattParser {
         }
       }
       this.expect(TPAREN, ')');
-      expr = mkCall(expr, args);
+      const end = this.prevEnd();
+      expr = mkCall(expr, args, spanBetween(expr.span.start, end));
     }
 
     return expr;
@@ -534,7 +563,8 @@ export class PrattParser {
           });
         }
         const name = this.expect(TNAME);
-        expr = mkMember(expr, String(name.value));
+        const end = this.prevEnd();
+        expr = mkMember(expr, String(name.value), spanBetween(expr.span.start, end));
       } else if (this.accept(TBRACKET, '[')) {
         if (!this.parser.isOperatorEnabled('[')) {
           throw new AccessError('Array/bracket access is disabled. Enable it with: new Parser({ operators: { array: true } })', {
@@ -543,7 +573,8 @@ export class PrattParser {
         }
         const index = this.parseExpression();
         this.expect(TBRACKET, ']');
-        expr = mkBinary('[', expr, index);
+        const end = this.prevEnd();
+        expr = mkBinary('[', expr, index, spanBetween(expr.span.start, end));
       } else {
         break;
       }
@@ -559,46 +590,57 @@ export class PrattParser {
 
     // Names and prefix-op identifiers (with arrow-function lookahead).
     if (t.type === TNAME || (t.type === TOP && this.isPrefixOperator(t))) {
+      const tStart = t.index;
+      const tEnd = this.peekEnd();
       this.cursor = this.cursor.advance();
 
       if (t.value === 'undefined') {
-        return mkUndefined();
+        return mkUndefined(spanBetween(tStart, tEnd));
       }
 
       // Single-parameter arrow function: `x => expr`
       const next = this.peek();
       if (next.type === TOP && next.value === '=>') {
-        return this.parseArrowFunctionFromParameter(String(t.value));
+        return this.parseArrowFunctionFromParameter(String(t.value), tStart);
       }
 
-      return mkIdent(String(t.value));
+      return mkIdent(String(t.value), spanBetween(tStart, tEnd));
     }
 
     // Numeric/string/constant literals.
     if (t.type === TNUMBER) {
+      const tStart = t.index;
+      const tEnd = this.peekEnd();
       this.cursor = this.cursor.advance();
-      return mkNumber(t.value as number);
+      return mkNumber(t.value as number, spanBetween(tStart, tEnd));
     }
     if (t.type === TSTRING) {
+      const tStart = t.index;
+      const tEnd = this.peekEnd();
       this.cursor = this.cursor.advance();
-      return mkString(t.value as string);
+      return mkString(t.value as string, spanBetween(tStart, tEnd));
     }
     if (t.type === TCONST) {
+      const tStart = t.index;
+      const tEnd = this.peekEnd();
+      const sp = spanBetween(tStart, tEnd);
       this.cursor = this.cursor.advance();
       const v = t.value;
-      if (typeof v === 'number') return mkNumber(v);
-      if (typeof v === 'string') return mkString(v);
-      if (typeof v === 'boolean') return mkBool(v);
-      if (v === null) return mkNull();
-      if (v === undefined) return mkUndefined();
-      return mkRaw(v);
+      if (typeof v === 'number') return mkNumber(v, sp);
+      if (typeof v === 'string') return mkString(v, sp);
+      if (typeof v === 'boolean') return mkBool(v, sp);
+      if (v === null) return mkNull(sp);
+      if (v === undefined) return mkUndefined(sp);
+      return mkRaw(v, sp);
     }
 
     // Parenthesized expression or multi-parameter arrow function.
-    if (this.accept(TPAREN, '(')) {
+    if (this.check(TPAREN, '(')) {
+      const openStart = this.peekStart();
+      this.cursor = this.cursor.advance();
       // Try arrow function first; on failure, restore and parse as a regular
       // parenthesized expression.
-      const arrow = this.tryParseArrowFunction();
+      const arrow = this.tryParseArrowFunction(openStart);
       if (arrow !== null) return arrow;
 
       const inner = this.parseExpression();
@@ -607,36 +649,49 @@ export class PrattParser {
     }
 
     // Object literal.
-    if (this.accept(TBRACE, '{')) {
-      return this.parseObjectLiteral();
+    if (this.check(TBRACE, '{')) {
+      const openStart = this.peekStart();
+      this.cursor = this.cursor.advance();
+      return this.parseObjectLiteral(openStart);
     }
 
     // Array literal. Mirror the legacy `parseArrayList` loop so an unclosed
     // `[` surfaces as "Unexpected token: TEOF" from the recursive atom parse
     // rather than "Expected ]" from a direct `expect` call — matches legacy
     // error messages the language service's diagnostics assertions depend on.
-    if (this.accept(TBRACKET, '[')) {
+    if (this.check(TBRACKET, '[')) {
+      const openStart = this.peekStart();
+      this.cursor = this.cursor.advance();
       const elements: ArrayEntry[] = [];
       while (!this.accept(TBRACKET, ']')) {
-        if (this.accept(TOP, '...')) {
-          elements.push(mkArraySpread(this.parseConditionalExpression()));
+        if (this.check(TOP, '...')) {
+          const spreadStart = this.peekStart();
+          this.cursor = this.cursor.advance();
+          const arg = this.parseConditionalExpression();
+          elements.push(mkArraySpread(arg, spanBetween(spreadStart, arg.span.end)));
         } else {
           elements.push(this.parseExpression());
         }
         while (this.accept(TCOMMA)) {
-          if (this.accept(TOP, '...')) {
-            elements.push(mkArraySpread(this.parseConditionalExpression()));
+          if (this.check(TOP, '...')) {
+            const spreadStart = this.peekStart();
+            this.cursor = this.cursor.advance();
+            const arg = this.parseConditionalExpression();
+            elements.push(mkArraySpread(arg, spanBetween(spreadStart, arg.span.end)));
           } else {
             elements.push(this.parseExpression());
           }
         }
       }
-      return mkArray(elements);
+      const closeEnd = this.prevEnd();
+      return mkArray(elements, spanBetween(openStart, closeEnd));
     }
 
     // Keyword expression (case/when).
-    if (this.accept(TKEYWORD)) {
-      return this.parseKeywordExpression(t);
+    if (this.check(TKEYWORD)) {
+      const kwStart = this.peekStart();
+      this.cursor = this.cursor.advance();
+      return this.parseKeywordExpression(t, kwStart);
     }
 
     this.error(`Unexpected token: ${t}`);
@@ -648,7 +703,7 @@ export class PrattParser {
    * Parse `paramName => body` when we've just consumed `paramName`. Mirrors
    * legacy `parseArrowFunctionFromParameter`.
    */
-  private parseArrowFunctionFromParameter(paramName: string): Node {
+  private parseArrowFunctionFromParameter(paramName: string, startPos: number): Node {
     if (!this.parser.isOperatorEnabled('=>')) {
       this.error('Arrow function syntax is not permitted');
     }
@@ -656,14 +711,15 @@ export class PrattParser {
     // Arrow bodies are conditional expressions, not full expressions — a
     // trailing `;` terminates the arrow rather than joining into the body.
     const body = this.parseConditionalExpression();
-    return mkLambda([paramName], mkParen(body));
+    const sp = spanBetween(startPos, body.span.end);
+    return mkLambda([paramName], mkParen(body, body.span), sp);
   }
 
   /**
    * Speculatively parse `(p1, p2, ...) => body`. Called after the initial
    * `(` has been consumed. On failure, restores the cursor and returns `null`.
    */
-  private tryParseArrowFunction(): Node | null {
+  private tryParseArrowFunction(openStart: number): Node | null {
     const saved = this.cursor;
     // At this point `(` has been consumed. Restoring to `saved` restores the
     // state just past the `(`, so the caller's recovery path (parseExpression
@@ -683,7 +739,8 @@ export class PrattParser {
         return null;
       }
       const body = this.parseExpression();
-      return mkLambda([], mkParen(body));
+      const sp = spanBetween(openStart, body.span.end);
+      return mkLambda([], mkParen(body, body.span), sp);
     }
 
     const params: string[] = [];
@@ -719,19 +776,19 @@ export class PrattParser {
 
     // Arrow function bodies stop at `;` — use parseConditionalExpression.
     const body = this.parseConditionalExpression();
-    return mkLambda(params, mkParen(body));
+    return mkLambda(params, mkParen(body, body.span), spanBetween(openStart, body.span.end));
   }
 
   // --- Case / when --------------------------------------------------------
 
-  private parseKeywordExpression(keyword: Token): Node {
+  private parseKeywordExpression(keyword: Token, startPos: number): Node {
     if (keyword.value === 'case') {
-      return this.parseCaseWhen();
+      return this.parseCaseWhen(startPos);
     }
     throw new Error(`unexpected keyword: ${keyword.value}`);
   }
 
-  private parseCaseWhen(): Node {
+  private parseCaseWhen(startPos: number): Node {
     // Distinguish `case subject when ... end` from `case when ... end`.
     const caseWithInput = !this.check(TKEYWORD);
     let subject: Node | null = null;
@@ -759,16 +816,17 @@ export class PrattParser {
       throw new Error("Case block must be closed with 'end'. Example: case x when 1 then 'one' else 'other' end");
     }
 
-    return mkCase(subject, arms, elseNode);
+    const endPos = this.prevEnd();
+    return mkCase(subject, arms, elseNode, spanBetween(startPos, endPos));
   }
 
   // --- Object literal -----------------------------------------------------
 
-  private parseObjectLiteral(): Node {
+  private parseObjectLiteral(openStart: number): Node {
     const properties: ObjectEntry[] = [];
 
     if (this.accept(TBRACE, '}')) {
-      return mkObject(properties);
+      return mkObject(properties, spanBetween(openStart, this.prevEnd()));
     }
 
     for (let first = true; ; first = false) {
@@ -777,15 +835,18 @@ export class PrattParser {
           throw new Error('Expected comma between object properties. Example: { a: 1, b: 2 }');
         }
         if (this.accept(TBRACE, '}')) {
-          return mkObject(properties);
+          return mkObject(properties, spanBetween(openStart, this.prevEnd()));
         }
       }
 
       // Spread syntax: { ...expr }
-      if (this.accept(TOP, '...')) {
-        properties.push(mkObjectSpread(this.parseConditionalExpression()));
+      if (this.check(TOP, '...')) {
+        const spreadStart = this.peekStart();
+        this.cursor = this.cursor.advance();
+        const arg = this.parseConditionalExpression();
+        properties.push(mkObjectSpread(arg, spanBetween(spreadStart, arg.span.end)));
         if (this.accept(TBRACE, '}')) {
-          return mkObject(properties);
+          return mkObject(properties, spanBetween(openStart, this.prevEnd()));
         }
         continue;
       }
@@ -810,7 +871,7 @@ export class PrattParser {
       properties.push({ key, value, quoted });
 
       if (this.accept(TBRACE, '}')) {
-        return mkObject(properties);
+        return mkObject(properties, spanBetween(openStart, this.prevEnd()));
       }
     }
   }

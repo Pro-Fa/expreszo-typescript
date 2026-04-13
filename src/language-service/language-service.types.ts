@@ -1,5 +1,14 @@
 ﻿import type { Values } from '../types';
-import type { Position, Hover, CompletionItem, MarkupContent, Diagnostic } from 'vscode-languageserver-types';
+import type {
+  Position,
+  Hover,
+  CompletionItem,
+  MarkupContent,
+  Diagnostic,
+  DocumentSymbol,
+  FoldingRange,
+  Location
+} from 'vscode-languageserver-types';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 
 /**
@@ -30,6 +39,31 @@ export interface LanguageServiceApi {
      * @param params - Parameters for the diagnostics request
      */
     getDiagnostics(params: GetDiagnosticsParams): Diagnostic[];
+
+    /**
+     * Returns the list of symbols declared or used in the document as LSP
+     * DocumentSymbol entries. One entry per unique symbol (dedup by name/kind).
+     */
+    getDocumentSymbols(params: { textDocument: TextDocument }): DocumentSymbol[];
+
+    /**
+     * Returns folding ranges for multi-line constructs (case blocks, multi-line
+     * array and object literals).
+     */
+    getFoldingRanges(params: { textDocument: TextDocument }): FoldingRange[];
+
+    /**
+     * Returns the definition location of the identifier at the given position,
+     * or null if the position is not on a named symbol. The definition is the
+     * first occurrence of the name within the expression.
+     */
+    getDefinition(params: { textDocument: TextDocument; position: Position }): Location | null;
+
+    /**
+     * Returns every occurrence of the identifier at the given position within
+     * the expression, including the definition itself.
+     */
+    getReferences(params: { textDocument: TextDocument; position: Position }): Location[];
 }
 
 export interface HighlightToken {
