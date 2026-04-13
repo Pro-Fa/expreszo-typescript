@@ -11,8 +11,10 @@ import type {
   SignatureHelp,
   SemanticTokens,
   CodeAction,
-  Range
+  Range,
+  TextEdit
 } from 'vscode-languageserver-types';
+import type { FormatOptions } from './formatter/pretty-printer';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 
 /**
@@ -87,6 +89,19 @@ export interface LanguageServiceApi {
      * and `unknown-ident` (Levenshtein "did you mean" suggestions).
      */
     getCodeActions(params: GetCodeActionsParams): CodeAction[];
+
+    /**
+     * Format the entire expression document. Returns a single whole-document
+     * `TextEdit` when the formatter output differs from the current source,
+     * or an empty array when the document parses cleanly and is already
+     * formatted (or when it does not parse).
+     */
+    format(params: FormatParams): TextEdit[];
+}
+
+export interface FormatParams {
+    textDocument: TextDocument;
+    options?: FormatOptions;
 }
 
 export interface GetCodeActionsParams {

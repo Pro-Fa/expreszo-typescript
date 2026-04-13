@@ -17,14 +17,15 @@ export function createParseCache(parser: Parser): ParseCache {
 
   return {
     get(doc: TextDocument): ParseResult {
-      const key = doc.uri + '@' + doc.version + '@' + doc.getText().length;
+      const text = doc.getText();
+      const key = doc.uri + '@' + doc.version + '@' + text.length + '@' + text;
       const hit = cache.get(key);
       if (hit) {
         return hit;
       }
       let result: ParseResult;
       try {
-        const expression = parser.parse(doc.getText());
+        const expression = parser.parse(text);
         result = { expression, parseError: null };
       } catch (err) {
         if (err instanceof ParseError) {

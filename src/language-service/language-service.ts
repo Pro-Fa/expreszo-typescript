@@ -23,6 +23,7 @@ import type {
   GetHoverParams,
   GetDiagnosticsParams,
   GetCodeActionsParams,
+  FormatParams,
   LanguageServiceApi,
   HoverV2
 } from './language-service.types';
@@ -36,7 +37,8 @@ import type {
   Position,
   SignatureHelp,
   SemanticTokens,
-  CodeAction
+  CodeAction,
+  TextEdit
 } from 'vscode-languageserver-types';
 import { CompletionItemKind, MarkupKind, InsertTextFormat } from 'vscode-languageserver-types';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -65,6 +67,7 @@ import { encodeSemanticTokens } from './semantic-tokens';
 import { getUnknownIdentDiagnostics } from './unknown-ident';
 import { getTypeMismatchDiagnostics } from './type-check';
 import { getCodeActions as computeCodeActions } from './code-actions';
+import { format as computeFormat } from './formatter';
 
 export function createLanguageService(options: LanguageServiceOptions | undefined = undefined): LanguageServiceApi {
   // Build a parser instance to access keywords/operators/functions/consts
@@ -421,6 +424,10 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
     return computeCodeActions(params, parser, functionNamesSet());
   }
 
+  function format(params: FormatParams): TextEdit[] {
+    return computeFormat(params, parseCache);
+  }
+
   return {
     getCompletions,
     getHover,
@@ -432,7 +439,8 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
     getReferences,
     getSignatureHelp,
     getSemanticTokens,
-    getCodeActions
+    getCodeActions,
+    format
   };
 
 }

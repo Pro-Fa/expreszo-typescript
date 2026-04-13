@@ -41,6 +41,7 @@ describe('MCP server', () => {
       ._registeredTools;
     const names = Object.keys(registry).sort();
     expect(names).toEqual([
+      'expreszo_format',
       'expreszo_get_code_actions',
       'expreszo_get_completions',
       'expreszo_get_definition',

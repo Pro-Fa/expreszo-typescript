@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import type { LanguageServiceApi } from '../language-service/language-service.types.js';
 import type { Values } from '../types/values.js';
+import type { Diagnostic } from 'vscode-languageserver-types';
 import { resolvePosition, type PositionInput } from './position.js';
 
 const DEFAULT_URI = 'expreszo://inline';
@@ -319,7 +320,7 @@ export function registerTools(server: McpServer, ls: LanguageServiceApi): void {
           textDocument: doc,
           range,
           context: {
-            diagnostics: context.diagnostics,
+            diagnostics: context.diagnostics as Diagnostic[],
             variables: context.variables as Values | undefined
           }
         });
@@ -344,6 +345,27 @@ export function registerTools(server: McpServer, ls: LanguageServiceApi): void {
       try {
         const doc = buildDocument(expression, uri);
         const result = ls.getSemanticTokens({ textDocument: doc });
+        return jsonResult(result);
+      } catch (err) {
+        return errorResult(err);
+      }
+    }
+  );
+
+  server.registerTool(
+    'expreszo_format',
+    {
+      title: 'Expreszo: format expression',
+      description:
+        'Format an expreszo expression using the built-in pretty-printer. Returns an array with at most one whole-document TextEdit, or an empty array if the document is already formatted or fails to parse.',
+      inputSchema: {
+        ...baseShape
+      }
+    },
+    async ({ expression, uri }) => {
+      try {
+        const doc = buildDocument(expression, uri);
+        const result = ls.format({ textDocument: doc });
         return jsonResult(result);
       } catch (err) {
         return errorResult(err);
