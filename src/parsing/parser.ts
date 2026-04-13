@@ -1,8 +1,9 @@
 // cSpell:words TEOF fndef
 import { PrattParser } from './pratt.js';
 import { Expression } from '../core/expression.js';
-import type { Value, VariableResolveResult, VariableResolver, Values } from '../types/values.js';
+import type { Value, ValueObject, VariableResolveResult, VariableResolver, Values } from '../types/values.js';
 import type { OperatorFunction } from '../types/parser.js';
+import { ParseError, VariableError } from '../types/errors.js';
 import { setDeprecationHandler } from '../utils/deprecation.js';
 import type { DeprecationHandler } from '../utils/deprecation.js';
 import { atan2, condition, fac, filter, fold, gamma, hypot, indexOf, indexOfLegacy, join, joinLegacy, map, max, min, random, roundTo, sum, json, stringLength, isEmpty, stringContains, startsWith, endsWith, searchCount, trim, toUpper, toLower, toTitle, split, repeat, reverse, left, right, replace, replaceFirst, naturalSort, toNumber, toBoolean, padLeft, padRight, padBoth, slice, urlEncode, base64Encode, base64Decode, coalesceString, merge, keys, values, count, clamp, reduce, find, some, every, unique, distinct, sort, flattenArray, mapValues, isArray, isObject, isNumber, isString, isBoolean, isNull, isUndefined, isFunctionValue } from '../functions/index.js';
@@ -317,6 +318,131 @@ export class Parser {
    */
   evaluate(expr: string, variables?: Values, resolver?: VariableResolver): Value | Promise<Value> {
     return this.parse(expr).evaluate(variables, resolver);
+  }
+
+  /**
+   * Recursively resolves every property of a plain object against the provided
+   * variables. Each string leaf is parsed; if parsing fails, or the parsed
+   * expression contains no variable references, the original string is kept
+   * untouched. Otherwise the expression is evaluated and its result replaces
+   * the string. Nested arrays and objects recurse. All other primitive values
+   * pass through unchanged.
+   *
+   * @param object - The object whose values should be resolved
+   * @param variables - Optional variable bindings used when evaluating string leaves
+   * @param resolver - Optional per-call variable resolver
+   * @returns A new object with resolved values
+   * @example
+   * ```typescript
+   * const parser = new Parser();
+   * parser.evaluateObject(
+   *   { name: 'user.name', age: 'user.age + 1', label: 'plain string' },
+   *   { user: { name: 'Jane', age: 29 } }
+   * );
+   * // { name: 'Jane', age: 30, label: 'plain string' }
+   * ```
+   */
+  evaluateObject<T extends ValueObject = ValueObject>(
+    object: ValueObject,
+    variables?: Values,
+    resolver?: VariableResolver
+  ): T {
+    if (object === null || object === undefined) {
+      return {} as T;
+    }
+
+    if (typeof object !== 'object') {
+      return this.resolveValue(object, variables, resolver) as T;
+    }
+
+    if (Array.isArray(object)) {
+      return this.evaluateArray(object, variables, resolver) as unknown as T;
+    }
+
+    const resolved: ValueObject = {};
+    for (const [key, value] of Object.entries(object)) {
+      resolved[key] = this.resolveValue(value, variables, resolver);
+    }
+
+    return resolved as T;
+  }
+
+  /**
+   * Recursively resolves every item of an array against the provided variables.
+   * Behaves like {@link Parser.evaluateObject} for each element: strings are
+   * parsed and evaluated only when they reference a variable, nested arrays and
+   * objects recurse, and other values pass through unchanged.
+   *
+   * @param array - The array whose items should be resolved
+   * @param variables - Optional variable bindings used when evaluating string leaves
+   * @param resolver - Optional per-call variable resolver
+   * @returns A new array with resolved items
+   * @example
+   * ```typescript
+   * const parser = new Parser();
+   * parser.evaluateArray(
+   *   ['x', 'x * 2', 'literal'],
+   *   { x: 21 }
+   * );
+   * // [21, 42, 'literal']
+   * ```
+   */
+  evaluateArray<T = Value>(
+    array: readonly Value[],
+    variables?: Values,
+    resolver?: VariableResolver
+  ): T[] {
+    if (!Array.isArray(array)) {
+      return [];
+    }
+
+    const resolved: Value[] = [];
+    for (const value of array) {
+      resolved.push(this.resolveValue(value, variables, resolver));
+    }
+
+    return resolved as T[];
+  }
+
+  private resolveValue(
+    value: Value,
+    variables?: Values,
+    resolver?: VariableResolver
+  ): Value {
+    if (typeof value === 'string') {
+      let expr: Expression;
+      try {
+        expr = this.parse(value);
+      } catch (err) {
+        if (err instanceof ParseError) {
+          return value;
+        }
+        throw err;
+      }
+
+      if (expr.variables().length === 0) {
+        return value;
+      }
+
+      try {
+        return expr.evaluate(variables, resolver) as Value;
+      } catch (err) {
+        if (err instanceof VariableError) {
+          return value;
+        }
+        throw err;
+      }
+    }
+
+    if (Array.isArray(value)) {
+      return this.evaluateArray(value, variables, resolver);
+    }
+
+    if (typeof value === 'object' && value !== null) {
+      return this.evaluateObject(value as ValueObject, variables, resolver);
+    }
+
+    return value;
   }
 
   static setDeprecationHandler(handler: DeprecationHandler | undefined): void {

@@ -101,6 +101,52 @@ parser.evaluate('$a + $b', {}, (name) =>
 ); // per-call resolver; parser.resolve is not mutated
 ```
 
+### evaluateObject(object, variables?, resolver?)
+
+Recursively resolve every property of a plain object against a set of variables. Useful when a payload mixes literal values with expression strings.
+
+```js
+const parser = new Parser();
+
+parser.evaluateObject(
+  {
+    name: 'user.name',
+    ageNextYear: 'user.age + 1',
+    label: 'plain string',
+    scores: ['user.score', 'user.score * 2']
+  },
+  { user: { name: 'Jane', age: 29, score: 10 } }
+);
+// {
+//   name: 'Jane',
+//   ageNextYear: 30,
+//   label: 'plain string',
+//   scores: [10, 20]
+// }
+```
+
+**String handling rules**
+
+Each string leaf is treated as a *possible* expression:
+
+1. The string is parsed. If parsing fails (`ParseError`), the original string is returned unchanged.
+2. If parsing succeeds but the expression references no variables (e.g. `"42"`, `"2 + 3"`), the original string is returned unchanged. This preserves literal text and keeps types stable.
+3. The expression is evaluated with `variables` and the optional per-call `resolver`. If evaluation raises a `VariableError` (i.e. the string looked like a bareword such as `"literal"` but no matching variable exists), the original string is returned unchanged. All other evaluation errors propagate.
+
+Nested arrays and objects recurse. All other primitives (numbers, booleans, `null`, `undefined`) pass through untouched.
+
+### evaluateArray(array, variables?, resolver?)
+
+Array counterpart to `evaluateObject`. Each element is resolved with the same rules: strings that reference variables are evaluated, literal strings stay as-is, nested structures recurse, primitives pass through.
+
+```js
+parser.evaluateArray(
+  ['x', 'x * 2', 'literal', { nested: 'x + 1' }],
+  { x: 21 }
+);
+// [21, 42, 'literal', { nested: 22 }]
+```
+
 ## Static Methods
 
 ### Parser.parse(expression: string)
