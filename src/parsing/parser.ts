@@ -6,7 +6,7 @@ import type { OperatorFunction } from '../types/parser.js';
 import { ParseError, VariableError } from '../types/errors.js';
 import { setDeprecationHandler } from '../utils/deprecation.js';
 import type { DeprecationHandler } from '../utils/deprecation.js';
-import { atan2, condition, fac, filter, fold, gamma, hypot, indexOf, indexOfLegacy, join, joinLegacy, map, max, min, random, roundTo, sum, json, stringLength, isEmpty, stringContains, startsWith, endsWith, searchCount, trim, toUpper, toLower, toTitle, split, repeat, reverse, left, right, replace, replaceFirst, naturalSort, toNumber, toBoolean, padLeft, padRight, padBoth, slice, urlEncode, base64Encode, base64Decode, coalesceString, merge, keys, values, count, clamp, reduce, find, some, every, unique, distinct, sort, flattenArray, mapValues, isArray, isObject, isNumber, isString, isBoolean, isNull, isUndefined, isFunctionValue } from '../functions/index.js';
+import { atan2, condition, fac, filter, fold, gamma, hypot, indexOf, indexOfLegacy, join, joinLegacy, map, max, min, random, roundTo, sum, json, stringLength, isEmpty, stringContains, startsWith, endsWith, searchCount, trim, toUpper, toLower, toTitle, split, repeat, reverse, left, right, replace, replaceFirst, naturalSort, toNumber, toBoolean, padLeft, padRight, padBoth, slice, urlEncode, base64Encode, base64Decode, coalesceString, merge, keys, values, count, clamp, reduce, find, some, every, unique, distinct, sort, flattenArray, mapValues, pick, omit, isArray, isObject, isNumber, isString, isBoolean, isNull, isUndefined, isFunctionValue, mean, median, mostFrequent, variance, stddev, percentile, range, chunk, union, intersect, groupBy, countBy } from '../functions/index.js';
 import {
   add,
   addLegacy,
@@ -244,6 +244,22 @@ export class Parser {
       values: values,
       flatten: flattenArray,
       mapValues: mapValues,
+      pick: pick,
+      omit: omit,
+      // Statistics
+      mean: mean,
+      median: median,
+      mostFrequent: mostFrequent,
+      variance: variance,
+      stddev: stddev,
+      percentile: percentile,
+      // Collection operations
+      range: range,
+      chunk: chunk,
+      union: union,
+      intersect: intersect,
+      groupBy: groupBy,
+      countBy: countBy,
       // Type checking functions
       isArray: isArray,
       isObject: isObject,

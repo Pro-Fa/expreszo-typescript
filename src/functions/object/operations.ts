@@ -101,6 +101,93 @@ export function flatten(
   return result;
 }
 
+/**
+ * Returns a new object containing only the given keys from `obj`.
+ * Keys that do not exist on `obj` are silently skipped.
+ * @param obj - Source object
+ * @param keyList - Array of string keys to keep
+ */
+export function pick(
+  obj: ValueObject | undefined,
+  keyList: Value[] | string | undefined
+): ValueObject | undefined {
+  if (obj === undefined || keyList === undefined) {
+    return undefined;
+  }
+  if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
+    throw new Error(
+      `pick(obj, keys) expects an object as first argument, got ${getTypeName(obj)}.\n` +
+      'Example: pick({a: 1, b: 2, c: 3}, ["a", "c"])'
+    );
+  }
+  // Accept a single string key as a convenience for single-key picks.
+  const list: Value[] = typeof keyList === 'string' ? [keyList] : keyList;
+  if (!Array.isArray(list)) {
+    throw new Error(
+      `pick(obj, keys) expects an array of strings as second argument, got ${getTypeName(keyList)}.\n` +
+      'Example: pick({a: 1, b: 2}, ["a"])'
+    );
+  }
+  const result: ValueObject = {};
+  for (const k of list) {
+    if (typeof k !== 'string') {
+      throw new Error(
+        `pick(obj, keys) expects all keys to be strings, got ${getTypeName(k)}.\n` +
+        'Example: pick({a: 1, b: 2}, ["a", "b"])'
+      );
+    }
+    if (Object.prototype.hasOwnProperty.call(obj, k)) {
+      result[k] = obj[k];
+    }
+  }
+  return result;
+}
+
+/**
+ * Returns a new object with the given keys removed from `obj`.
+ * Keys that do not exist on `obj` are silently ignored.
+ * @param obj - Source object
+ * @param keyList - Array of string keys to drop
+ */
+export function omit(
+  obj: ValueObject | undefined,
+  keyList: Value[] | string | undefined
+): ValueObject | undefined {
+  if (obj === undefined || keyList === undefined) {
+    return undefined;
+  }
+  if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
+    throw new Error(
+      `omit(obj, keys) expects an object as first argument, got ${getTypeName(obj)}.\n` +
+      'Example: omit({a: 1, b: 2, c: 3}, ["b"])'
+    );
+  }
+  const list: Value[] = typeof keyList === 'string' ? [keyList] : keyList;
+  if (!Array.isArray(list)) {
+    throw new Error(
+      `omit(obj, keys) expects an array of strings as second argument, got ${getTypeName(keyList)}.\n` +
+      'Example: omit({a: 1, b: 2}, ["a"])'
+    );
+  }
+  const exclude = new Set<string>();
+  for (const k of list) {
+    if (typeof k !== 'string') {
+      throw new Error(
+        `omit(obj, keys) expects all keys to be strings, got ${getTypeName(k)}.\n` +
+        'Example: omit({a: 1, b: 2}, ["a", "b"])'
+      );
+    }
+    exclude.add(k);
+  }
+  const result: ValueObject = {};
+  for (const k of Object.keys(obj)) {
+    if (!exclude.has(k)) {
+      result[k] = obj[k];
+    }
+  }
+  return result;
+}
+
 export function mapValues(obj: any, fn: any): ValueObject | undefined {
   if (obj === undefined) return undefined;
   if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {

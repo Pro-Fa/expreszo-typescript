@@ -4,3 +4,4 @@
  */
 
 export * from './operations';
+export * from './collection.js';

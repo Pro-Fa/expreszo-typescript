@@ -4,3 +4,4 @@
  */
 
 export * from './advanced.js';
+export * from './statistics.js';

@@ -24,7 +24,10 @@ import {
   padLeft, padRight, padBoth, slice, urlEncode, base64Encode, base64Decode,
   coalesceString, merge, keys, values, count,
   clamp, reduce, find, some, every, unique, distinct, sort, flattenArray, mapValues,
-  isArray, isObject, isNumber, isString, isBoolean, isNull, isUndefined, isFunctionValue
+  pick, omit,
+  isArray, isObject, isNumber, isString, isBoolean, isNull, isUndefined, isFunctionValue,
+  mean, median, mostFrequent, variance, stddev, percentile,
+  range, chunk, union, intersect, groupBy, countBy
 } from '../../functions/index.js';
 import { pow } from '../../operators/binary/index.js';
 
@@ -41,6 +44,12 @@ const RAW_BUILTIN_FUNCTIONS: readonly Omit<FunctionDescriptor, 'docs'>[] = [
   { name: 'random',  category: 'math', pure: false, safe: true, async: false, impl: random },
   { name: 'roundTo', category: 'math', pure: true,  safe: true, async: false, impl: roundTo },
   { name: 'sum',     category: 'math', pure: true,  safe: true, async: false, impl: sum },
+  { name: 'mean',         category: 'math', pure: true, safe: true, async: false, impl: mean },
+  { name: 'median',       category: 'math', pure: true, safe: true, async: false, impl: median },
+  { name: 'mostFrequent', category: 'math', pure: true, safe: true, async: false, impl: mostFrequent },
+  { name: 'variance',     category: 'math', pure: true, safe: true, async: false, impl: variance },
+  { name: 'stddev',       category: 'math', pure: true, safe: true, async: false, impl: stddev },
+  { name: 'percentile',   category: 'math', pure: true, safe: true, async: false, impl: percentile },
 
   // Array
   { name: 'count',    category: 'array', pure: true, safe: true, async: false, impl: count },
@@ -55,6 +64,12 @@ const RAW_BUILTIN_FUNCTIONS: readonly Omit<FunctionDescriptor, 'docs'>[] = [
   { name: 'indexOf',  category: 'array', pure: true, safe: true, async: false, impl: indexOf },
   { name: 'join',     category: 'array', pure: true, safe: true, async: false, impl: join },
   { name: 'map',      category: 'array', pure: true, safe: true, async: false, impl: map },
+  { name: 'range',     category: 'array', pure: true, safe: true, async: false, impl: range },
+  { name: 'chunk',     category: 'array', pure: true, safe: true, async: false, impl: chunk },
+  { name: 'union',     category: 'array', pure: true, safe: true, async: false, impl: union },
+  { name: 'intersect', category: 'array', pure: true, safe: true, async: false, impl: intersect },
+  { name: 'groupBy',   category: 'array', pure: true, safe: true, async: false, impl: groupBy },
+  { name: 'countBy',   category: 'array', pure: true, safe: true, async: false, impl: countBy },
 
   // String
   { name: 'length',       category: 'string', pure: true, safe: true, async: false, impl: stringLength },
@@ -95,6 +110,8 @@ const RAW_BUILTIN_FUNCTIONS: readonly Omit<FunctionDescriptor, 'docs'>[] = [
   { name: 'keys',      category: 'object', pure: true, safe: true, async: false, impl: keys },
   { name: 'values',    category: 'object', pure: true, safe: true, async: false, impl: values },
   { name: 'mapValues', category: 'object', pure: true, safe: true, async: false, impl: mapValues },
+  { name: 'pick',      category: 'object', pure: true, safe: true, async: false, impl: pick },
+  { name: 'omit',      category: 'object', pure: true, safe: true, async: false, impl: omit },
 
   // Utility
   { name: 'if',   category: 'utility', pure: true, safe: true, async: false, impl: condition },

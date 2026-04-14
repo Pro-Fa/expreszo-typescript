@@ -341,5 +341,97 @@ export const BUILTIN_FUNCTION_DOCS: Readonly<Record<string, FunctionDocs>> = {
     params: [
       { name: 'value', description: 'Value to check.', type: 'any' }
     ]
+  },
+  mean: {
+    description: 'Arithmetic mean (average) of an array of numbers. Returns undefined for an empty array.',
+    params: [
+      { name: 'a', description: 'Array of numbers.', type: 'array' }
+    ]
+  },
+  median: {
+    description: 'Median of an array of numbers. For an even-length array, returns the mean of the two middle values. Returns undefined for an empty array.',
+    params: [
+      { name: 'a', description: 'Array of numbers.', type: 'array' }
+    ]
+  },
+  mostFrequent: {
+    description: 'Most frequently occurring value in an array (statistical mode). On ties, returns the value that first reached the highest count. Works on any element type.',
+    params: [
+      { name: 'a', description: 'Input array.', type: 'array' }
+    ]
+  },
+  variance: {
+    description: 'Population variance (mean of squared deviations from the mean). Returns undefined for an empty array.',
+    params: [
+      { name: 'a', description: 'Array of numbers.', type: 'array' }
+    ]
+  },
+  stddev: {
+    description: 'Population standard deviation (square root of variance). Returns undefined for an empty array.',
+    params: [
+      { name: 'a', description: 'Array of numbers.', type: 'array' }
+    ]
+  },
+  percentile: {
+    description: 'Value at the given percentile using linear interpolation between ranks. p is a percentage in [0, 100].',
+    params: [
+      { name: 'a', description: 'Array of numbers.', type: 'array' },
+      { name: 'p', description: 'Percentile in [0, 100].', type: 'number' }
+    ]
+  },
+  range: {
+    description: 'Generate an array of numbers from start (inclusive) to end (exclusive). Step defaults to 1; a negative step counts down.',
+    params: [
+      { name: 'start', description: 'Start value (inclusive).', type: 'number' },
+      { name: 'end', description: 'End value (exclusive).', type: 'number' },
+      { name: 'step', description: 'Step size (default 1).', optional: true, type: 'number' }
+    ]
+  },
+  chunk: {
+    description: 'Split array into groups of `size` elements. The last chunk may be shorter.',
+    params: [
+      { name: 'a', description: 'Input array.', type: 'array' },
+      { name: 'size', description: 'Positive integer chunk size.', type: 'number' }
+    ]
+  },
+  union: {
+    description: 'Concatenate arrays and remove duplicates, preserving first-seen order. Element equality follows Set semantics (strict for primitives, reference for objects).',
+    params: [
+      { name: 'arrays', description: 'Arrays to union.', isVariadic: true, type: 'array' }
+    ]
+  },
+  intersect: {
+    description: 'Elements present in every input array, deduped and preserving the order they appear in the first array. Element equality follows Set semantics.',
+    params: [
+      { name: 'arrays', description: 'Arrays to intersect.', isVariadic: true, type: 'array' }
+    ]
+  },
+  groupBy: {
+    description: 'Group elements into an object keyed by `keyFn(element, index)`. Each value is an array of elements in original order. Keys are coerced to strings.',
+    params: [
+      { name: 'a', description: 'Input array.', type: 'array' },
+      { name: 'keyFn', description: 'Key function. Eg: `u => u.role`', type: 'function' }
+    ]
+  },
+  countBy: {
+    description: 'Count elements by key using `keyFn(element, index)`. Returns an object mapping each key to its element count. Keys are coerced to strings.',
+    params: [
+      { name: 'a', description: 'Input array.', type: 'array' },
+      { name: 'keyFn', description: 'Key function. Eg: `u => u.role`', type: 'function' }
+    ]
+  },
+  pick: {
+    description: 'Return a new object containing only the listed keys. Missing keys are silently skipped.',
+    params: [
+      { name: 'obj', description: 'Source object.', type: 'object' },
+      { name: 'keys', description: 'Array of string keys to keep.', type: 'array' }
+    ]
+  },
+  omit: {
+    description: 'Return a new object with the listed keys removed. Missing keys are silently ignored.',
+    params: [
+      { name: 'obj', description: 'Source object.', type: 'object' },
+      { name: 'keys', description: 'Array of string keys to drop.', type: 'array' }
+    ]
   }
 };
