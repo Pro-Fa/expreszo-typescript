@@ -50,9 +50,12 @@ describe('MCP server', () => {
       'expreszo_get_folding_ranges',
       'expreszo_get_highlighting',
       'expreszo_get_hover',
+      'expreszo_get_inlay_hints',
       'expreszo_get_references',
       'expreszo_get_semantic_tokens',
-      'expreszo_get_signature_help'
+      'expreszo_get_signature_help',
+      'expreszo_prepare_rename',
+      'expreszo_rename'
     ]);
   });
 
@@ -121,5 +124,63 @@ describe('MCP server', () => {
     const payload = parsePayload(result) as unknown[];
     expect(Array.isArray(payload)).toBe(true);
     expect(payload.length).toBeGreaterThan(0);
+  });
+
+  it('expreszo_prepare_rename returns a range for a renameable variable', async () => {
+    const server = createMcpServer();
+    const result = await callTool(server, 'expreszo_prepare_rename', {
+      expression: 'foo + bar',
+      position: { offset: 1 }
+    });
+    const payload = parsePayload(result) as { start: unknown; end: unknown } | null;
+    expect(payload).toBeTruthy();
+    expect(payload?.start).toBeDefined();
+    expect(payload?.end).toBeDefined();
+  });
+
+  it('expreszo_prepare_rename returns null for a built-in function name', async () => {
+    const server = createMcpServer();
+    const result = await callTool(server, 'expreszo_prepare_rename', {
+      expression: 'sin(x)',
+      position: { offset: 1 }
+    });
+    const payload = parsePayload(result);
+    expect(payload).toBeNull();
+  });
+
+  it('expreszo_rename replaces every occurrence of a variable', async () => {
+    const server = createMcpServer();
+    const result = await callTool(server, 'expreszo_rename', {
+      expression: 'foo + foo * 2',
+      position: { offset: 0 },
+      newName: 'bar'
+    });
+    const payload = parsePayload(result) as { changes?: Record<string, unknown[]> } | null;
+    expect(payload).toBeTruthy();
+    const edits = payload?.changes && Object.values(payload.changes)[0];
+    expect(Array.isArray(edits)).toBe(true);
+    expect((edits as unknown[]).length).toBe(2);
+  });
+
+  it('expreszo_get_inlay_hints emits parameter names for multi-arg built-ins', async () => {
+    const server = createMcpServer();
+    const result = await callTool(server, 'expreszo_get_inlay_hints', {
+      expression: 'pow(2, 8)'
+    });
+    const payload = parsePayload(result) as Array<{ label: string; kind?: number }>;
+    expect(Array.isArray(payload)).toBe(true);
+    expect(payload.length).toBe(2);
+    // Labels should end with ':' (e.g., "base:", "exp:")
+    expect(payload.every((h) => typeof h.label === 'string' && h.label.endsWith(':'))).toBe(true);
+  });
+
+  it('expreszo_get_inlay_hints skips single-parameter functions', async () => {
+    const server = createMcpServer();
+    const result = await callTool(server, 'expreszo_get_inlay_hints', {
+      expression: 'sin(x)'
+    });
+    const payload = parsePayload(result) as unknown[];
+    expect(Array.isArray(payload)).toBe(true);
+    expect(payload.length).toBe(0);
   });
 });

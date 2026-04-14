@@ -372,4 +372,81 @@ export function registerTools(server: McpServer, ls: LanguageServiceApi): void {
       }
     }
   );
+
+  server.registerTool(
+    'expreszo_prepare_rename',
+    {
+      title: 'Expreszo: prepare rename',
+      description:
+        'Returns the source range of the symbol at the given position if it is renameable, or null when the cursor is on a built-in function name, constant, keyword, or any non-identifier token. Call this before expreszo_rename to confirm the operation is valid and to learn which text range will be replaced.',
+      inputSchema: {
+        ...baseShape,
+        ...positionFieldShape
+      }
+    },
+    async ({ expression, uri, position }) => {
+      try {
+        const doc = buildDocument(expression, uri);
+        const result = ls.prepareRename({
+          textDocument: doc,
+          position: resolvePosition(doc, position as PositionInput)
+        });
+        return jsonResult(result);
+      } catch (err) {
+        return errorResult(err);
+      }
+    }
+  );
+
+  server.registerTool(
+    'expreszo_rename',
+    {
+      title: 'Expreszo: rename symbol',
+      description:
+        'Renames the identifier at the given position to `newName`, returning an LSP WorkspaceEdit that replaces every body reference AND every lambda / function-def parameter declaration site in a single edit. Returns null when the cursor is not on a renameable identifier (built-in functions and constants are rejected) or when the document fails to parse.',
+      inputSchema: {
+        ...baseShape,
+        ...positionFieldShape,
+        newName: z.string().min(1).describe('The replacement identifier. Must be non-empty; callers are responsible for ensuring it is a valid expreszo identifier.')
+      }
+    },
+    async ({ expression, uri, position, newName }) => {
+      try {
+        const doc = buildDocument(expression, uri);
+        const result = ls.rename({
+          textDocument: doc,
+          position: resolvePosition(doc, position as PositionInput),
+          newName
+        });
+        return jsonResult(result);
+      } catch (err) {
+        return errorResult(err);
+      }
+    }
+  );
+
+  server.registerTool(
+    'expreszo_get_inlay_hints',
+    {
+      title: 'Expreszo: get inlay hints',
+      description:
+        'Returns LSP InlayHint entries for parameter-name labels at each argument of every built-in function call with two or more documented parameters. For example, `pow(2, 8)` yields hints `base:` before `2` and `exp:` before `8`. Single-parameter functions (sin, abs, ...) are intentionally skipped. Pass an optional `range` to limit hints to a subregion.',
+      inputSchema: {
+        ...baseShape,
+        range: rangeSchema.optional().describe('Optional viewport range; hints outside it are omitted. When omitted, hints for the whole expression are returned.')
+      }
+    },
+    async ({ expression, uri, range }) => {
+      try {
+        const doc = buildDocument(expression, uri);
+        const result = ls.getInlayHints({
+          textDocument: doc,
+          range
+        });
+        return jsonResult(result);
+      } catch (err) {
+        return errorResult(err);
+      }
+    }
+  );
 }
