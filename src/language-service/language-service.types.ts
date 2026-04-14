@@ -12,7 +12,9 @@ import type {
   SemanticTokens,
   CodeAction,
   Range,
-  TextEdit
+  TextEdit,
+  WorkspaceEdit,
+  InlayHint
 } from 'vscode-languageserver-types';
 import type { FormatOptions } from './formatter/pretty-printer';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
@@ -97,11 +99,52 @@ export interface LanguageServiceApi {
      * formatted (or when it does not parse).
      */
     format(params: FormatParams): TextEdit[];
+
+    /**
+     * Returns the range of the renameable symbol at `position`, or null when
+     * the cursor is not on a user-defined identifier (e.g. it is on a built-in
+     * function name, constant, or keyword). Clients call this before `rename`
+     * to confirm the operation is valid and to display the pre-filled rename
+     * input filled with the current name.
+     */
+    prepareRename(params: PrepareRenameParams): Range | null;
+
+    /**
+     * Replaces all occurrences of the identifier at `position` with `newName`,
+     * including lambda / function-def parameter declarations. Returns null when
+     * the cursor is not on a renameable identifier or the document does not
+     * parse.
+     */
+    rename(params: RenameParams): WorkspaceEdit | null;
+
+    /**
+     * Returns parameter-name inlay hints for built-in function calls within the
+     * optional `range`. Hints are only emitted for functions with two or more
+     * documented parameters so single-argument calls stay uncluttered.
+     */
+    getInlayHints(params: GetInlayHintsParams): InlayHint[];
 }
 
 export interface FormatParams {
     textDocument: TextDocument;
     options?: FormatOptions;
+}
+
+export interface PrepareRenameParams {
+    textDocument: TextDocument;
+    position: Position;
+}
+
+export interface RenameParams {
+    textDocument: TextDocument;
+    position: Position;
+    newName: string;
+}
+
+export interface GetInlayHintsParams {
+    textDocument: TextDocument;
+    /** Optional viewport range; hints outside it are omitted. */
+    range?: Range;
 }
 
 export interface GetCodeActionsParams {
@@ -114,7 +157,7 @@ export interface GetCodeActionsParams {
 }
 
 export interface HighlightToken {
-    type: 'number' | 'string' | 'name' | 'keyword' | 'operator' | 'function' | 'punctuation' | 'constant';
+    type: 'number' | 'string' | 'name' | 'keyword' | 'operator' | 'function' | 'punctuation' | 'constant' | 'comment';
     start: number;
     end: number;
     value?: string | number | boolean | undefined;

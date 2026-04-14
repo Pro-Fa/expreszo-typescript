@@ -546,6 +546,35 @@ describe('Language Service', () => {
       expect(keywordToken).toBeDefined();
     });
 
+    it('should highlight // line comments', () => {
+      const text = '// hello\n1 + 2';
+      const doc = TextDocument.create('file://test', 'plaintext', 1, text);
+      const tokens = ls.getHighlighting(doc);
+
+      const commentToken = tokens.find(t => t.type === 'comment');
+      expect(commentToken).toBeDefined();
+      expect(commentToken?.start).toBe(0);
+      expect(commentToken?.end).toBe(8); // up to but not including the newline
+    });
+
+    it('should highlight /* */ block comments', () => {
+      const text = '1 + /* inline */ 2';
+      const doc = TextDocument.create('file://test', 'plaintext', 1, text);
+      const tokens = ls.getHighlighting(doc);
+
+      const commentToken = tokens.find(t => t.type === 'comment');
+      expect(commentToken).toBeDefined();
+      expect(text.slice(commentToken!.start, commentToken!.end)).toBe('/* inline */');
+    });
+
+    it('should not treat // inside a string literal as a comment', () => {
+      const text = '"// not a comment"';
+      const doc = TextDocument.create('file://test', 'plaintext', 1, text);
+      const tokens = ls.getHighlighting(doc);
+
+      expect(tokens.find(t => t.type === 'comment')).toBeUndefined();
+    });
+
     it('should provide correct start and end positions', () => {
       const text = 'foo + bar';
       const doc = TextDocument.create('file://test', 'plaintext', 1, text);
@@ -1058,6 +1087,36 @@ describe('Language Service', () => {
           variables: { user: { age: 21 } }
         });
         expect(diagnostics.filter(d => d.code === 'unknown-ident')).toEqual([]);
+      });
+
+      it('treats inline function parameters as in-scope in the function body', () => {
+        const doc = TextDocument.create(
+          'file://test',
+          'plaintext',
+          1,
+          'map(company.departments, f(d) = d.budget)'
+        );
+        const diagnostics = ls.getDiagnostics({
+          textDocument: doc,
+          variables: { company: { departments: [] } }
+        });
+        expect(diagnostics.filter(d => d.code === 'unknown-ident')).toEqual([]);
+      });
+
+      it('warns on unknown identifiers outside any inline function parameters', () => {
+        const doc = TextDocument.create(
+          'file://test',
+          'plaintext',
+          1,
+          'map(items, f(d) = d.budget) + d'
+        );
+        const diagnostics = ls.getDiagnostics({
+          textDocument: doc,
+          variables: { items: [] }
+        });
+        const unknown = diagnostics.filter(d => d.code === 'unknown-ident');
+        expect(unknown.length).toBe(1);
+        expect(unknown[0].message).toContain("'d'");
       });
     });
   });

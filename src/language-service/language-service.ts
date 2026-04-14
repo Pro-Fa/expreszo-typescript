@@ -24,6 +24,9 @@ import type {
   GetDiagnosticsParams,
   GetCodeActionsParams,
   FormatParams,
+  PrepareRenameParams,
+  RenameParams,
+  GetInlayHintsParams,
   LanguageServiceApi,
   HoverV2
 } from './language-service.types';
@@ -38,7 +41,9 @@ import type {
   SignatureHelp,
   SemanticTokens,
   CodeAction,
-  TextEdit
+  TextEdit,
+  WorkspaceEdit,
+  InlayHint
 } from 'vscode-languageserver-types';
 import { CompletionItemKind, MarkupKind, InsertTextFormat } from 'vscode-languageserver-types';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -49,7 +54,8 @@ import {
   extractPathPrefix,
   makeTokenStream,
   iterateTokens,
-  TokenSpan
+  TokenSpan,
+  findCommentSpans
 } from './ls-utils';
 import { pathVariableCompletions, tryVariableHoverUsingSpans } from './variable-utils';
 import {
@@ -61,7 +67,12 @@ import { ParseError } from '../types/errors';
 import { createParseCache } from './shared/parse-cache';
 import { getDocumentSymbols as computeDocumentSymbols } from './document-symbols';
 import { getFoldingRanges as computeFoldingRanges } from './folding';
-import { getDefinition as computeDefinition, getReferences as computeReferences } from './references';
+import {
+  getDefinition as computeDefinition,
+  getReferences as computeReferences,
+  buildRenameEdit as computeRenameEdit
+} from './references';
+import { getInlayHints as computeInlayHints } from './inlay-hints';
 import { getSignatureHelp as computeSignatureHelp } from './signature-help';
 import { encodeSemanticTokens } from './semantic-tokens';
 import { getUnknownIdentDiagnostics } from './unknown-ident';
@@ -77,6 +88,28 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
 
   const parseCache = createParseCache(parser);
 
+  // Token span cache — keyed by URI, evicted when version or text changes.
+  // Shared by getHighlighting, getDiagnostics, getHover, and getSignatureHelp
+  // so the lexer runs at most once per document version per language-service call.
+  interface TokenCacheEntry { version: number; text: string; spans: TokenSpan[] }
+  const tokenSpanCache = new Map<string, TokenCacheEntry>();
+
+  function getTokenSpans(textDocument: TextDocument): TokenSpan[] | null {
+    const text = textDocument.getText();
+    const cached = tokenSpanCache.get(textDocument.uri);
+    if (cached && cached.version === textDocument.version && cached.text === text) {
+      return cached.spans;
+    }
+    try {
+      const ts = makeTokenStream(parser, text);
+      const spans = iterateTokens(ts);
+      tokenSpanCache.set(textDocument.uri, { version: textDocument.version, text, spans });
+      return spans;
+    } catch {
+      return null;
+    }
+  }
+
   const constantDocs = {
     ...DEFAULT_CONSTANT_DOCS
   } as Record<string, string>;
@@ -86,6 +119,7 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
   // as concurrent uses will operate on separate instances
   let cachedFunctions: FunctionDetails[] | null = null;
   let cachedFunctionNames: Set<string> | null = null;
+  let cachedFunctionDetailsMap: Map<string, FunctionDetails> | null = null;
   let cachedConstants: string[] | null = null;
 
   /**
@@ -117,11 +151,18 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
     if (cachedFunctionNames !== null) {
       return cachedFunctionNames;
     }
-    // Calling allFunctions() ensures cachedFunctionNames is populated
     allFunctions();
-    // After allFunctions(), cachedFunctionNames is guaranteed to be non-null
-    // We return a fallback empty set only as a defensive measure
     return cachedFunctionNames ?? new Set<string>();
+  }
+
+  function functionDetailsMap(): Map<string, FunctionDetails> {
+    if (cachedFunctionDetailsMap !== null) {
+      return cachedFunctionDetailsMap;
+    }
+    const map = new Map<string, FunctionDetails>();
+    for (const func of allFunctions()) map.set(func.name, func);
+    cachedFunctionDetailsMap = map;
+    return map;
   }
 
   /**
@@ -243,11 +284,9 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
 
   function getHover(params: GetHoverParams): HoverV2 {
     const { textDocument, position, variables } = params;
-    const text = textDocument.getText();
 
-    // Build spans once and reuse
-    const ts = makeTokenStream(parser, text);
-    const spans = iterateTokens(ts);
+    // Reuse the cached token spans — avoids re-tokenising on each hover request.
+    const spans = getTokenSpans(textDocument) ?? [];
 
     const variableHover = tryVariableHoverUsingSpans(textDocument, position, variables, spans);
     if (variableHover) {
@@ -255,7 +294,6 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
     }
 
     // Fallback to token-based hover
-
     const offset = textDocument.offsetAt(position);
     const span = spans.find(s => offset >= s.start && offset <= s.end);
     if (!span) {
@@ -265,22 +303,26 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
     const token = span.token;
     const label = String(token.value);
 
-    if (token.type === TNAME || token.type === TKEYWORD) {
-      // Function hover
-      const func = allFunctions().find(f => f.name === label);
-      if (func) {
-        const range: Range = {
-          start: textDocument.positionAt(span.start),
-          end: textDocument.positionAt(span.end)
-        };
-        const value = func.docs() ?? func.details();
-        return {
-          contents: { kind: MarkupKind.Markdown, value },
-          range
-        };
+    // TCONST is included here so that built-in literals (true/false/null) get
+    // their documentation shown just like numeric constants (PI, E).
+    if (token.type === TNAME || token.type === TKEYWORD || token.type === TCONST) {
+      // Function hover — only TNAME tokens can be function names
+      if (token.type === TNAME) {
+        const func = allFunctions().find(f => f.name === label);
+        if (func) {
+          const range: Range = {
+            start: textDocument.positionAt(span.start),
+            end: textDocument.positionAt(span.end)
+          };
+          const value = func.docs() ?? func.details();
+          return {
+            contents: { kind: MarkupKind.Markdown, value },
+            range
+          };
+        }
       }
 
-      // Constant hover
+      // Constant hover (numeric constants and built-in literals)
       if (allConstants().includes(label)) {
         const v = parser.numericConstants[label] ?? parser.buildInLiterals[label];
         const doc = constantDocs[label];
@@ -314,8 +356,8 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
       return { contents: { kind: MarkupKind.PlainText, value: `operator: ${label}` }, range };
     }
 
-    // Numbers/strings
-    if (token.type === TNUMBER || token.type === TSTRING || token.type === TCONST) {
+    // Numbers and strings
+    if (token.type === TNUMBER || token.type === TSTRING) {
       const range: Range = { start: textDocument.positionAt(span.start), end: textDocument.positionAt(span.end) };
       return { contents: { kind: MarkupKind.PlainText, value: `${valueTypeName(token.value)}` }, range };
     }
@@ -325,14 +367,21 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
 
   function getHighlighting(textDocument: TextDocument): HighlightToken[] {
     const text = textDocument.getText();
-    const tokenStream = makeTokenStream(parser, text);
-    const spans = iterateTokens(tokenStream);
-    return spans.map(span => ({
+    const spans = getTokenSpans(textDocument) ?? [];
+    const tokens: HighlightToken[] = spans.map(span => ({
       type: tokenKindToHighlight(span.token),
       start: span.start,
       end: span.end,
       value: span.token.value
     }));
+    // The parser strips comments before tokenization, so rescan the raw text
+    // and append comment highlights directly. Sorting keeps clients that
+    // expect ordered spans happy.
+    for (const c of findCommentSpans(text)) {
+      tokens.push({ type: 'comment', start: c.start, end: c.end });
+    }
+    tokens.sort((a, b) => a.start - b.start);
+    return tokens;
   }
 
   /**
@@ -342,46 +391,26 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
    */
   function getDiagnostics(params: GetDiagnosticsParams): Diagnostic[] {
     const { textDocument } = params;
-    const text = textDocument.getText();
     const diagnostics: Diagnostic[] = [];
 
-    // Try to parse the expression to catch syntax errors
-    // The parser will throw ParseError for issues like:
-    // - Unknown characters
-    // - Unclosed strings
-    // - Illegal escape sequences
-    // - Unexpected tokens
-    // - Missing expected tokens (like closing brackets)
-    try {
-      parser.parse(text);
-    } catch (error) {
-      if (error instanceof ParseError) {
-        diagnostics.push(createDiagnosticFromParseError(textDocument, error));
-      } else if (error instanceof Error) {
-        // Handle generic errors thrown by the parser (e.g., invalid object definition)
-        diagnostics.push(createDiagnosticFromError(textDocument, error));
+    // Use the parse cache so we don't reparse for every diagnostic sub-pass.
+    const { parseError } = parseCache.get(textDocument);
+    if (parseError) {
+      if (parseError instanceof ParseError) {
+        diagnostics.push(createDiagnosticFromParseError(textDocument, parseError));
+      } else {
+        diagnostics.push(createDiagnosticFromError(textDocument, parseError));
       }
     }
 
-    // Try to tokenize for function argument checking
-    let spans: TokenSpan[] = [];
-    try {
-      const ts = makeTokenStream(parser, text);
-      spans = iterateTokens(ts);
-    } catch {
-      // If tokenization fails, we already have a parse error diagnostic
-      // Return early since we can't do function argument checking without tokens
-      return diagnostics;
-    }
+    // Use the token span cache for arity checking.
+    // Returns null when tokenisation itself fails (e.g. unclosed string literal),
+    // in which case we skip arity/unknown-ident passes and return parse errors only.
+    const spans = getTokenSpans(textDocument);
+    if (!spans) return diagnostics;
 
-    // Build a map from function name to FunctionDetails for quick lookup
-    const funcDetailsMap = new Map<string, FunctionDetails>();
-    for (const func of allFunctions()) {
-      funcDetailsMap.set(func.name, func);
-    }
-
-    // Get function argument count diagnostics
-    const functionDiagnostics = getDiagnosticsForDocument(params, spans, functionNamesSet(), funcDetailsMap);
+    // Function argument count diagnostics
+    const functionDiagnostics = getDiagnosticsForDocument(params, spans, functionNamesSet(), functionDetailsMap());
     diagnostics.push(...functionDiagnostics);
 
     // Unknown identifier diagnostics (opt-in via `variables`)
@@ -412,7 +441,8 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
   }
 
   function getSignatureHelp(params: { textDocument: TextDocument; position: Position }): SignatureHelp | null {
-    return computeSignatureHelp(params.textDocument, parser, params.position, functionNamesSet());
+    const spans = getTokenSpans(params.textDocument) ?? [];
+    return computeSignatureHelp(params.textDocument, parser, spans, params.position, functionNamesSet());
   }
 
   function getSemanticTokens(params: { textDocument: TextDocument }): SemanticTokens {
@@ -428,6 +458,48 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
     return computeFormat(params, parseCache);
   }
 
+  /**
+   * Returns the range of the symbol at `position` if it is renameable (i.e. a
+   * user-defined identifier, not a built-in function name or constant).
+   * Returns null when the cursor is not on a renameable name.
+   */
+  function prepareRename(params: PrepareRenameParams): Range | null {
+    const { textDocument, position } = params;
+    const spans = getTokenSpans(textDocument) ?? [];
+    const offset = textDocument.offsetAt(position);
+    const hit = spans.find(s => offset >= s.start && offset <= s.end);
+    if (!hit || hit.token.type !== TNAME) return null;
+    const name = String(hit.token.value);
+    // Built-in functions and constants refer to external bindings — renaming
+    // them inside the expression alone would break evaluation semantics.
+    if (functionNamesSet().has(name) || allConstants().includes(name)) return null;
+    return {
+      start: textDocument.positionAt(hit.start),
+      end: textDocument.positionAt(hit.end)
+    };
+  }
+
+  /**
+   * Replaces all occurrences of the identifier at `position` with `newName`,
+   * covering both body references (Ident / NameRef nodes) and lambda / function-def
+   * parameter declaration sites. Returns null when the cursor is not on a
+   * renameable identifier.
+   */
+  function rename(params: RenameParams): WorkspaceEdit | null {
+    const { textDocument, position, newName } = params;
+    const spans = getTokenSpans(textDocument) ?? [];
+    const offset = textDocument.offsetAt(position);
+    const hit = spans.find(s => offset >= s.start && offset <= s.end);
+    if (!hit || hit.token.type !== TNAME) return null;
+    const targetName = String(hit.token.value);
+    if (functionNamesSet().has(targetName) || allConstants().includes(targetName)) return null;
+    return computeRenameEdit(textDocument, parseCache, targetName, newName);
+  }
+
+  function getInlayHints(params: GetInlayHintsParams): InlayHint[] {
+    return computeInlayHints(params.textDocument, parseCache, params.range);
+  }
+
   return {
     getCompletions,
     getHover,
@@ -440,7 +512,10 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
     getSignatureHelp,
     getSemanticTokens,
     getCodeActions,
-    format
+    format,
+    prepareRename,
+    rename,
+    getInlayHints
   };
 
 }

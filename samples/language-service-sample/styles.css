@@ -100,6 +100,30 @@ html, body {
     border-radius: 2px;
 }
 
+/* Horizontal resizer */
+#horizontalResizer {
+    height: 6px;
+    cursor: row-resize;
+    flex-shrink: 0;
+    position: relative;
+}
+
+#horizontalResizer:hover {
+    background-color: #6366f1 !important;
+}
+
+#horizontalResizer::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 2px;
+    background: rgba(100, 100, 100, 0.5);
+    border-radius: 2px;
+}
+
 #resultContainer {
     flex: 1;
     overflow-y: auto;
@@ -163,6 +187,7 @@ html, body {
 .tok-punctuation { color: #383a42 !important; }
 .tok-name { color: #001080 !important; }
 .tok-constant { color: #0070c1 !important; }
+.tok-comment { color: #008000 !important; font-style: italic; }
 
 /* Dark theme token colors */
 .dark .tok-number { color: #b5cea8 !important; }
@@ -173,6 +198,7 @@ html, body {
 .dark .tok-punctuation { color: #d4d4d4 !important; }
 .dark .tok-name { color: #9cdcfe !important; }
 .dark .tok-constant { color: #4fc1ff !important; }
+.dark .tok-comment { color: #6a9955 !important; font-style: italic; }
 
 /* Error styling animation */
 @keyframes shake {

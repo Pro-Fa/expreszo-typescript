@@ -51,4 +51,31 @@ describe('format', () => {
     const doc = docFrom('1 + (');
     expect(ls.format({ textDocument: doc })).toEqual([]);
   });
+
+  it('keeps a flat call with simple arguments on one line', () => {
+    expect(formatOnce(ls, 'length(items)')).toBe('length(items)');
+  });
+
+  it('breaks nested function calls onto multiple lines', () => {
+    const input = 'sum(map(filter(items, f(i) = i > threshold), f(x) = x * 2)) / length(items)';
+    const expected = [
+      'sum(',
+      '  map(',
+      '    filter(',
+      '      items,',
+      '      f(i) = (i > threshold)',
+      '    ),',
+      '    f(x) = (x * 2)',
+      '  )',
+      ') / length(items)'
+    ].join('\n');
+    expect(formatOnce(ls, input)).toBe(expected);
+  });
+
+  it('is idempotent on nested function calls', () => {
+    const input = 'sum(map(filter(items, f(i) = i > threshold), f(x) = x * 2)) / length(items)';
+    const once = formatOnce(ls, input);
+    const twice = formatOnce(ls, once);
+    expect(twice).toBe(once);
+  });
 });

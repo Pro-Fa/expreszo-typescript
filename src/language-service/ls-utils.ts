@@ -203,3 +203,56 @@ export function iterateTokens(ts: TokenStream, untilPos?: number): TokenSpan[] {
   }
   return spans;
 }
+
+export interface CommentSpan {
+  start: number;
+  end: number;
+}
+
+/**
+ * Scan an expression source for line comments and block comments.
+ * The parser strips comments before they reach the token stream, so the
+ * language service rescans the raw text to emit comment highlights and
+ * semantic tokens. String literals are skipped so sequences like `"// not a
+ * comment"` are not reported.
+ */
+export function findCommentSpans(text: string): CommentSpan[] {
+  const spans: CommentSpan[] = [];
+  const n = text.length;
+  let i = 0;
+  while (i < n) {
+    const c = text.charCodeAt(i);
+    // 0x22 = '"', 0x27 = "'"
+    if (c === 0x22 || c === 0x27) {
+      const quote = c;
+      i++;
+      while (i < n && text.charCodeAt(i) !== quote) {
+        if (text.charCodeAt(i) === 0x5c && i + 1 < n) i += 2; // '\\'
+        else i++;
+      }
+      if (i < n) i++;
+      continue;
+    }
+    if (c === 0x2f && i + 1 < n) {
+      const next = text.charCodeAt(i + 1);
+      if (next === 0x2f) {
+        const start = i;
+        i += 2;
+        while (i < n && text.charCodeAt(i) !== 0x0a) i++;
+        spans.push({ start, end: i });
+        continue;
+      }
+      if (next === 0x2a) {
+        const start = i;
+        i += 2;
+        while (i + 1 < n && !(text.charCodeAt(i) === 0x2a && text.charCodeAt(i + 1) === 0x2f)) i++;
+        if (i + 1 < n) i += 2;
+        else i = n;
+        spans.push({ start, end: i });
+        continue;
+      }
+    }
+    i++;
+  }
+  return spans;
+}

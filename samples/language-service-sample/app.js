@@ -179,16 +179,62 @@ function loadExampleFromUrl() {
     document.addEventListener('mousemove', (e) => {
         if (!isResizing) return;
         e.preventDefault();
-        
+
         const containerRect = bottomArea.getBoundingClientRect();
         const containerWidth = containerRect.width;
         const resizerWidth = 6;
-        
+
         let newLeftWidth = e.clientX - containerRect.left;
         newLeftWidth = Math.max(containerWidth * 0.2, Math.min(containerWidth * 0.8, newLeftWidth));
-        
+
         const percentage = (newLeftWidth / containerWidth) * 100;
         contextPane.style.width = percentage + '%';
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isResizing) {
+            isResizing = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        }
+    });
+})();
+
+// Horizontal resizing between expression pane and bottom split
+(function() {
+    const resizer = document.getElementById('horizontalResizer');
+    const expressionPane = document.getElementById('expressionPane');
+    const workArea = document.getElementById('workArea');
+    let isResizing = false;
+
+    resizer.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isResizing = true;
+        document.body.style.cursor = 'row-resize';
+        document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        e.preventDefault();
+
+        const containerRect = workArea.getBoundingClientRect();
+        const containerHeight = containerRect.height;
+
+        let newTopHeight = e.clientY - containerRect.top;
+        newTopHeight = Math.max(containerHeight * 0.15, Math.min(containerHeight * 0.85, newTopHeight));
+
+        expressionPane.style.height = newTopHeight + 'px';
+
+        // Monaco editors need an explicit layout kick when their container
+        // changes size mid-drag, otherwise the viewport stays stale until
+        // the next window resize.
+        if (typeof expressionEditor !== 'undefined' && expressionEditor) {
+            expressionEditor.layout();
+        }
+        if (typeof contextEditor !== 'undefined' && contextEditor) {
+            contextEditor.layout();
+        }
     });
 
     document.addEventListener('mouseup', () => {
@@ -215,6 +261,29 @@ require(['vs/editor/editor.main'], function () {
     
     const languageId = 'expreszo';
     monaco.languages.register({id: languageId});
+
+    // Language configuration — enables Monaco's built-in bracket matching,
+    // auto-closing pairs, surround-with selection, and rainbow bracket
+    // colourisation. No language-service code runs for this; Monaco handles
+    // it all from the config below.
+    monaco.languages.setLanguageConfiguration(languageId, {
+        brackets: [['(', ')'], ['[', ']'], ['{', '}']],
+        autoClosingPairs: [
+            { open: '(', close: ')' },
+            { open: '[', close: ']' },
+            { open: '{', close: '}' },
+            { open: '"', close: '"', notIn: ['string'] },
+            { open: "'", close: "'", notIn: ['string'] }
+        ],
+        surroundingPairs: [
+            { open: '(', close: ')' },
+            { open: '[', close: ']' },
+            { open: '{', close: '}' },
+            { open: '"', close: '"' },
+            { open: "'", close: "'" }
+        ],
+        comments: { lineComment: '//', blockComment: ['/*', '*/'] }
+    });
 
     // Set initial theme
     const currentTheme = html.classList.contains('dark') ? 'vs-dark' : 'vs';
@@ -248,6 +317,13 @@ require(['vs/editor/editor.main'], function () {
     // Load from localStorage or use defaults
     const savedExpression = localStorage.getItem('expreszo-expression') || defaultExpression;
     const savedContext = localStorage.getItem('expreszo-context') || defaultContext;
+    const savedLegacy = localStorage.getItem('expreszo-legacy') === 'true';
+
+    // Legacy-mode toggle — swaps parser operator implementations for `+`, `/`,
+    // `|`, comparisons, `indexOf`, `join`.
+    const legacyToggle = document.getElementById('legacyToggle');
+    legacyToggle.checked = savedLegacy;
+    let legacyMode = savedLegacy;
 
     // Create context editor (JSON)
     const contextModel = monaco.editor.createModel(savedContext, 'json');
@@ -273,11 +349,18 @@ require(['vs/editor/editor.main'], function () {
         minimap: {enabled: false},
         lineNumbers: 'on',
         scrollBeyondLastLine: false,
-        wordWrap: 'on'
+        wordWrap: 'on',
+        // Rainbow-colour nested bracket pairs and always underline the match
+        // under the cursor, driven by the LanguageConfiguration.brackets above.
+        // Vertical bracket-pair guides are intentionally disabled so only the
+        // two matching brackets are highlighted, not the entire span between them.
+        matchBrackets: 'always',
+        bracketPairColorization: { enabled: true, independentColorPoolPerBracketType: true },
+        guides: { bracketPairs: false, highlightActiveBracketPair: true }
     });
 
     // Access ExpresZo UMD
-    const {createLanguageService, Parser} = window.exprEval || {};
+    const {createLanguageService, Parser, SEMANTIC_TOKENS_LEGEND} = window.exprEval || {};
     if (!createLanguageService) {
         console.error('ExpresZo not found. Make sure /dist/bundle.js is built.');
         showError({message: 'ExpresZo library not loaded. Please run: npm run build'}, null);
@@ -285,6 +368,31 @@ require(['vs/editor/editor.main'], function () {
     }
 
     const ls = createLanguageService();
+
+    function toMonacoRange(range) {
+        return new monaco.Range(
+            range.start.line + 1,
+            range.start.character + 1,
+            range.end.line + 1,
+            range.end.character + 1
+        );
+    }
+
+    // LSP SymbolKind (1-based) → Monaco SymbolKind (0-based, shifted by -1)
+    function toMonacoSymbolKind(lspKind) {
+        return Math.max(0, (lspKind ?? 1) - 1);
+    }
+
+    // LSP DiagnosticSeverity (Error=1, Warning=2, Info=3, Hint=4) → Monaco MarkerSeverity
+    function toMonacoSeverity(lspSeverity) {
+        switch (lspSeverity) {
+            case 1: return monaco.MarkerSeverity.Error;
+            case 2: return monaco.MarkerSeverity.Warning;
+            case 3: return monaco.MarkerSeverity.Info;
+            case 4: return monaco.MarkerSeverity.Hint;
+            default: return monaco.MarkerSeverity.Error;
+        }
+    }
 
     // Minimal lsp text document backed by Monaco model
     function makeTextDocument(m) {
@@ -400,7 +508,7 @@ require(['vs/editor/editor.main'], function () {
 
     // Syntax highlighting
     let highlightDecorations = [];
-    
+
     function applyHighlighting() {
         const doc = makeTextDocument(expressionModel);
         const tokens = ls.getHighlighting(doc);
@@ -417,29 +525,288 @@ require(['vs/editor/editor.main'], function () {
         highlightDecorations = expressionEditor.deltaDecorations(highlightDecorations, decorations);
     }
 
-    // Diagnostics - show function argument count errors
+    // Diagnostics — includes parse errors, arity, unknown-ident, and type-mismatch.
+    // We stash the raw LSP diagnostics on the model so the code-action provider
+    // can surface them later without re-running the pipeline.
+    let lastDiagnostics = [];
+
     function applyDiagnostics() {
         const doc = makeTextDocument(expressionModel);
-        const diagnostics = ls.getDiagnostics({ textDocument: doc });
+        const variables = getContextVariables() || {};
+        const diagnostics = ls.getDiagnostics({ textDocument: doc, variables });
+        lastDiagnostics = diagnostics;
 
-        // Convert LSP diagnostics to Monaco markers
         const markers = diagnostics.map(d => {
             const startPos = fromLspPosition(d.range.start);
             const endPos = fromLspPosition(d.range.end);
             return {
-                severity: monaco.MarkerSeverity.Error,
+                severity: toMonacoSeverity(d.severity),
                 message: d.message,
                 startLineNumber: startPos.lineNumber,
                 startColumn: startPos.column,
                 endLineNumber: endPos.lineNumber,
                 endColumn: endPos.column,
-                source: d.source || 'expreszo'
+                source: d.source || 'expreszo',
+                code: typeof d.code === 'string' || typeof d.code === 'number' ? String(d.code) : undefined
             };
         });
 
-        // Set markers on the model
         monaco.editor.setModelMarkers(expressionModel, 'expreszo', markers);
     }
+
+    // Signature help — triggers on '(' and ','
+    monaco.languages.registerSignatureHelpProvider(languageId, {
+        signatureHelpTriggerCharacters: ['(', ','],
+        signatureHelpRetriggerCharacters: [','],
+        provideSignatureHelp(model, position) {
+            const doc = makeTextDocument(model);
+            const sig = ls.getSignatureHelp({
+                textDocument: doc,
+                position: toLspPosition(position)
+            });
+            if (!sig) return null;
+            return {
+                value: {
+                    signatures: (sig.signatures || []).map(s => ({
+                        label: s.label,
+                        documentation: s.documentation,
+                        parameters: (s.parameters || []).map(p => ({
+                            label: p.label,
+                            documentation: p.documentation
+                        }))
+                    })),
+                    activeSignature: sig.activeSignature ?? 0,
+                    activeParameter: sig.activeParameter ?? 0
+                },
+                dispose() {}
+            };
+        }
+    });
+
+    // Document symbols — powers the outline view
+    monaco.languages.registerDocumentSymbolProvider(languageId, {
+        displayName: 'ExpresZo',
+        provideDocumentSymbols(model) {
+            const doc = makeTextDocument(model);
+            const symbols = ls.getDocumentSymbols({ textDocument: doc }) || [];
+            const toMonacoSymbol = (s) => ({
+                name: s.name,
+                detail: s.detail || '',
+                kind: toMonacoSymbolKind(s.kind),
+                tags: [],
+                range: toMonacoRange(s.range),
+                selectionRange: toMonacoRange(s.selectionRange),
+                children: (s.children || []).map(toMonacoSymbol)
+            });
+            return symbols.map(toMonacoSymbol);
+        }
+    });
+
+    // Folding ranges — collapses multi-line case / array / object literals
+    monaco.languages.registerFoldingRangeProvider(languageId, {
+        provideFoldingRanges(model) {
+            const doc = makeTextDocument(model);
+            const ranges = ls.getFoldingRanges({ textDocument: doc }) || [];
+            return ranges.map(r => ({
+                start: r.startLine + 1,
+                end: r.endLine + 1,
+                kind: monaco.languages.FoldingRangeKind.Region
+            }));
+        }
+    });
+
+    // Go-to-definition — for free variables jumps to the first occurrence;
+    // for lambda / function-def parameters jumps to the declaration in the head.
+    monaco.languages.registerDefinitionProvider(languageId, {
+        provideDefinition(model, position) {
+            const doc = makeTextDocument(model);
+            const loc = ls.getDefinition({
+                textDocument: doc,
+                position: toLspPosition(position)
+            });
+            if (!loc) return null;
+            return {
+                uri: model.uri,
+                range: toMonacoRange(loc.range)
+            };
+        }
+    });
+
+    // Find all references
+    monaco.languages.registerReferenceProvider(languageId, {
+        provideReferences(model, position) {
+            const doc = makeTextDocument(model);
+            const locs = ls.getReferences({
+                textDocument: doc,
+                position: toLspPosition(position)
+            }) || [];
+            return locs.map(l => ({
+                uri: model.uri,
+                range: toMonacoRange(l.range)
+            }));
+        }
+    });
+
+    // Semantic tokens — uses the stable legend exported by the language service
+    if (SEMANTIC_TOKENS_LEGEND) {
+        monaco.languages.registerDocumentSemanticTokensProvider(languageId, {
+            getLegend() {
+                return {
+                    tokenTypes: [...SEMANTIC_TOKENS_LEGEND.tokenTypes],
+                    tokenModifiers: [...SEMANTIC_TOKENS_LEGEND.tokenModifiers]
+                };
+            },
+            provideDocumentSemanticTokens(model) {
+                const doc = makeTextDocument(model);
+                const result = ls.getSemanticTokens({ textDocument: doc });
+                return {
+                    data: new Uint32Array(result.data),
+                    resultId: result.resultId
+                };
+            },
+            releaseDocumentSemanticTokens() {}
+        });
+    }
+
+    // Code actions — quick fixes for arity-too-few and unknown-ident
+    monaco.languages.registerCodeActionProvider(languageId, {
+        provideCodeActions(model, range, context) {
+            const doc = makeTextDocument(model);
+            const variables = getContextVariables() || {};
+
+            const lspRange = {
+                start: toLspPosition({ lineNumber: range.startLineNumber, column: range.startColumn }),
+                end: toLspPosition({ lineNumber: range.endLineNumber, column: range.endColumn })
+            };
+
+            // Only offer actions for diagnostics that overlap the requested range
+            const reqStart = doc.offsetAt(lspRange.start);
+            const reqEnd = doc.offsetAt(lspRange.end);
+            const inRange = lastDiagnostics.filter(d => {
+                const ds = doc.offsetAt(d.range.start);
+                const de = doc.offsetAt(d.range.end);
+                return de >= reqStart && ds <= reqEnd;
+            });
+
+            const actions = ls.getCodeActions({
+                textDocument: doc,
+                range: lspRange,
+                context: {
+                    diagnostics: inRange,
+                    variables
+                }
+            }) || [];
+
+            const monacoActions = actions.map(a => {
+                const edits = [];
+                const changes = a.edit?.changes || {};
+                for (const uri of Object.keys(changes)) {
+                    for (const te of changes[uri]) {
+                        edits.push({
+                            resource: model.uri,
+                            textEdit: {
+                                range: toMonacoRange(te.range),
+                                text: te.newText
+                            },
+                            versionId: model.getVersionId()
+                        });
+                    }
+                }
+                return {
+                    title: a.title,
+                    kind: a.kind || 'quickfix',
+                    diagnostics: (a.diagnostics || []).map(d => ({
+                        severity: toMonacoSeverity(d.severity),
+                        message: d.message,
+                        startLineNumber: d.range.start.line + 1,
+                        startColumn: d.range.start.character + 1,
+                        endLineNumber: d.range.end.line + 1,
+                        endColumn: d.range.end.character + 1
+                    })),
+                    edit: { edits },
+                    isPreferred: true
+                };
+            });
+
+            return {
+                actions: monacoActions,
+                dispose() {}
+            };
+        }
+    });
+
+    // Document formatting — replaces the whole expression with the pretty-printed version
+    monaco.languages.registerDocumentFormattingEditProvider(languageId, {
+        provideDocumentFormattingEdits(model) {
+            const doc = makeTextDocument(model);
+            const edits = ls.format({ textDocument: doc }) || [];
+            return edits.map(e => ({
+                range: toMonacoRange(e.range),
+                text: e.newText
+            }));
+        }
+    });
+
+    // Rename provider — F2 or right-click → Rename Symbol.
+    // Built-in functions and constants are excluded from renaming since they
+    // reference external bindings; user variables and lambda parameters are
+    // fully supported, including updating every declaration site.
+    monaco.languages.registerRenameProvider(languageId, {
+        resolveRenameLocation(model, position) {
+            const doc = makeTextDocument(model);
+            const range = ls.prepareRename({
+                textDocument: doc,
+                position: toLspPosition(position)
+            });
+            if (!range) return { rejectReason: 'This symbol cannot be renamed.' };
+            const text = model.getValueInRange(toMonacoRange(range));
+            return { range: toMonacoRange(range), text };
+        },
+        provideRenameEdits(model, position, newName) {
+            const doc = makeTextDocument(model);
+            const result = ls.rename({
+                textDocument: doc,
+                position: toLspPosition(position),
+                newName
+            });
+            if (!result) return null;
+            const changes = result.changes || {};
+            const edits = [];
+            for (const uri of Object.keys(changes)) {
+                for (const te of changes[uri]) {
+                    edits.push({
+                        resource: model.uri,
+                        textEdit: { range: toMonacoRange(te.range), text: te.newText },
+                        versionId: model.getVersionId()
+                    });
+                }
+            }
+            return { edits };
+        }
+    });
+
+    // Inlay hints — parameter name labels before each argument of built-in
+    // functions with two or more documented parameters (e.g. pow(base, exp)).
+    // Single-argument functions are intentionally excluded to avoid clutter.
+    monaco.languages.registerInlayHintsProvider(languageId, {
+        provideInlayHints(model, range) {
+            const doc = makeTextDocument(model);
+            const lspRange = {
+                start: { line: range.startLineNumber - 1, character: range.startColumn - 1 },
+                end:   { line: range.endLineNumber - 1,   character: range.endColumn - 1 }
+            };
+            const hints = ls.getInlayHints({ textDocument: doc, range: lspRange }) || [];
+            return {
+                hints: hints.map(h => ({
+                    position: fromLspPosition(h.position),
+                    label: typeof h.label === 'string' ? h.label : h.label.map(p => p.value || '').join(''),
+                    kind: h.kind,       // 2 = Parameter
+                    paddingRight: h.paddingRight
+                })),
+                dispose() {}
+            };
+        }
+    });
 
     // Syntax highlight JSON
     function syntaxHighlightJson(json) {
@@ -599,13 +966,26 @@ require(['vs/editor/editor.main'], function () {
         }
 
         try {
-            const parser = new Parser();
+            const parser = new Parser({ legacy: legacyMode });
             const evaluationResult = parser.evaluate(expression, contextVars || {});
             showResult(evaluationResult);
         } catch (error) {
             showError(error, contextError);
         }
     }
+
+    legacyToggle.addEventListener('change', () => {
+        legacyMode = legacyToggle.checked;
+        localStorage.setItem('expreszo-legacy', String(legacyMode));
+        evaluate();
+    });
+
+    // Format button — triggers Monaco's format-document action, which fans out
+    // to the registered DocumentFormattingEditProvider above.
+    document.getElementById('formatBtn').addEventListener('click', () => {
+        expressionEditor.focus();
+        expressionEditor.getAction('editor.action.formatDocument')?.run();
+    });
 
     // Save functionality
     document.getElementById('saveBtn').addEventListener('click', () => {
@@ -628,6 +1008,7 @@ require(['vs/editor/editor.main'], function () {
     });
 
     contextModel.onDidChangeContent(() => {
+        applyDiagnostics();
         evaluate();
     });
 

@@ -1,29 +1,40 @@
 import type { TextDocument } from 'vscode-languageserver-textdocument';
-import type { CodeAction, Diagnostic, Range } from 'vscode-languageserver-types';
+import type { CodeAction, Diagnostic } from 'vscode-languageserver-types';
 import { CodeActionKind } from 'vscode-languageserver-types';
 import type { Parser } from '../parsing/parser';
-import type { Values } from '../types/values.js';
 import { closestMatch } from './shared/levenshtein.js';
+import { buildKnownNames } from './shared/known-names.js';
 import { FunctionDetails } from './language-service.models.js';
+import type { GetCodeActionsParams } from './language-service.types.js';
 
-export interface GetCodeActionsParams {
-  textDocument: TextDocument;
-  range: Range;
-  context: {
-    diagnostics: readonly Diagnostic[];
-    variables?: Values;
-  };
-}
-
-function buildKnownNames(parser: Parser, variables: Values | undefined): string[] {
-  const known = new Set<string>();
-  if (parser.functions) for (const k of Object.keys(parser.functions)) known.add(k);
-  if (parser.unaryOps) for (const k of Object.keys(parser.unaryOps)) known.add(k);
-  if (parser.numericConstants) for (const k of Object.keys(parser.numericConstants)) known.add(k);
-  if (parser.buildInLiterals) for (const k of Object.keys(parser.buildInLiterals)) known.add(k);
-  if (parser.keywords) for (const k of parser.keywords) known.add(k);
-  if (variables) for (const k of Object.keys(variables)) known.add(k);
-  return Array.from(known);
+/**
+ * Count the number of top-level comma-separated arguments in the raw text
+ * between a function's outer parentheses. Handles nested parens/brackets/braces
+ * and string literals so inner commas are not mistakenly counted.
+ */
+function countTopLevelArgs(inner: string): number {
+  const trimmed = inner.trim();
+  if (!trimmed) return 0;
+  let depth = 0;
+  let count = 1;
+  let inStr = false;
+  let strChar = '';
+  for (let i = 0; i < inner.length; i++) {
+    const ch = inner[i];
+    if (inStr) {
+      if (ch === '\\' && i + 1 < inner.length) { i++; continue; }
+      if (ch === strChar) inStr = false;
+    } else if (ch === '"' || ch === "'") {
+      inStr = true; strChar = ch;
+    } else if (ch === '(' || ch === '[' || ch === '{') {
+      depth++;
+    } else if (ch === ')' || ch === ']' || ch === '}') {
+      depth--;
+    } else if (ch === ',' && depth === 0) {
+      count++;
+    }
+  }
+  return count;
 }
 
 function arityQuickFix(
@@ -54,7 +65,7 @@ function arityQuickFix(
 
   const details = new FunctionDetails(parser, funcName);
   const paramDocs = details.params();
-  const existingCount = trimmed.length === 0 ? 0 : inner.split(',').length;
+  const existingCount = trimmed.length === 0 ? 0 : countTopLevelArgs(inner);
   const missing = minExpected - existingCount;
   if (missing <= 0) return null;
 
@@ -120,7 +131,7 @@ export function getCodeActions(
   parser: Parser,
   functionNames: Set<string>
 ): CodeAction[] {
-  const knownNames = buildKnownNames(parser, params.context.variables);
+  const knownNames = Array.from(buildKnownNames(parser, params.context.variables));
   const out: CodeAction[] = [];
 
   for (const diagnostic of params.context.diagnostics) {

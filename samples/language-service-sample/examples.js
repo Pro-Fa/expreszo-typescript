@@ -48,7 +48,7 @@ const exampleCases = [
         id: 'map-filter',
         title: 'Map and Filter Functions',
         description: 'Transform and filter data with callbacks',
-        expression: 'sum(\n  map(\n    f(x) = x * 2, \n    filter(\n      f(i) = i > threshold, \n      items\n    )\n  )\n) / length(items)',
+        expression: 'sum(\n  map(\n    filter(\n      items,\n      f(i) = i > threshold\n    ),\n    f(x) = x * 2\n  )\n) / length(items)',
         context: {
             items: [1, 2, 3, 4, 5, 6, 7, 8],
             threshold: 3
@@ -58,7 +58,7 @@ const exampleCases = [
         id: 'complex',
         title: 'Complex Objects',
         description: 'Work with deeply nested data structures',
-        expression: 'length(company.departments[0].employees) * company.settings.bonusRate + sum(map(f(d) = d.budget, company.departments))',
+        expression: 'length(company.departments[0].employees) * company.settings.bonusRate + sum(map(company.departments, f(d) = d.budget))',
         context: {
             company: {
                 name: "TechCorp",
@@ -85,7 +85,7 @@ const exampleCases = [
         id: 'data-transform',
         title: 'Data Transformation',
         description: 'Flatten nested objects and transform rows',
-        expression: "map(f(row) = {_id: row.rowId, ...flatten(row.data, '')}, $event)",
+        expression: "map($event, f(row) = {_id: row.rowId, ...flatten(row.data, '')})",
         context: {
             "$event": [
                 {"rowId": 1, "state": "saved", "data": { "InventoryId": 1256, "Description": "Bal", "Weight": { "Unit": "g", "Amount": 120 } }},
@@ -95,13 +95,69 @@ const exampleCases = [
         }
     },
     {
+        id: 'folding-demo',
+        title: 'Folding Ranges Demo',
+        description: 'Multi-line case, array, and object literals produce folds',
+        expression: 'case\n  when score >= thresholds.gold then {\n    tier: "gold",\n    perks: [\n      "priority support",\n      "free shipping",\n      "early access"\n    ]\n  }\n  when score >= thresholds.silver then {\n    tier: "silver",\n    perks: [\n      "free shipping",\n      "monthly newsletter"\n    ]\n  }\n  else {\n    tier: "bronze",\n    perks: [\n      "monthly newsletter"\n    ]\n  }\nend',
+        context: {
+            score: 85,
+            thresholds: {
+                gold: 90,
+                silver: 75
+            }
+        }
+    },
+    {
         id: 'diagnostics-demo',
         title: 'Diagnostics Demo',
-        description: 'Shows error highlighting for incorrect function arguments',
-        expression: '// Try functions with wrong argument counts:\n// pow() needs 2 args, random() needs 0-1 args\npow(2) + random(1, 2, 3)',
+        description: 'Arity, type-mismatch, and unknown-identifier diagnostics. Hover squiggles and click the lightbulb for quick fixes.',
+        expression: '// pow() needs 2 args           -> arity-too-few\n// random() accepts 0-1 args    -> arity-too-many\n// pow expects numbers          -> type-mismatch\n// lenght is a typo             -> unknown-ident quickfix\npow(2) + random(1, 2, 3) + pow([1, 2], 2) + lenght(numbers)',
         context: {
-            x: 5,
-            y: 10
+            numbers: [1, 2, 3, 4, 5]
+        }
+    },
+    {
+        id: 'legacy-mode',
+        title: 'Legacy vs Modern Mode',
+        description: 'Toggle "Legacy mode" in the header. Modern mode coerces mixed types in string concatenation ("Score: " + 85 -> "Score: 85"); legacy mode requires both sides to be strings and returns undefined otherwise. Comparisons behave similarly with undefined operands.',
+        expression: '"Score: " + score + " (passed: " + (score > threshold) + ")"',
+        context: {
+            score: 85,
+            threshold: 60
+        }
+    },
+    {
+        id: 'formatter-signatures',
+        title: 'Formatter & Signature Help',
+        description: 'Click Format to pretty-print this compressed expression. Place the cursor inside any call to see nested signature help.',
+        expression: 'sum(map(filter(items,f(i)=i>threshold),f(x)=pow(x,2)))+max(map(items,f(i)=sqrt(i)))',
+        context: {
+            items: [1, 2, 3, 4, 5, 6, 7, 8],
+            threshold: 3
+        }
+    },
+    {
+        id: 'inlay-hints',
+        title: 'Inlay Hints',
+        description: 'Parameter-name labels appear before each argument of multi-parameter built-in functions. Hover the greyed labels to see the parameter description.',
+        expression: "// pow, log, clamp, and padStart all have named params\npow(base, exp) + log(value, base) + clamp(score, minVal, maxVal) + padStart(label, 10, '0')",
+        context: {
+            base: 2,
+            exp: 8,
+            value: 100,
+            score: 75,
+            minVal: 0,
+            maxVal: 100,
+            label: 'item'
+        }
+    },
+    {
+        id: 'rename-lambda',
+        title: 'Rename Symbol',
+        description: 'Press F2 (or right-click → Rename Symbol) on any variable or lambda parameter to rename all its occurrences at once. Built-in names like sin or PI are excluded. Try renaming "x" inside the map callback.',
+        expression: "// Select 'x' inside the lambda body and press F2\nsum(map(items, f(x) = pow(x, 2))) + reduce(items, f(acc, x) = acc + x, 0)",
+        context: {
+            items: [1, 2, 3, 4, 5]
         }
     }
 ];

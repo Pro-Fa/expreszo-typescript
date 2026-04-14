@@ -116,6 +116,7 @@ Try it live at the [Playground](https://pro-fa.github.io/expreszo-typescript/) â
 | [Expression](docs/expression.md) | Expression object methods: evaluate, simplify, variables |
 | [Advanced Features](docs/advanced-features.md) | Promises, custom resolution, type conversion, operator customization |
 | [Language Service](docs/language-service.md) | IDE integration: completions, hover info, diagnostics, Monaco Editor |
+| [MCP Server](docs/mcp-server.md) | Model Context Protocol server exposing the language service to AI assistants |
 | [Migration Guide](docs/migration.md) | Migrating from expr-eval, legacy mode, version history |
 
 ### For Contributors

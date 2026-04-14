@@ -52,8 +52,12 @@ export class FunctionDetails {
   public docs(): string | undefined {
     if (this.docBlock) {
       const params = this.params();
-      const paramList = params.map((p) => `* \`${p.name}\`: ${p.description}`).join('\n');
-      return `**${this.details()}**\n\n${this.docBlock.description}\n\n*Parameters:*\n${paramList}`;
+      const parts = [`**${this.details()}**`, '', this.docBlock.description];
+      if (params.length > 0) {
+        const paramList = params.map((p) => `* \`${p.name}\`: ${p.description}`).join('\n');
+        parts.push('', '*Parameters:*', paramList);
+      }
+      return parts.join('\n');
     }
 
     if (this.parser.unaryOps && this.parser.unaryOps[this.name]) {

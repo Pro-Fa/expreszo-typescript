@@ -12,16 +12,23 @@ export interface ParseCache {
   get(doc: TextDocument): ParseResult;
 }
 
+interface Entry {
+  version: number;
+  text: string;
+  result: ParseResult;
+}
+
 export function createParseCache(parser: Parser): ParseCache {
-  const cache = new Map<string, ParseResult>();
+  // One entry per URI — a newer version (or replaced content) evicts the
+  // previous result, so the cache stays bounded by the set of live documents.
+  const cache = new Map<string, Entry>();
 
   return {
     get(doc: TextDocument): ParseResult {
       const text = doc.getText();
-      const key = doc.uri + '@' + doc.version + '@' + text.length + '@' + text;
-      const hit = cache.get(key);
-      if (hit) {
-        return hit;
+      const hit = cache.get(doc.uri);
+      if (hit && hit.version === doc.version && hit.text === text) {
+        return hit.result;
       }
       let result: ParseResult;
       try {
@@ -36,7 +43,7 @@ export function createParseCache(parser: Parser): ParseCache {
           result = { expression: null, parseError: new Error(String(err)) };
         }
       }
-      cache.set(key, result);
+      cache.set(doc.uri, { version: doc.version, text, result });
       return result;
     }
   };

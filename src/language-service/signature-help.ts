@@ -2,7 +2,7 @@ import type { TextDocument } from 'vscode-languageserver-textdocument';
 import type { Position, SignatureHelp } from 'vscode-languageserver-types';
 import { TNAME, TPAREN, TBRACKET, TBRACE, TCOMMA } from '../parsing';
 import type { Parser } from '../parsing/parser';
-import { makeTokenStream, iterateTokens, type TokenSpan } from './ls-utils';
+import type { TokenSpan } from './ls-utils';
 import { FunctionDetails } from './language-service.models';
 
 /**
@@ -15,7 +15,6 @@ function findEnclosingCall(
   spans: TokenSpan[],
   cursorOffset: number
 ): { funcName: string; activeParameter: number } | null {
-  // Start from the token whose end is <= cursorOffset (scan everything before).
   let paren = 0;
   let bracket = 0;
   let brace = 0;
@@ -57,22 +56,19 @@ function findEnclosingCall(
   return { funcName: String(nameSpan.token.value), activeParameter };
 }
 
+/**
+ * Returns LSP signature help for the function call enclosing `position`.
+ * Accepts pre-computed `spans` from the caller's token cache to avoid
+ * redundant tokenisation on each keystroke.
+ */
 export function getSignatureHelp(
   doc: TextDocument,
   parser: Parser,
+  spans: TokenSpan[],
   position: Position,
   functionNames: Set<string>
 ): SignatureHelp | null {
-  const text = doc.getText();
   const offset = doc.offsetAt(position);
-
-  let spans: TokenSpan[];
-  try {
-    const stream = makeTokenStream(parser, text);
-    spans = iterateTokens(stream);
-  } catch {
-    return null;
-  }
 
   const found = findEnclosingCall(spans, offset);
   if (!found) return null;

@@ -5,7 +5,9 @@
  *
  * Multi-line rendering for `Case`, `ArrayLit`, and `ObjectLit` kicks in
  * when the node's original source span crosses multiple lines; otherwise
- * the output stays on one line.
+ * the output stays on one line. `Call` nodes break onto multiple lines
+ * whenever any argument is itself a `Call`, `Lambda`, or `FunctionDef`,
+ * so nested function calls render as a readable indented tree.
  */
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 import type {
@@ -210,8 +212,21 @@ export class PrettyPrinter {
 
   private visitCall(node: Call, indentLevel: number): string {
     const callee = this.visit(node.callee, indentLevel, 100);
+    if (node.args.length === 0) return callee + '()';
+
+    if (node.args.some(a => this.argForcesBreak(a))) {
+      const inner = this.indent(indentLevel + 1);
+      const outer = this.indent(indentLevel);
+      const args = node.args.map(a => inner + this.visit(a, indentLevel + 1, 0));
+      return callee + '(\n' + args.join(',\n') + '\n' + outer + ')';
+    }
+
     const args = node.args.map(a => this.visit(a, indentLevel, 0));
     return callee + '(' + args.join(', ') + ')';
+  }
+
+  private argForcesBreak(arg: Node): boolean {
+    return arg.type === 'Call' || arg.type === 'Lambda' || arg.type === 'FunctionDef';
   }
 
   private visitLambda(node: Lambda, indentLevel: number): string {

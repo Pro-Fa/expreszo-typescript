@@ -21,7 +21,10 @@ export const SEMANTIC_TOKENS_LEGEND = {
   tokenModifiers: [] as readonly string[]
 };
 
-const HIGHLIGHT_TYPE_TO_INDEX: Record<HighlightToken['type'], number> = {
+// Punctuation (parens, commas, braces) is intentionally absent — the LSP
+// semantic-token protocol has no standard punctuation type, and tagging
+// punctuation as 'operator' causes editors to highlight it incorrectly.
+const HIGHLIGHT_TYPE_TO_INDEX: Partial<Record<HighlightToken['type'], number>> = {
   keyword: 0,
   function: 1,
   name: 2,
@@ -29,7 +32,7 @@ const HIGHLIGHT_TYPE_TO_INDEX: Record<HighlightToken['type'], number> = {
   number: 4,
   string: 5,
   operator: 6,
-  punctuation: 6
+  comment: 7
 };
 
 export function encodeSemanticTokens(
@@ -40,25 +43,31 @@ export function encodeSemanticTokens(
   type Entry = { line: number; startChar: number; length: number; type: number };
   const entries: Entry[] = [];
   for (const t of highlightTokens) {
+    const typeIndex = HIGHLIGHT_TYPE_TO_INDEX[t.type];
+    if (typeIndex === undefined) continue; // e.g. punctuation — no semantic type
     const start = doc.positionAt(t.start);
     const end = doc.positionAt(t.end);
-    if (start.line !== end.line) {
-      // Semantic tokens can't span multiple lines; split into per-line chunks.
-      // For this language, tokens rarely cross lines (only multi-line strings),
-      // so falling back to truncating at the first line is acceptable.
-      entries.push({
-        line: start.line,
-        startChar: start.character,
-        length: t.end - t.start,
-        type: HIGHLIGHT_TYPE_TO_INDEX[t.type]
-      });
-    } else {
+    if (start.line === end.line) {
       entries.push({
         line: start.line,
         startChar: start.character,
         length: end.character - start.character,
-        type: HIGHLIGHT_TYPE_TO_INDEX[t.type]
+        type: typeIndex
       });
+      continue;
+    }
+    // LSP semantic tokens can't span multiple lines — `length` is measured
+    // within the start line. Split the token into one entry per covered line.
+    const slice = doc.getText({ start, end });
+    const lines = slice.split(/\r\n|\r|\n/);
+    let line = start.line;
+    let char = start.character;
+    for (const piece of lines) {
+      if (piece.length > 0) {
+        entries.push({ line, startChar: char, length: piece.length, type: typeIndex });
+      }
+      line++;
+      char = 0;
     }
   }
 
