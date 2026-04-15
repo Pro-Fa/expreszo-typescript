@@ -85,7 +85,7 @@ html, body {
 }
 
 #verticalResizer:hover {
-    background-color: #6366f1 !important;
+    background-color: #f97316 !important;
 }
 
 #verticalResizer::after {
@@ -109,7 +109,7 @@ html, body {
 }
 
 #horizontalResizer:hover {
-    background-color: #6366f1 !important;
+    background-color: #f97316 !important;
 }
 
 #horizontalResizer::after {
@@ -223,8 +223,8 @@ html, body {
 }
 
 .dark #examplesSidebar {
-    background-color: #252526;
-    border-right-color: #3c3c3c;
+    background-color: #111827;
+    border-right-color: #374151;
 }
 
 #examplesSidebar > div:first-child {
@@ -238,8 +238,8 @@ html, body {
 }
 
 .dark #examplesSidebar > div:first-child {
-    background-color: #333333;
-    border-bottom-color: #3c3c3c;
+    background-color: #1f2937;
+    border-bottom-color: #374151;
 }
 
 #examplesList {
@@ -262,18 +262,18 @@ html, body {
 
 .example-item:hover {
     background-color: #ffffff;
-    border-color: #e0e7ff;
+    border-color: #fed7aa;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .dark .example-item:hover {
-    background-color: #2d2d2d;
-    border-color: #3c3c3c;
+    background-color: #1f2937;
+    border-color: #374151;
 }
 
 .example-item:focus {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.4);
 }
 
 .example-item:active {
@@ -288,15 +288,15 @@ html, body {
 }
 
 .dark .example-item p:first-child {
-    color: #cccccc;
+    color: #e5e7eb;
 }
 
 .example-item:hover p:first-child {
-    color: #4f46e5;
+    color: #f97316;
 }
 
 .dark .example-item:hover p:first-child {
-    color: #569cd6;
+    color: #f97316;
 }
 
 .example-item p:last-child {
@@ -306,7 +306,7 @@ html, body {
 }
 
 .dark .example-item p:last-child {
-    color: #808080;
+    color: #9ca3af;
 }
 
 .line-clamp-2 {

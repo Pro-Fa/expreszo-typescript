@@ -1,3 +1,6 @@
+<img src="logo.png" alt="ExpresZo" width="50%" class="logo-light">
+<img src="logo_dark.png" alt="ExpresZo" width="50%" class="logo-dark">
+
 # ExpresZo Typescript
 
 [![npm](https://img.shields.io/npm/v/@pro-fa/expreszo.svg?maxAge=3600)](https://www.npmjs.com/package/@pro-fa/expreszo)
@@ -5,6 +8,7 @@
 **A fast, safe, and extensible expression evaluator for JavaScript and TypeScript.**
 
 ExpresZo parses and evaluates expressions at runtime — a configurable alternative to `eval()` that won't execute arbitrary code. Use it to power user-facing formula editors, rule engines, template systems, or any place you need to evaluate dynamic expressions safely.
+
 
 ## Why ExpresZo?
 

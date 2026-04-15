@@ -1,5 +1,6 @@
-# ExpresZo Typescript
+![ExpresZo](docs/logo.png)
 
+# ExpresZo Typescript
 [![npm](https://img.shields.io/npm/v/@pro-fa/expreszo.svg?maxAge=3600)](https://www.npmjs.com/package/@pro-fa/expreszo)
 
 **A fast, safe, and extensible expression evaluator for JavaScript and TypeScript.**
@@ -74,7 +75,6 @@ expr.evaluate({ x: 3 });  // 7
 expr.evaluate({ x: 10 }); // 21
 
 // Rich expression language
-parser.evaluate('items | filter(x => x > 3) | length', { items: [1, 2, 3, 4, 5] }); // 2
 parser.evaluate('user.name ?? "Anonymous"', { user: {} }); // "Anonymous"
 parser.evaluate('CASE WHEN score >= 90 THEN "A" WHEN score >= 80 THEN "B" ELSE "C" END', { score: 85 }); // "B"
 ```

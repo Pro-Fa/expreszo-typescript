@@ -68,35 +68,35 @@ function renderExamplesSidebar() {
 
     examplesList.innerHTML = exampleCases.map(example => `
         <div class="example-container relative group/container">
-            <button 
+            <button
                 class="example-item w-full text-left p-3 rounded-lg transition-all duration-200
-                       hover:bg-white dark:hover:bg-[#2d2d2d] 
-                       hover:shadow-sm hover:border-indigo-200 dark:hover:border-[#3c3c3c]
+                       hover:bg-white dark:hover:bg-[#1f2937]
+                       hover:shadow-sm hover:border-[#fed7aa] dark:hover:border-[#374151]
                        border border-transparent
                        group"
                 data-example-id="${example.id}"
             >
                 <div class="flex items-start gap-2">
-                    <div class="flex-shrink-0 w-6 h-6 rounded bg-indigo-100 dark:bg-[#3c3c3c] flex items-center justify-center mt-0.5">
-                        <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-[#569cd6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex-shrink-0 w-6 h-6 rounded bg-[#ffedd5] dark:bg-[#374151] flex items-center justify-center mt-0.5">
+                        <svg class="w-3.5 h-3.5 text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-800 dark:text-[#cccccc] truncate group-hover:text-indigo-600 dark:group-hover:text-[#569cd6]">
+                        <p class="text-sm font-medium text-gray-800 dark:text-[#e5e7eb] truncate group-hover:text-[#f97316] dark:group-hover:text-[#f97316]">
                             ${example.title}
                         </p>
-                        <p class="text-xs text-gray-500 dark:text-[#808080] mt-0.5 line-clamp-2">
+                        <p class="text-xs text-gray-500 dark:text-[#9ca3af] mt-0.5 line-clamp-2">
                             ${example.description}
                         </p>
                     </div>
                 </div>
             </button>
-            <button 
-                class="copy-link-btn absolute top-2 right-2 p-1.5 rounded-md 
+            <button
+                class="copy-link-btn absolute top-2 right-2 p-1.5 rounded-md
                        opacity-0 group-hover/container:opacity-100
-                       bg-gray-100 dark:bg-[#3c3c3c] hover:bg-gray-200 dark:hover:bg-[#4c4c4c]
-                       text-gray-500 dark:text-[#808080] hover:text-indigo-600 dark:hover:text-[#569cd6]
+                       bg-gray-100 dark:bg-[#374151] hover:bg-gray-200 dark:hover:bg-[#4b5563]
+                       text-gray-500 dark:text-[#9ca3af] hover:text-[#f97316] dark:hover:text-[#f97316]
                        transition-all duration-200"
                 data-example-id="${example.id}"
                 title="Copy link to example"

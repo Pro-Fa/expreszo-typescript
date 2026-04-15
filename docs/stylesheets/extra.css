@@ -1,0 +1,13 @@
+/* Dark mode logo swap for docs homepage */
+[data-md-color-scheme="default"] .logo-dark {
+  display: none;
+}
+[data-md-color-scheme="slate"] .logo-light {
+  display: none;
+}
+
+/* Dark mode logo swap for nav bar */
+[data-md-color-scheme="slate"] .md-header__button.md-logo img,
+[data-md-color-scheme="slate"] .md-footer__link img {
+  content: url('../logo_dark.png');
+}

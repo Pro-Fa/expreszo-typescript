@@ -6,20 +6,22 @@ repo_name: pro-fa/expreszo-typescript
 
 theme:
   name: material
+  logo: logo_dark.png
+  favicon: logo.png
   palette:
     # Light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
-      accent: indigo
+      primary: black
+      accent: deep orange
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     # Dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: indigo
+      primary: black
+      accent: deep orange
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -33,6 +35,9 @@ theme:
     - search.highlight
     - content.code.copy
     - content.code.annotate
+
+extra_css:
+  - stylesheets/extra.css
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -60,6 +65,7 @@ nav:
     - Expression: expression.md
     - Advanced Features: advanced-features.md
     - Language Service: language-service.md
+    - MCP Server: mcp-server.md
     - Migration Guide: migration.md
   - For Contributors:
     - Contributing: contributing.md
