@@ -1,4 +1,7 @@
-![ExpresZo](docs/logo.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/logo_dark.png">
+  <img src="docs/logo.png" alt="ExpresZo" width="420">
+</picture>
 
 # ExpresZo Typescript
 [![npm](https://img.shields.io/npm/v/@pro-fa/expreszo.svg?maxAge=3600)](https://www.npmjs.com/package/@pro-fa/expreszo)
