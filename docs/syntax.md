@@ -33,11 +33,11 @@ Operators are listed from highest to lowest precedence:
 The `|` (pipe) operator concatenates arrays or strings:
 - If both operands are arrays, they are concatenated as arrays
 - If both operands are strings, they are concatenated as strings
-- If operands are of different types, the result is `undefined`
+- If either operand is a string, the other is coerced to a string and both are concatenated
 
 | Operator | Description |
 |:-------- |:----------- |
-| a \| b   | Concatenates `a` and `b` if both are arrays or both are strings; otherwise returns `undefined`. |
+| a \| b   | Concatenates `a` and `b`. If both are arrays, returns a combined array. If either is a string, coerces both to strings and concatenates. |
 
 ### Array Concatenation
 
@@ -134,8 +134,8 @@ Besides the "operator" functions, there are several pre-defined functions. You c
 | every(a, f)   | Returns `true` if all elements in array `a` satisfy `f(x, index)`. Returns `true` for empty arrays. |
 | unique(a)     | Returns a new array with duplicate values removed from array `a`. |
 | distinct(a)   | Alias for `unique`. Returns a new array with duplicate values removed. |
-| indexOf(x, a) | Return the first index of string or array `a` matching the value `x`, or `-1` if not found. |
-| join(sep, a)  | Concatenate the elements of `a`, separated by `sep`. |
+| indexOf(a, x) | Return the first index of value `x` in string or array `a`, or `-1` if not found. |
+| join(a, sep)  | Concatenate the elements of `a`, separated by `sep`. |
 | sum(a)        | Returns the sum of all numbers in array `a`. |
 | sort(a, f?)   | Sorts an array. Optionally accepts a comparator function `f(a, b)`. |
 | flatten(a, depth?) | Flattens a nested array. If given an object, flattens nested keys using an optional separator (default: `_`). |
@@ -162,7 +162,7 @@ Besides the "operator" functions, there are several pre-defined functions. You c
 
 | Function      | Description |
 |:------------- |:----------- |
-| if(c, a, b)   | Function form of c ? a : b. Note: This always evaluates both `a` and `b`, regardless of whether `c` is `true` or not. Use `c ? a : b` instead if there are side effects, or if evaluating the branches could be expensive. |
+| if(c, a, b)   | Function form of c ? a : b. Uses lazy evaluation: only the matching branch is evaluated. |
 | coalesce(a, b, ...)   | Returns the first non-null and non-empty string value from the arguments. Numbers and booleans (including 0 and false) are considered valid values. |
 | json(value)   | Converts a value to a JSON string representation. |
 

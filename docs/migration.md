@@ -114,7 +114,7 @@ const legacyParser = new Parser({ legacy: true }); // legacy behavior
 
 | Scenario | Modern | Legacy |
 |----------|--------|--------|
-| `"3" + "4"` (non-numeric strings) | `NaN` | `"34"` (string concatenation with deprecation warning) |
+| `"hello" + "world"` (non-numeric strings) | `NaN` | `"helloworld"` (string concatenation with deprecation warning) |
 | `[1, 2] + [3, 4]` | Throws error | `[1, 2, 3, 4]` (array concatenation with deprecation warning) |
 | `{a: 1} + {b: 2}` | Throws error | `{a: 1, b: 2}` (object merge with deprecation warning) |
 
@@ -164,9 +164,10 @@ The parameter order is reversed in legacy mode:
 // Modern: safe — the else branch is never evaluated
 parser.evaluate('if(true, x, 1 / y)', { x: 42, y: 0 }); // 42
 
-// Legacy: throws — all branches are evaluated eagerly
+// Legacy: all branches are evaluated eagerly, including the else branch
 const legacy = new Parser({ legacy: true });
-legacy.evaluate('if(true, x, 1 / y)', { x: 42, y: 0 }); // Error!
+// Division by zero returns Infinity (with deprecation warning) instead of throwing
+legacy.evaluate('if(true, x, 1 / y)', { x: 42, y: 0 }); // 42 (but 1/y is still evaluated)
 ```
 
 ### Migration Strategy

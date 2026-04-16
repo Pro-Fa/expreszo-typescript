@@ -32,33 +32,39 @@ npm run bench
 
 ## Architecture
 
-**ExpresZo Typescript** is a safe, extensible expression evaluator — a configurable alternative to JavaScript's `eval()`. It uses a **stack-based bytecode interpreter**:
+**ExpresZo Typescript** is a safe, extensible expression evaluator — a configurable alternative to JavaScript's `eval()`. It uses a **Pratt parser** and an **immutable AST**:
 
 ```
-Expression string → TokenStream (lexer) → Parser (ParserState + utils) → Instructions → Evaluator (stack VM) → Result
+Expression string → TokenStream (lexer) → Pratt Parser → AST (immutable) → Evaluator (AST walker) → Result
 ```
 
 ### Key classes
 
 - **`Parser`** (`src/parsing/parser.ts`) — entry point; configurable with custom operators, functions, and variable resolvers; produces `Expression` objects
 - **`Expression`** (`src/core/expression.ts`) — compiled expression with methods: `evaluate()`, `simplify()`, `substitute()`, `toString()`, `variables()`, `symbols()`
-- **`Evaluator`** (`src/core/evaluate.ts`) — stack-based VM that processes `Instruction` tokens in RPN order; supports async (Promise) evaluation
+- **`Evaluator`** (`src/eval/sync-evaluator.ts`, `src/eval/async-evaluator.ts`) — AST walker that evaluates expressions; supports async (Promise) evaluation
 - **`TokenStream`** (`src/parsing/token-stream.ts`) — lexer that converts expression strings to tokens
-- **`Instruction`** (`src/parsing/instruction.ts`) — bytecode-style nodes: `ISCALAR`, `IOP1/IOP2/IOP3`, `IVAR`, `IFUNCALL`, `IARRAY`, etc.
+- **`AST Nodes`** (`src/ast/nodes.ts`) — immutable AST node types with a visitor pattern (`src/ast/visitor.ts`)
 
 ### Source layout
 
 ```
 src/
-├── core/           # Expression, evaluate, simplify, substitute, toString, getSymbols
-├── parsing/        # Parser, TokenStream, Instruction, token types, parser-state + utils
+├── ast/            # AST node types and visitor pattern
+├── core/           # Expression, logical operations
+├── eval/           # Sync and async evaluators (AST walkers)
+├── parsing/        # Pratt parser, TokenStream, token types, parser-state + utils
 ├── operators/      # Binary (arithmetic, comparison, logical, utility) and unary operators
 ├── functions/      # Built-ins split by domain: math/, array/, string/, object/, utility/
-├── config/         # ParserConfigurationBuilder
+├── api/            # defineParser and tree-shakeable presets
+├── registry/       # Built-in function documentation and descriptors
 ├── language-service/ # IDE completions, hover, diagnostics
+├── mcp-server/     # MCP server for AI assistant integration
 ├── validation/     # Expression validation
 ├── types/          # Shared TypeScript types and type guards
-└── errors/         # Error context helpers
+├── errors/         # Error context helpers
+├── utils/          # Shared utilities
+└── entries/        # Subpath export entry points
 ```
 
 ### Build targets

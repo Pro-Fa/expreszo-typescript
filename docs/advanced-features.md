@@ -204,13 +204,20 @@ Equivalent to: `not ("a" in ["a", "b", "c"])`
 
 **Note:** Requires `operators.in: true` in parser options.
 
-### String Concatenation with +
+### String Concatenation
 
-The `+` operator concatenates strings:
+Use the `|` (pipe) operator to concatenate strings:
 
 ```
-"hello" + " " + "world"  // "hello world"
-"Count: " + 42           // "Count: 42"
+"hello" | " " | "world"  // "hello world"
+"Count: " | 42           // "Count: 42"
+```
+
+The `+` operator with strings attempts numeric conversion. Non-numeric strings produce `NaN`:
+
+```
+"3" + "4"                // 7 (numeric strings are converted)
+"hello" + "world"        // NaN (non-numeric strings)
 ```
 
 ### SQL-Style CASE Blocks

@@ -14,7 +14,7 @@ This TypeScript port adds the following features over the original library:
 - **Coalesce operator (`??`)** - Null/undefined fallback: `x ?? defaultValue`
 - **`not in` operator** - Check if value is not in array: `"x" not in arr`
 - **Optional chaining** - Property access returns `undefined` instead of throwing errors
-- **String concatenation with `+`** - Concatenate strings using the `+` operator
+- **String concatenation with `|`** - Concatenate strings using the `|` (pipe) operator
 - **SQL-style CASE blocks** - Multi-way conditionals with `case/when/then/else/end`
 - **Object construction** - Create objects with `{key: value}` syntax
 - **`json()` function** - Convert values to JSON strings

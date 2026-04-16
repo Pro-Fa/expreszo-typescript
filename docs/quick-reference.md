@@ -83,8 +83,8 @@ This is a quick reference card. For detailed documentation, see [Expression Synt
 | Function | Example | Result |
 |:---------|:--------|:-------|
 | `count(arr)` | `count([1, 2, 3])` | 3 |
-| `indexOf(val, arr)` | `indexOf(2, [1, 2, 3])` | 1 |
-| `join(sep, arr)` | `join("-", [1, 2])` | "1-2" |
+| `indexOf(arr, val)` | `indexOf([1, 2, 3], 2)` | 1 |
+| `join(arr, sep)` | `join([1, 2], "-")` | "1-2" |
 | `unique(arr)` | `unique([1, 1, 2])` | [1, 2] |
 | `map(arr, fn)` | `map([1, 2], x => x * 2)` | [2, 4] |
 | `filter(arr, fn)` | `filter([1, 2, 3], x => x > 1)` | [2, 3] |

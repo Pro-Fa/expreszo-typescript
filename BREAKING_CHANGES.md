@@ -113,7 +113,7 @@ The following are new in v7 and do not break existing code, but are listed for a
 - `createLanguageService()` API
 
 ## Earlier changes
-When comming from `expr-eval` or an earlier version of `@pro-fa/expr-eval` you will have to take the following breaking changes into account:
+When coming from `expr-eval` or an earlier version of `@pro-fa/expr-eval` you will have to take the following breaking changes into account:
 
 ## Version 6.0.0
 `null` is no longer silently casted to `0`. This means that from version 6 onwards, `null == 0` will no longer be true and `null == someVariable` with `someVariable` having a null value will become true. (This was not the case before.)
