@@ -16,8 +16,12 @@ export default defineConfig({
         'tree-shake-test.mjs',
         'vite.config.ts',
         'vitest.config.ts',
-        // type-only file — exclude from coverage
+        // type-only files — exclude from coverage
         'src/language-service/language-service.types.ts',
+        'src/**/types.ts',
+        'src/types/**',
+        // barrel files — exclude from coverage
+        'src/**/index.ts',
         'samples/**',
         'eslint.config.js'
       ],

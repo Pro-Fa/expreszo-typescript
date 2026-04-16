@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
   add,
+  addLegacy,
   sub,
   mul,
   div,
+  divLegacy,
   mod,
   pow
 } from '../../../src/operators/binary/arithmetic.js';
@@ -432,6 +434,66 @@ describe('Binary Arithmetic Operators', () => {
       it('should return undefined when both operands are undefined', () => {
         expect(pow(undefined, undefined)).toBe(undefined);
       });
+    });
+  });
+
+  describe('addLegacy', () => {
+    it('should add two numbers', () => {
+      expect(addLegacy(2, 3)).toBe(5);
+    });
+
+    it('should return undefined when either operand is undefined', () => {
+      expect(addLegacy(undefined, 3)).toBe(undefined);
+      expect(addLegacy(2, undefined)).toBe(undefined);
+      expect(addLegacy(undefined, undefined)).toBe(undefined);
+    });
+
+    it('should add numeric strings as numbers', () => {
+      expect(addLegacy('2', '3')).toBe(5);
+    });
+
+    it('should concatenate non-numeric strings (deprecation warning)', () => {
+      expect(addLegacy('hello', 'world')).toBe('helloworld');
+    });
+
+    it('should concatenate number and non-numeric string (deprecation warning)', () => {
+      expect(addLegacy(5, 'hello')).toBe('5hello');
+    });
+
+    it('should concatenate arrays (deprecation warning)', () => {
+      expect(addLegacy([1, 2], [3, 4])).toEqual([1, 2, 3, 4]);
+    });
+
+    it('should merge objects (deprecation warning)', () => {
+      expect(addLegacy({ a: 1 }, { b: 2 })).toEqual({ a: 1, b: 2 });
+    });
+
+    it('should throw for incompatible types', () => {
+      expect(() => addLegacy(5, [1, 2])).toThrow('Cannot add values of incompatible types: number and object');
+    });
+  });
+
+  describe('divLegacy', () => {
+    it('should divide two numbers', () => {
+      expect(divLegacy(6, 3)).toBe(2);
+    });
+
+    it('should return undefined when either operand is undefined', () => {
+      expect(divLegacy(undefined, 3)).toBe(undefined);
+      expect(divLegacy(6, undefined)).toBe(undefined);
+      expect(divLegacy(undefined, undefined)).toBe(undefined);
+    });
+
+    it('should return Infinity for division by zero (deprecation warning)', () => {
+      expect(divLegacy(5, 0)).toBe(Infinity);
+    });
+
+    it('should return -Infinity for negative division by zero', () => {
+      expect(divLegacy(-5, 0)).toBe(-Infinity);
+    });
+
+    it('should return NaN for 0/0', () => {
+      expect(divLegacy(0, 0)).toBeNaN();
     });
   });
 });
