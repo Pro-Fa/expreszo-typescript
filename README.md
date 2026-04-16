@@ -5,6 +5,8 @@
 
 # ExpresZo Typescript
 [![npm](https://img.shields.io/npm/v/@pro-fa/expreszo.svg?maxAge=3600)](https://www.npmjs.com/package/@pro-fa/expreszo)
+[![CI](https://github.com/Pro-Fa/expreszo-typescript/actions/workflows/ci.yml/badge.svg)](https://github.com/Pro-Fa/expreszo-typescript/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Pro-Fa/expreszo-typescript/branch/main/graph/badge.svg)](https://codecov.io/gh/Pro-Fa/expreszo-typescript)
 
 **A fast, safe, and extensible expression evaluator for JavaScript and TypeScript.**
 
@@ -16,6 +18,8 @@ import { Parser } from '@pro-fa/expreszo';
 const parser = new Parser();
 parser.evaluate('price * (1 - discount)', { price: 100, discount: 0.2 }); // 80
 ```
+
+[Read full documentation](https://pro-fa.github.io/expreszo-typescript/docs/)
 
 ## Why ExpresZo?
 

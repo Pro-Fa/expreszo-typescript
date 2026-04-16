@@ -2,7 +2,28 @@
 
 This document lists breaking changes in the library to help users migrate between versions.
 
-## Version 7.0.0
+## Migration to ExpresZo
+
+### Renaming
+
+The package was renamed from `@pro-fa/expr-eval` to `@pro-fa/expreszo` and ported to TypeScript.
+
+```bash
+# Remove old package
+npm uninstall @pro-fa/expr-eval
+
+# Install new package
+npm install @pro-fa/expreszo
+```
+
+Update imports:
+```typescript
+// Before
+import { Parser } from '@pro-fa/expr-eval';
+
+// After
+import { Parser } from '@pro-fa/expreszo';
+```
 
 ### Architecture: AST Replaces Stack-Based Bytecode
 
@@ -91,8 +112,10 @@ The following are new in v7 and do not break existing code, but are listed for a
 - Expression syntax (all operators, built-in functions, inline function definitions)
 - `createLanguageService()` API
 
-## Version 6.0.0
+## Earlier changes
+When comming from `expr-eval` or an earlier version of `@pro-fa/expr-eval` you will have to take the following breaking changes into account:
 
+## Version 6.0.0
 `null` is no longer silently casted to `0`. This means that from version 6 onwards, `null == 0` will no longer be true and `null == someVariable` with `someVariable` having a null value will become true. (This was not the case before.)
 
 ## Version 5.0.0
@@ -215,14 +238,14 @@ parser.evaluate('true && true');         // true
 
 ### Package Renamed
 
-The package was renamed from `expr-eval` to `@pro-fa/expreszo` and ported to TypeScript.
+The package was renamed from `expr-eval` to `@pro-fa/expr-eval` and ported to TypeScript.
 
 ```bash
 # Remove old package
 npm uninstall expr-eval
 
 # Install new package
-npm install @pro-fa/expreszo
+npm install @pro-fa/expr-eval
 ```
 
 Update imports:
@@ -231,5 +254,5 @@ Update imports:
 const { Parser } = require('expr-eval');
 
 // After
-import { Parser } from '@pro-fa/expreszo';
+import { Parser } from '@pro-fa/expr-eval';
 ```
