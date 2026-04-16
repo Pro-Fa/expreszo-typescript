@@ -2,7 +2,7 @@
 
 > **Audience:** Developers integrating ExpresZo into their projects.
 
-`Parser.parse(str)` returns an `Expression` object. `Expression`s are similar to JavaScript functions, i.e. they can be "called" with variables bound to passed-in values. In fact, they can even be converted into JavaScript functions.
+`parser.parse(str)` returns an `Expression` object. `Expression`s are similar to JavaScript functions, i.e. they can be "called" with variables bound to passed-in values.
 
 ## evaluate(variables?: object, resolver?: VariableResolver)
 
@@ -11,7 +11,8 @@ Evaluate the expression, with variables bound to the values in `{variables}`. Ea
 ```js
 import { Parser } from '@pro-fa/expreszo';
 
-const expr = Parser.parse("2 ^ x");
+const parser = new Parser();
+const expr = parser.parse("2 ^ x");
 console.log(expr.evaluate({ x: 3 })); // 8
 ```
 
@@ -35,7 +36,8 @@ See [Per-Expression Variable Resolver](advanced-features.md#per-expression-varia
 Create a new `Expression` with the specified variable replaced with another expression. This is similar to function composition. If `expression` is a string or number, it will be parsed into an `Expression`.
 
 ```js
-const expr = Parser.parse("2 * x + 1");
+const parser = new Parser();
+const expr = parser.parse("2 * x + 1");
 console.log(expr.toString());              // ((2*x)+1)
 
 const expr2 = expr.substitute("x", "4 * x");
@@ -50,7 +52,8 @@ Simplify constant sub-expressions and replace variable references with literal v
 Simplify is pretty simple. For example, it doesn't know that addition and multiplication are associative, so `((2*(4*x))+1)` from the previous example cannot be simplified unless you provide a value for x. `2*4*x+1` can however, because it's parsed as `(((2*4)*x)+1)`, so the `(2*4)` sub-expression will be replaced with "8", resulting in `((8*x)+1)`.
 
 ```js
-const expr = Parser.parse("x * (y * atan(1))").simplify({ y: 4 });
+const parser = new Parser();
+const expr = parser.parse("x * (y * atan(1))").simplify({ y: 4 });
 console.log(expr.toString());          // (x*3.141592653589793)
 console.log(expr.evaluate({ x: 2 }));  // 6.283185307179586
 ```
@@ -60,19 +63,21 @@ console.log(expr.evaluate({ x: 2 }));  // 6.283185307179586
 Get an array of the unbound variables in the expression.
 
 ```js
-const expr = Parser.parse("x * (y * atan(1))");
+const parser = new Parser();
+const expr = parser.parse("x * (y * atan(1))");
 console.log(expr.variables());                     // ['x', 'y']
 console.log(expr.simplify({ y: 4 }).variables());  // ['x']
 ```
 
-By default, `variables` will return "top-level" objects, so for example, `Parser.parse(x.y.z).variables()` returns `['x']`. If you want to get the whole chain of object members, you can call it with `{ withMembers: true }`. So `Parser.parse(x.y.z).variables({ withMembers: true })` would return `['x.y.z']`.
+By default, `variables` will return "top-level" objects, so for example, `parser.parse('x.y.z').variables()` returns `['x']`. If you want to get the whole chain of object members, you can call it with `{ withMembers: true }`. So `parser.parse('x.y.z').variables({ withMembers: true })` would return `['x.y.z']`.
 
 ## symbols(options?: object)
 
 Get an array of variables, including any built-in functions used in the expression.
 
 ```js
-const expr = Parser.parse("min(x, y, z)");
+const parser = new Parser();
+const expr = parser.parse("min(x, y, z)");
 console.log(expr.symbols());                          // ['min', 'x', 'y', 'z']
 console.log(expr.simplify({ y: 4, z: 5 }).symbols()); // ['min', 'x']
 ```
@@ -83,20 +88,3 @@ Like `variables`, `symbols` accepts an option argument `{ withMembers: true }` t
 
 Convert the expression to a string. `toString()` surrounds every sub-expression with parentheses (except literal values, variables, and function calls), so it's useful for debugging precedence errors.
 
-## toJSFunction(parameters: array | string, variables?: object)
-
-Convert an `Expression` object into a callable JavaScript function. `parameters` is an array of parameter names, or a string, with the names separated by commas.
-
-If the optional `variables` argument is provided, the expression will be simplified with variables bound to the supplied values.
-
-```js
-const expr = Parser.parse("x + y + z");
-
-// Create a function with all three parameters
-const f1 = expr.toJSFunction("x,y,z");
-console.log(f1(1, 2, 3)); // 6
-
-// Create a function with x pre-bound to 100
-const f2 = expr.toJSFunction("y,z", { x: 100 });
-console.log(f2(2, 3)); // 105
-```

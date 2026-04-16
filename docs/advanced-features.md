@@ -4,12 +4,6 @@
 
 This document covers advanced integration features beyond basic parsing and evaluation. For expression syntax, see [Expression Syntax](syntax.md). For basic parser usage, see [Parser](parser.md).
 
-## About This TypeScript Port
-
-This is a modern TypeScript port of the original expr-eval library, completely rewritten with contemporary build tools and development practices. Originally based on [expr-eval 2.0.2](http://silentmatt.com/javascript-expression-evaluator/), this version has been restructured with a modular architecture, TypeScript support, and comprehensive testing using Vitest.
-
-The library maintains backward compatibility while providing enhanced features and improved maintainability.
-
 ## Async Expressions (Promise Support)
 
 Custom functions can return promises. When they do, `evaluate()` returns a promise:
@@ -113,7 +107,7 @@ parser.parse('$pi * $radius ^ 2').evaluate({}, (name) =>
 ); // 78.539...
 ```
 
-Both `Parser.evaluate(expr, variables, resolver)` and `Expression.evaluate(variables, resolver)` accept the resolver, and it propagates through nested constructs such as short-circuit `and`/`or`, the ternary `?:` operator, user-defined functions, and arrow functions.
+Both `parser.evaluate(expr, variables, resolver)` and `Expression.evaluate(variables, resolver)` accept the resolver, and it propagates through nested constructs such as short-circuit `and`/`or`, the ternary `?:` operator, user-defined functions, and arrow functions.
 
 ## Type Conversion (as Operator)
 
@@ -245,8 +239,6 @@ case
     else "F"
 end
 ```
-
-> **Note:** `toJSFunction()` is not supported for expressions that use CASE blocks.
 
 ### Object Construction
 

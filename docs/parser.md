@@ -12,9 +12,6 @@ import { Parser } from '@pro-fa/expreszo';
 // Create a parser instance
 const parser = new Parser();
 
-// Parse and evaluate in one step
-const result = Parser.evaluate('2 * x + 1', { x: 3 }); // 7
-
 // Or parse once and evaluate multiple times
 const expr = parser.parse('2 * x + 1');
 expr.evaluate({ x: 3 }); // 7
@@ -147,24 +144,6 @@ parser.evaluateArray(
 // [21, 42, 'literal', { nested: 22 }]
 ```
 
-## Static Methods
-
-### Parser.parse(expression: string)
-
-Static equivalent of `new Parser().parse(expression)`.
-
-```js
-const expr = Parser.parse('x + 1');
-```
-
-### Parser.evaluate(expression: string, variables?: object, resolver?: VariableResolver)
-
-Parse and immediately evaluate an expression. Equivalent to `Parser.parse(expr).evaluate(vars, resolver)`.
-
-```js
-Parser.evaluate('6 * x', { x: 7 }); // 42
-```
-
 ## Instance Properties
 
 ### parser.functions
@@ -193,33 +172,43 @@ parser.evaluate('double(5)'); // 10
 await parser.evaluate('fetchValue(123) * 2');
 ```
 
-### parser.consts
+### parser.numericConstants
 
-An object containing all available constants. You can add, modify, or remove constants:
+An object containing numeric constants. You can add, modify, or remove constants:
 
 ```js
 const parser = new Parser();
 
 // Add custom constants
-parser.consts.TAU = Math.PI * 2;
-parser.consts.GOLDEN_RATIO = 1.618033988749;
+parser.numericConstants.TAU = Math.PI * 2;
+parser.numericConstants.GOLDEN_RATIO = 1.618033988749;
 
 // Use in expressions
 parser.evaluate('TAU'); // 6.283185307179586
 parser.evaluate('2 * PI'); // 6.283185307179586 (PI is built-in)
 
-// Remove all built-in constants
-parser.consts = {};
+// Remove all numeric constants
+parser.numericConstants = {};
 ```
 
-**Built-in Constants:**
+**Built-in Numeric Constants:**
 
 | Constant | Value |
 |:---------|:------|
 | `E` | `Math.E` (~2.718) |
 | `PI` | `Math.PI` (~3.14159) |
+| `Infinity` | `Infinity` |
+| `NaN` | `NaN` |
+
+### parser.buildInLiterals
+
+An object containing built-in literal values:
+
+| Literal | Value |
+|:--------|:------|
 | `true` | `true` |
 | `false` | `false` |
+| `null` | `null` |
 
 ### parser.resolve
 

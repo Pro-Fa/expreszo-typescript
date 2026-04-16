@@ -79,7 +79,7 @@ parser.evaluate('x + 1', { x: 4 });
 
 ### Expression Constructor Signature Changed
 
-The `Expression` constructor now takes `(root: Node, parser: ParserLike)` instead of `(tokens: Instruction[], parser: ParserLike)`. This is an internal API — expressions should always be created via `Parser.parse()`.
+The `Expression` constructor now takes `(root: Node, parser: ParserLike)` instead of `(tokens: Instruction[], parser: ParserLike)`. This is an internal API — expressions should always be created via `parser.parse()`.
 
 ### Parser Recursion Depth Limit (256)
 

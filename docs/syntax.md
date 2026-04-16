@@ -115,8 +115,8 @@ Besides the "operator" functions, there are several pre-defined functions. You c
 | max(a,b,…)    | Get the largest (maximum) number in the list. |
 | clamp(x, min, max) | Clamps x to be within the range [min, max]. Returns min if x < min, max if x > max, otherwise x. |
 | hypot(a,b)    | Hypotenuse, i.e. the square root of the sum of squares of its arguments. |
-| pyt(a, b)     | Alias for hypot. |
 | pow(x, y)     | Equivalent to x^y. For consistency with JavaScript's Math object. |
+| gamma(n)      | Gamma function of n. |
 | atan2(y, x)   | Arc tangent of x/y. i.e. the angle between (0, 0) and (x, y) in radians. |
 | roundTo(x, n) | Rounds x to n places after the decimal point. |
 
@@ -136,7 +136,27 @@ Besides the "operator" functions, there are several pre-defined functions. You c
 | distinct(a)   | Alias for `unique`. Returns a new array with duplicate values removed. |
 | indexOf(x, a) | Return the first index of string or array `a` matching the value `x`, or `-1` if not found. |
 | join(sep, a)  | Concatenate the elements of `a`, separated by `sep`. |
+| sum(a)        | Returns the sum of all numbers in array `a`. |
+| sort(a, f?)   | Sorts an array. Optionally accepts a comparator function `f(a, b)`. |
+| flatten(a, depth?) | Flattens a nested array. If given an object, flattens nested keys using an optional separator (default: `_`). |
+| range(start, end, step?) | Generates an array of numbers from `start` (inclusive) to `end` (exclusive), with optional `step` (default: 1). |
+| chunk(a, size) | Splits array `a` into sub-arrays of length `size`. |
+| union(a, b, ...) | Returns a new array with all unique elements from all input arrays. |
+| intersect(a, b, ...) | Returns a new array of elements present in all input arrays. |
+| groupBy(a, f) | Groups elements of array `a` by the key returned by function `f(x, index)`. Returns an object. |
+| countBy(a, f) | Counts elements of array `a` by the key returned by function `f(x, index)`. Returns an object with counts. |
 | naturalSort(arr) | Sorts an array of strings using natural sort order (alphanumeric-aware). For example, `["file10", "file2", "file1"]` becomes `["file1", "file2", "file10"]`. |
+
+### Statistics Functions
+
+| Function      | Description |
+|:------------- |:----------- |
+| mean(a)       | Returns the arithmetic mean (average) of an array of numbers. |
+| median(a)     | Returns the median of an array of numbers. |
+| mostFrequent(a) | Returns the most frequently occurring value in an array (mode). |
+| variance(a)   | Returns the population variance of an array of numbers. |
+| stddev(a)     | Returns the population standard deviation of an array of numbers. |
+| percentile(a, p) | Returns the p-th percentile (0–100) of an array of numbers using linear interpolation. |
 
 ### Utility Functions
 
@@ -295,7 +315,9 @@ The parser includes functions for working with objects.
 | merge(obj1, obj2, ...)| Merges two or more objects together. Duplicate keys are overwritten by later arguments. |
 | keys(obj)             | Returns an array of strings containing the keys of the object. |
 | values(obj)           | Returns an array containing the values of the object. |
-| flatten(obj, sep?)    | Flattens a nested object's keys using an optional separator (default: `_`). For example, `{foo: {bar: 1}}` becomes `{foo_bar: 1}`. |
+| pick(obj, keys)       | Returns a new object containing only the specified keys from `obj`. Keys that don't exist are skipped. |
+| omit(obj, keys)       | Returns a new object with the specified keys removed from `obj`. |
+| mapValues(obj, f)     | Returns a new object with the same keys, where each value is the result of `f(value, key)`. |
 
 ### Object Function Examples
 
@@ -309,6 +331,15 @@ keys({a: 1, b: 2, c: 3})                  → ["a", "b", "c"]
 
 // Get values
 values({a: 1, b: 2, c: 3})                → [1, 2, 3]
+
+// Pick specific keys
+pick({a: 1, b: 2, c: 3}, ["a", "c"])      → {a: 1, c: 3}
+
+// Omit specific keys
+omit({a: 1, b: 2, c: 3}, ["b"])           → {a: 1, c: 3}
+
+// Map over values
+mapValues({a: 1, b: 2}, (v, k) => v * 10) → {a: 10, b: 20}
 
 // Flatten nested objects (using a variable `obj`)
 flatten(obj)    // where obj = {foo: {bar: 1}} → {foo_bar: 1}
@@ -525,7 +556,7 @@ true and false      → false
 x == undefined      → true (if x is not defined)
 ```
 
-> **For developers:** Constants can be customized via `parser.consts`. See [Parser Configuration](parser.md#parserconsts) for details.
+> **For developers:** Constants can be customized via `parser.numericConstants` and `parser.buildInLiterals`. See [Parser Configuration](parser.md#parsernumericconstants) for details.
 
 ## Coalesce Operator
 

@@ -163,16 +163,18 @@ Changes to the parser (`src/parsing/`) require extra care:
 
 ```typescript
 describe('myFunction', () => {
+  const parser = new Parser();
+
   it('should transform a simple string', () => {
-    expect(Parser.evaluate('myFunction("hello")')).toBe('HELLO');
+    expect(parser.evaluate('myFunction("hello")')).toBe('HELLO');
   });
 
   it('should return undefined for non-string input', () => {
-    expect(Parser.evaluate('myFunction(123)')).toBeUndefined();
+    expect(parser.evaluate('myFunction(123)')).toBeUndefined();
   });
 
   it('should handle empty strings', () => {
-    expect(Parser.evaluate('myFunction("")')).toBe('');
+    expect(parser.evaluate('myFunction("")')).toBe('');
   });
 });
 ```

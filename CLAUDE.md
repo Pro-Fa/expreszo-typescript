@@ -41,7 +41,7 @@ Expression string → TokenStream (lexer) → Parser (ParserState + utils) → I
 ### Key classes
 
 - **`Parser`** (`src/parsing/parser.ts`) — entry point; configurable with custom operators, functions, and variable resolvers; produces `Expression` objects
-- **`Expression`** (`src/core/expression.ts`) — compiled expression with methods: `evaluate()`, `simplify()`, `substitute()`, `toJSFunction()`, `toString()`, `variables()`, `symbols()`
+- **`Expression`** (`src/core/expression.ts`) — compiled expression with methods: `evaluate()`, `simplify()`, `substitute()`, `toString()`, `variables()`, `symbols()`
 - **`Evaluator`** (`src/core/evaluate.ts`) — stack-based VM that processes `Instruction` tokens in RPN order; supports async (Promise) evaluation
 - **`TokenStream`** (`src/parsing/token-stream.ts`) — lexer that converts expression strings to tokens
 - **`Instruction`** (`src/parsing/instruction.ts`) — bytecode-style nodes: `ISCALAR`, `IOP1/IOP2/IOP3`, `IVAR`, `IFUNCALL`, `IARRAY`, etc.
