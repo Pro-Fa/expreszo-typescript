@@ -345,6 +345,45 @@ describe('Expression Advanced Features TypeScript Test', () => {
     });
   });
 
+  describe('resolver as first argument to evaluate', () => {
+    it('should accept a resolver directly as the first argument to Expression.evaluate', () => {
+      const parser = new Parser();
+      const data = { a: 5, b: 1 };
+      const resolver: VariableResolver = (token) =>
+        token.startsWith('$') ? { value: (data as any)[token.substring(1)] } : undefined;
+      expect(parser.parse('$a + $b').evaluate(resolver)).toBe(6);
+    });
+
+    it('should behave identically whether resolver is first arg or second', () => {
+      const parser = new Parser();
+      const expr = parser.parse('$a * 2');
+      const resolver: VariableResolver = (token) =>
+        token === '$a' ? { value: 3 } : undefined;
+      expect(expr.evaluate(resolver)).toBe(6);
+      expect(expr.evaluate({}, resolver)).toBe(6);
+    });
+
+    it('should accept a resolver as the second arg to Parser.evaluate', () => {
+      const parser = new Parser();
+      const resolver: VariableResolver = (token) =>
+        token === '$a' ? { value: 42 } : undefined;
+      expect(parser.evaluate('$a + 1', resolver)).toBe(43);
+    });
+
+    it('should still treat an object first arg as values', () => {
+      const parser = new Parser();
+      expect(parser.parse('a + 1').evaluate({ a: 10 })).toBe(11);
+    });
+
+    it('should handle async expressions when resolver is the first arg', async () => {
+      const parser = new Parser();
+      parser.functions.asyncAdd = async (a: number, b: number) => a + b;
+      const resolver: VariableResolver = (token) =>
+        token === '$x' ? { value: 40 } : undefined;
+      await expect(parser.parse('asyncAdd($x, 2)').evaluate(resolver)).resolves.toBe(42);
+    });
+  });
+
   describe('?? (nullish coalescing) operator', () => {
     it('should succeed with variables set to undefined', () => {
       expect(parser.evaluate('x = undefined; x + 1')).toBeUndefined();

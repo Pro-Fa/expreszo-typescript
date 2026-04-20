@@ -12,7 +12,7 @@ export interface CreateMcpServerOptions {
 export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer {
   const server = new McpServer({
     name: options.name ?? 'expreszo-mcp',
-    version: options.version ?? '0.3.0'
+    version: options.version ?? '0.5.0'
   });
 
   const ls = createLanguageService({ operators: options.operators });

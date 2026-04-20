@@ -84,15 +84,15 @@ export const BUILTIN_FUNCTION_DOCS: Readonly<Record<string, FunctionDocs>> = {
   indexOf: {
     description: 'First index of x in a (array or string), or -1 if not found.',
     params: [
-      { name: 'x', description: 'Value to search for.', type: 'any' },
-      { name: 'a', description: 'Array or string to search.', type: 'any' }
+      { name: 'a', description: 'Array or string to search.', type: 'any' },
+      { name: 'x', description: 'Value to search for.', type: 'any' }
     ]
   },
   join: {
     description: 'Join array a using separator sep.',
     params: [
-      { name: 'sep', description: 'Separator string.', type: 'string' },
-      { name: 'a', description: 'Array to join.', type: 'array' }
+      { name: 'a', description: 'Array to join.', type: 'array' },
+      { name: 'sep', description: 'Separator string.', type: 'string' }
     ]
   },
   if: {

@@ -77,6 +77,7 @@ import { getSignatureHelp as computeSignatureHelp } from './signature-help';
 import { encodeSemanticTokens } from './semantic-tokens';
 import { getUnknownIdentDiagnostics } from './unknown-ident';
 import { getTypeMismatchDiagnostics } from './type-check';
+import { getLegacyArgOrderDiagnostics } from './legacy-arg-order';
 import { getCodeActions as computeCodeActions } from './code-actions';
 import { format as computeFormat } from './formatter';
 
@@ -420,6 +421,10 @@ export function createLanguageService(options: LanguageServiceOptions | undefine
 
     // Type-mismatch diagnostics — literals-only, always on
     diagnostics.push(...getTypeMismatchDiagnostics(textDocument, parseCache));
+
+    // Legacy argument-order diagnostics — suggests reordering to the
+    // preferred (collection-first) form for dual-order built-ins
+    diagnostics.push(...getLegacyArgOrderDiagnostics(textDocument, parseCache));
 
     return diagnostics;
   }

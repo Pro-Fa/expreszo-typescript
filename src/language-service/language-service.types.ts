@@ -87,8 +87,10 @@ export interface LanguageServiceApi {
 
     /**
      * Returns LSP CodeAction quick fixes for the diagnostics in the supplied
-     * context. Currently handles `arity-too-few` (inserts placeholder args)
-     * and `unknown-ident` (Levenshtein "did you mean" suggestions).
+     * context. Currently handles `arity-too-few` (inserts placeholder args),
+     * `unknown-ident` (Levenshtein "did you mean" suggestions) and
+     * `legacy-arg-order` (reorders dual-order built-in calls to the preferred
+     * collection-first form).
      */
     getCodeActions(params: GetCodeActionsParams): CodeAction[];
 

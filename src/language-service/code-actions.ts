@@ -1,11 +1,13 @@
 import type { TextDocument } from 'vscode-languageserver-textdocument';
-import type { CodeAction, Diagnostic } from 'vscode-languageserver-types';
+import type { CodeAction, Diagnostic, TextEdit } from 'vscode-languageserver-types';
 import { CodeActionKind } from 'vscode-languageserver-types';
 import type { Parser } from '../parsing/parser';
 import { closestMatch } from './shared/levenshtein.js';
 import { buildKnownNames } from './shared/known-names.js';
 import { FunctionDetails } from './language-service.models.js';
 import type { GetCodeActionsParams } from './language-service.types.js';
+import type { LegacyArgOrderFixData } from './legacy-arg-order.js';
+import { spanToRange } from './shared/positions.js';
 
 /**
  * Count the number of top-level comma-separated arguments in the raw text
@@ -126,6 +128,57 @@ function didYouMeanQuickFix(
   };
 }
 
+function isLegacyArgOrderFixData(data: unknown): data is LegacyArgOrderFixData {
+  if (typeof data !== 'object' || data === null) return false;
+  const d = data as Record<string, unknown>;
+  return (
+    d.kind === 'legacy-arg-order' &&
+    typeof d.functionName === 'string' &&
+    Array.isArray(d.argSpans) &&
+    Array.isArray(d.swapPairs)
+  );
+}
+
+function reorderArgsQuickFix(
+  doc: TextDocument,
+  diagnostic: Diagnostic
+): CodeAction | null {
+  const data = diagnostic.data;
+  if (!isLegacyArgOrderFixData(data)) return null;
+
+  const text = doc.getText();
+  const edits: TextEdit[] = [];
+  // Each swap pair substitutes the two argument slices at their own ranges.
+  // Emitting per-slot edits (rather than rewriting the whole call) keeps
+  // surrounding whitespace/comments intact.
+  for (const [i, j] of data.swapPairs) {
+    const a = data.argSpans[i];
+    const b = data.argSpans[j];
+    if (!a || !b) return null;
+    edits.push({
+      range: spanToRange(doc, a),
+      newText: text.slice(b.start, b.end)
+    });
+    edits.push({
+      range: spanToRange(doc, b),
+      newText: text.slice(a.start, a.end)
+    });
+  }
+  if (edits.length === 0) return null;
+
+  return {
+    title: `Reorder arguments of '${data.functionName}' to preferred order`,
+    kind: CodeActionKind.QuickFix,
+    diagnostics: [diagnostic],
+    isPreferred: true,
+    edit: {
+      changes: {
+        [doc.uri]: edits
+      }
+    }
+  };
+}
+
 export function getCodeActions(
   params: GetCodeActionsParams,
   parser: Parser,
@@ -140,6 +193,9 @@ export function getCodeActions(
       if (action) out.push(action);
     } else if (diagnostic.code === 'unknown-ident') {
       const action = didYouMeanQuickFix(params.textDocument, diagnostic, knownNames);
+      if (action) out.push(action);
+    } else if (diagnostic.code === 'legacy-arg-order') {
+      const action = reorderArgsQuickFix(params.textDocument, diagnostic);
       if (action) out.push(action);
     }
   }

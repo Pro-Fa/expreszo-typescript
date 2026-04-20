@@ -97,4 +97,22 @@ describe('Parser.evaluateObject / evaluateArray', () => {
       expect(result).toEqual([1, true, null, undefined]);
     });
   });
+
+  describe('resolver as first argument', () => {
+    it('evaluateObject accepts a resolver directly in place of variables', () => {
+      const result = parser.evaluateObject(
+        { name: 'user.name' },
+        (token) => (token === 'user' ? { value: { name: 'Jane' } } : undefined)
+      );
+      expect(result).toEqual({ name: 'Jane' });
+    });
+
+    it('evaluateArray accepts a resolver directly in place of variables', () => {
+      const result = parser.evaluateArray(
+        ['$x', '$x + 1'],
+        (token) => (token === '$x' ? { value: 10 } : undefined)
+      );
+      expect(result).toEqual([10, 11]);
+    });
+  });
 });

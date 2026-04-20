@@ -5,6 +5,7 @@
 `parser.parse(str)` returns an `Expression` object. `Expression`s are similar to JavaScript functions, i.e. they can be "called" with variables bound to passed-in values.
 
 ## evaluate(variables?: object, resolver?: VariableResolver)
+## evaluate(resolver: VariableResolver)
 
 Evaluate the expression, with variables bound to the values in `{variables}`. Each variable in the expression is bound to the corresponding member of the `variables` object. If there are unbound variables, `evaluate` will throw an exception.
 
@@ -18,6 +19,8 @@ console.log(expr.evaluate({ x: 3 })); // 8
 
 The optional `resolver` argument is a per-call variable resolver. It has the same shape as `parser.resolve` — `(name) => { alias } | { value } | undefined` — but applies only to the current `evaluate()` call, so a single parsed `Expression` can be evaluated multiple times against different data sources without mutating parser state. The per-call `resolver` is consulted before `parser.resolve`; the `variables` object still takes precedence over both.
 
+When no `variables` are needed, the resolver can be passed directly as the first argument — `evaluate` detects whether the first argument is an object or a function and dispatches accordingly.
+
 ```js
 const parser = new Parser();
 const expr = parser.parse('$user.name');
@@ -25,6 +28,11 @@ const expr = parser.parse('$user.name');
 const resolveAlice = (name) => name === '$user' ? { value: { name: 'Alice' } } : undefined;
 const resolveBob   = (name) => name === '$user' ? { value: { name: 'Bob'   } } : undefined;
 
+// Resolver as first argument
+expr.evaluate(resolveAlice); // 'Alice'
+expr.evaluate(resolveBob);   // 'Bob'
+
+// Equivalent, with an explicit empty values object
 expr.evaluate({}, resolveAlice); // 'Alice'
 expr.evaluate({}, resolveBob);   // 'Bob'
 ```

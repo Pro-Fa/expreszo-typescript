@@ -6,7 +6,7 @@ import type { OperatorFunction } from '../types/parser.js';
 import { ParseError, VariableError } from '../types/errors.js';
 import { setDeprecationHandler } from '../utils/deprecation.js';
 import type { DeprecationHandler } from '../utils/deprecation.js';
-import { atan2, condition, fac, filter, fold, gamma, hypot, indexOf, indexOfLegacy, join, joinLegacy, map, max, min, random, roundTo, sum, json, stringLength, isEmpty, stringContains, startsWith, endsWith, searchCount, trim, toUpper, toLower, toTitle, split, repeat, reverse, left, right, replace, replaceFirst, naturalSort, toNumber, toBoolean, padLeft, padRight, padBoth, slice, urlEncode, base64Encode, base64Decode, coalesceString, merge, keys, values, count, clamp, reduce, find, some, every, unique, distinct, sort, flattenArray, mapValues, pick, omit, isArray, isObject, isNumber, isString, isBoolean, isNull, isUndefined, isFunctionValue, mean, median, mostFrequent, variance, stddev, percentile, range, chunk, union, intersect, groupBy, countBy } from '../functions/index.js';
+import { atan2, condition, fac, filter, fold, gamma, hypot, indexOf, join, map, max, min, random, roundTo, sum, json, stringLength, isEmpty, stringContains, startsWith, endsWith, searchCount, trim, toUpper, toLower, toTitle, split, repeat, reverse, left, right, replace, replaceFirst, naturalSort, toNumber, toBoolean, padLeft, padRight, padBoth, slice, urlEncode, base64Encode, base64Decode, coalesceString, merge, keys, values, count, clamp, reduce, find, some, every, unique, distinct, sort, flattenArray, mapValues, pick, omit, isArray, isObject, isNumber, isString, isBoolean, isNull, isUndefined, isFunctionValue, mean, median, mostFrequent, variance, stddev, percentile, range, chunk, union, intersect, groupBy, countBy } from '../functions/index.js';
 import {
   add,
   addLegacy,
@@ -77,6 +77,16 @@ interface ParserOptions {
   allowMemberAccess?: boolean;
   operators?: Record<string, boolean>;
   legacy?: boolean;
+}
+
+function normalizeVariablesOrResolver(
+  variablesOrResolver: Values | VariableResolver | undefined,
+  resolver: VariableResolver | undefined
+): [Values | undefined, VariableResolver | undefined] {
+  if (typeof variablesOrResolver === 'function') {
+    return [undefined, variablesOrResolver];
+  }
+  return [variablesOrResolver, resolver];
 }
 
 export class Parser {
@@ -197,9 +207,9 @@ export class Parser {
       distinct: distinct,
       gamma: gamma,
       hypot: hypot,
-      indexOf: this.legacy ? indexOfLegacy : indexOf,
+      indexOf: indexOf,
       if: condition,
-      join: this.legacy ? joinLegacy : join,
+      join: join,
       map: map,
       max: max,
       min: min,
@@ -318,6 +328,9 @@ export class Parser {
    * Parses and immediately evaluates a mathematical expression.
    * This is a convenience method equivalent to `parser.parse(expr).evaluate(variables, resolver)`.
    *
+   * A resolver function may be passed in place of `variables`; it is then used
+   * as the per-call resolver with no variable bindings.
+   *
    * @param expr - The mathematical expression string to evaluate
    * @param variables - Optional object containing variable values
    * @param resolver - Optional per-call variable resolver. Tried before the parser-level
@@ -332,8 +345,17 @@ export class Parser {
    * const result = parser.evaluate('2 + 3 * x', { x: 4 }); // Returns 14
    * ```
    */
-  evaluate(expr: string, variables?: Values, resolver?: VariableResolver): Value | Promise<Value> {
-    return this.parse(expr).evaluate(variables, resolver);
+  evaluate(expr: string, resolver: VariableResolver): Value | Promise<Value>;
+  evaluate(expr: string, variables?: Values, resolver?: VariableResolver): Value | Promise<Value>;
+  evaluate(
+    expr: string,
+    variablesOrResolver?: Values | VariableResolver,
+    resolver?: VariableResolver
+  ): Value | Promise<Value> {
+    if (typeof variablesOrResolver === 'function') {
+      return this.parse(expr).evaluate(variablesOrResolver);
+    }
+    return this.parse(expr).evaluate(variablesOrResolver, resolver);
   }
 
   /**
@@ -360,24 +382,35 @@ export class Parser {
    */
   evaluateObject<T extends ValueObject = ValueObject>(
     object: ValueObject,
+    resolver: VariableResolver
+  ): T;
+  evaluateObject<T extends ValueObject = ValueObject>(
+    object: ValueObject,
     variables?: Values,
     resolver?: VariableResolver
+  ): T;
+  evaluateObject<T extends ValueObject = ValueObject>(
+    object: ValueObject,
+    variablesOrResolver?: Values | VariableResolver,
+    resolver?: VariableResolver
   ): T {
+    const [variables, effectiveResolver] = normalizeVariablesOrResolver(variablesOrResolver, resolver);
+
     if (object === null || object === undefined) {
       return {} as T;
     }
 
     if (typeof object !== 'object') {
-      return this.resolveValue(object, variables, resolver) as T;
+      return this.resolveValue(object, variables, effectiveResolver) as T;
     }
 
     if (Array.isArray(object)) {
-      return this.evaluateArray(object, variables, resolver) as unknown as T;
+      return this.evaluateArray(object, variables, effectiveResolver) as unknown as T;
     }
 
     const resolved: ValueObject = {};
     for (const [key, value] of Object.entries(object)) {
-      resolved[key] = this.resolveValue(value, variables, resolver);
+      resolved[key] = this.resolveValue(value, variables, effectiveResolver);
     }
 
     return resolved as T;
@@ -405,16 +438,27 @@ export class Parser {
    */
   evaluateArray<T = Value>(
     array: readonly Value[],
+    resolver: VariableResolver
+  ): T[];
+  evaluateArray<T = Value>(
+    array: readonly Value[],
     variables?: Values,
+    resolver?: VariableResolver
+  ): T[];
+  evaluateArray<T = Value>(
+    array: readonly Value[],
+    variablesOrResolver?: Values | VariableResolver,
     resolver?: VariableResolver
   ): T[] {
     if (!Array.isArray(array)) {
       return [];
     }
 
+    const [variables, effectiveResolver] = normalizeVariablesOrResolver(variablesOrResolver, resolver);
+
     const resolved: Value[] = [];
     for (const value of array) {
-      resolved.push(this.resolveValue(value, variables, resolver));
+      resolved.push(this.resolveValue(value, variables, effectiveResolver));
     }
 
     return resolved as T[];

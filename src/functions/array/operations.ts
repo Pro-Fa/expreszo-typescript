@@ -76,13 +76,27 @@ export function fold(arg1: Function | any[] | undefined, arg2: any, arg3: Functi
   }, init);
 }
 
-export function indexOf(haystack: string | any[] | undefined, target: any): number | undefined {
-  if (haystack === undefined) {
+export function indexOf(arg1: any, arg2: any): number | undefined {
+  // Support both indexOf(arrayOrString, target) and indexOf(target, arrayOrString) for backwards compatibility
+  const arg1IsCollection = Array.isArray(arg1) || typeof arg1 === 'string';
+  const arg2IsCollection = Array.isArray(arg2) || typeof arg2 === 'string';
+
+  let haystack: string | any[];
+  let target: any;
+
+  if (arg1IsCollection) {
+    // collection-first (preferred): indexOf(haystack, target)
+    haystack = arg1;
+    target = arg2;
+  } else if (arg2IsCollection && arg1 !== undefined) {
+    // target-first (legacy): indexOf(target, haystack)
+    target = arg1;
+    haystack = arg2;
+  } else if (arg1 === undefined) {
     return undefined;
-  }
-  if (!(Array.isArray(haystack) || typeof haystack === 'string')) {
+  } else {
     throw new Error(
-      `indexOf(arrayOrString, target) expects a string or array as first argument, got ${getTypeName(haystack)}.\n` +
+      `indexOf(arrayOrString, target) expects a string or array as first argument, got ${getTypeName(arg1)}.\n` +
       'Example: indexOf(["a", "b", "c"], "b") or indexOf("hello", "o")'
     );
   }
@@ -90,45 +104,31 @@ export function indexOf(haystack: string | any[] | undefined, target: any): numb
   return haystack.indexOf(target);
 }
 
-export function indexOfLegacy(target: any, s: string | any[] | undefined): number | undefined {
-  if (s === undefined) {
-    return undefined;
-  }
-  if (!(Array.isArray(s) || typeof s === 'string')) {
-    throw new Error(
-      `indexOf(target, arrayOrString) expects a string or array as second argument, got ${getTypeName(s)}.\n` +
-      'Example: indexOf("b", ["a", "b", "c"]) or indexOf("o", "hello")'
-    );
-  }
+export function join(arg1: any, arg2: any): string | undefined {
+  // Support both join(array, separator) and join(separator, array) for backwards compatibility
+  let a: any[] | undefined;
+  let sep: string | undefined;
 
-  return s.indexOf(target);
-}
-
-export function join(a: any[] | undefined, sep: string | undefined): string | undefined {
-  if (a === undefined || sep === undefined) {
+  if (Array.isArray(arg1) && (typeof arg2 === 'string' || arg2 === undefined)) {
+    // array-first (preferred): join(array, separator)
+    a = arg1;
+    sep = arg2;
+  } else if (Array.isArray(arg2) && (typeof arg1 === 'string' || arg1 === undefined)) {
+    // separator-first (legacy): join(separator, array)
+    sep = arg1;
+    a = arg2;
+  } else if (arg1 === undefined || arg2 === undefined) {
     return undefined;
-  }
-  if (!Array.isArray(a)) {
+  } else {
     throw new Error(
-      `join(array, separator) expects an array as first argument, got ${getTypeName(a)}.\n` +
+      `join(array, separator) expects an array as first argument, got ${getTypeName(arg1)}.\n` +
       'Example: join(["a", "b", "c"], ", ")'
     );
   }
 
-  return a.join(sep);
-}
-
-export function joinLegacy(sep: string | undefined, a: any[] | undefined): string | undefined {
-  if (sep === undefined || a === undefined) {
+  if (a === undefined || sep === undefined) {
     return undefined;
   }
-  if (!Array.isArray(a)) {
-    throw new Error(
-      `join(separator, array) expects an array as second argument, got ${getTypeName(a)}.\n` +
-      'Example: join(", ", ["a", "b", "c"])'
-    );
-  }
-
   return a.join(sep);
 }
 

@@ -125,6 +125,10 @@ export class Expression {
   /**
    * Evaluates the expression with the given variable values.
    *
+   * Accepts either a `values` object, a `resolver` function, or both. When a
+   * function is passed as the first argument it is treated as the resolver and
+   * no `values` object is used.
+   *
    * @param values - Object containing variable values
    * @param resolver - Optional per-call variable resolver. Tried before the parser-level
    *   resolver (if any) when a variable is not present in `values`. Lets a single parsed
@@ -138,29 +142,47 @@ export class Expression {
    * const expr = parser.parse('2 + 3 * x');
    * const result = expr.evaluate({ x: 4 }); // Returns 14
    *
-   * // Per-call resolver
+   * // Per-call resolver only
    * const expr2 = parser.parse('$a + $b');
-   * const result2 = expr2.evaluate({}, (t) =>
+   * const result2 = expr2.evaluate((t) =>
+   *   t.startsWith('$') ? { value: lookup(t.substring(1)) } : undefined
+   * );
+   *
+   * // Values and resolver
+   * const result3 = expr2.evaluate({}, (t) =>
    *   t.startsWith('$') ? { value: lookup(t.substring(1)) } : undefined
    * );
    * ```
    */
-  evaluate(values?: ReadonlyValues, resolver?: VariableResolver): Value | Promise<Value> {
+  evaluate(resolver: VariableResolver): Value | Promise<Value>;
+  evaluate(values?: ReadonlyValues, resolver?: VariableResolver): Value | Promise<Value>;
+  evaluate(
+    valuesOrResolver?: ReadonlyValues | VariableResolver,
+    resolver?: VariableResolver
+  ): Value | Promise<Value> {
+    let values: ReadonlyValues | undefined;
+    let effectiveResolver: VariableResolver | undefined;
+    if (typeof valuesOrResolver === 'function') {
+      effectiveResolver = valuesOrResolver;
+    } else {
+      values = valuesOrResolver;
+      effectiveResolver = resolver;
+    }
     const safeValues = (values || {}) as Record<string, Value>;
 
     if (this.isAsync === undefined) {
       this.isAsync = containsAsyncCall(this.#root, { functions: this.functions });
     }
     if (this.isAsync) {
-      return evaluateAstAsync(this.#root, this, safeValues, resolver);
+      return evaluateAstAsync(this.#root, this, safeValues, effectiveResolver);
     }
 
     try {
-      return evaluateAstSync(this.#root, this, safeValues, resolver);
+      return evaluateAstSync(this.#root, this, safeValues, effectiveResolver);
     } catch (err) {
       if (err instanceof AsyncRequiredError) {
         this.isAsync = true;
-        return evaluateAstAsync(this.#root, this, safeValues, resolver);
+        return evaluateAstAsync(this.#root, this, safeValues, effectiveResolver);
       }
       throw err;
     }

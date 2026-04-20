@@ -81,6 +81,9 @@ const expr = parser.parse('2 * x + 1');
 expr.evaluate({ x: 3 });  // 7
 expr.evaluate({ x: 10 }); // 21
 
+// Or pass a resolver directly as the first argument
+expr.evaluate((name) => name === 'x' ? { value: 3 } : undefined); // 7
+
 // Rich expression language
 parser.evaluate('user.name ?? "Anonymous"', { user: {} }); // "Anonymous"
 parser.evaluate('CASE WHEN score >= 90 THEN "A" WHEN score >= 80 THEN "B" ELSE "C" END', { score: 85 }); // "B"
