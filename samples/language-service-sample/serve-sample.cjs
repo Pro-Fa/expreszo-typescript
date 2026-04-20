@@ -25,7 +25,13 @@ function send(res, status, body, headers = {}) {
 }
 
 const server = http.createServer((req, res) => {
-    let urlPath = decodeURIComponent(req.url || '/');
+    const rawUrl = req.url || '/';
+    let urlPath;
+    try {
+        urlPath = decodeURIComponent(rawUrl);
+    } catch (e) {
+        return send(res, 400, 'Bad Request');
+    }
     
     // Strip query string
     const queryIndex = urlPath.indexOf('?');

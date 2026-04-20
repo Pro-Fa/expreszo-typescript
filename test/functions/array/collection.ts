@@ -5,7 +5,7 @@ import {
   union,
   intersect,
   groupBy,
-  countBy,
+  countBy
 } from '../../../src/functions/array/collection.js';
 
 describe('range', () => {
@@ -284,7 +284,7 @@ describe('groupBy', () => {
     expect(result).toEqual({
       a: ['apple', 'avocado'],
       b: ['banana', 'blueberry'],
-      c: ['cherry'],
+      c: ['cherry']
     });
   });
 

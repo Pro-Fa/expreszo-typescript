@@ -23,7 +23,7 @@ import {
   mkCase,
   mkSequence,
   mkParen,
-  type Node,
+  type Node
 } from '../../../src/ast/nodes.js';
 
 const REPLACEMENT = mkNumber(42);

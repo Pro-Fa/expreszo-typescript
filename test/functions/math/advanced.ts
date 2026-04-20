@@ -7,7 +7,7 @@ import {
   max,
   min,
   roundTo,
-  clamp,
+  clamp
 } from '../../../src/functions/math/advanced.js';
 
 describe('advanced math functions (direct)', () => {

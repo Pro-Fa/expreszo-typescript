@@ -176,7 +176,7 @@ export function getLegacyArgOrderDiagnostics(
       severity: DiagnosticSeverity.Information,
       message:
         `'${name}' is called with legacy argument order. ` +
-        `The preferred order is collection-first. Use the quick fix to reorder.`,
+        'The preferred order is collection-first. Use the quick fix to reorder.',
       source: 'expreszo',
       code: 'legacy-arg-order',
       data

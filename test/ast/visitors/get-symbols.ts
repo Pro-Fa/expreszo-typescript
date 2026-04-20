@@ -21,7 +21,7 @@ import {
   mkFunctionDef,
   mkCase,
   mkSequence,
-  mkParen,
+  mkParen
 } from '../../../src/ast/nodes.js';
 
 /** Helper: collect symbols from a node and return the result array. */
@@ -169,7 +169,7 @@ describe('getSymbolsFromNode', () => {
     it('collects symbols from spread entries', () => {
       const node = mkObject([
         { key: 'a', value: mkIdent('x') },
-        mkObjectSpread(mkIdent('rest')),
+        mkObjectSpread(mkIdent('rest'))
       ]);
       expect(symbols(node)).toEqual(['x', 'rest']);
     });
@@ -177,14 +177,14 @@ describe('getSymbolsFromNode', () => {
     it('collects symbols from spread entries (withMembers)', () => {
       const node = mkObject([
         { key: 'a', value: mkIdent('x') },
-        mkObjectSpread(mkIdent('rest')),
+        mkObjectSpread(mkIdent('rest'))
       ]);
       expect(symbols(node, true)).toEqual(['x', 'rest']);
     });
 
     it('ObjectSpread with complex argument', () => {
       const node = mkObject([
-        mkObjectSpread(mkCall(mkIdent('getDefaults'), [])),
+        mkObjectSpread(mkCall(mkIdent('getDefaults'), []))
       ]);
       expect(symbols(node)).toEqual(['getDefaults']);
     });
@@ -219,7 +219,7 @@ describe('getSymbolsFromNode', () => {
         mkIdent('val'),
         [
           { when: mkNumber(1), then: mkIdent('a') },
-          { when: mkNumber(2), then: mkIdent('b') },
+          { when: mkNumber(2), then: mkIdent('b') }
         ],
         mkIdent('c')
       );

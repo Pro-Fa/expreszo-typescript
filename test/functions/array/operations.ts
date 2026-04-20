@@ -14,7 +14,7 @@ import {
   unique,
   distinct,
   sort,
-  reduce,
+  reduce
 } from '../../../src/functions/array/operations.js';
 
 describe('Array Operations', () => {

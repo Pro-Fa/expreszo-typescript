@@ -22,23 +22,23 @@ import {
   mkFunctionDef,
   mkCase,
   mkSequence,
-  mkParen,
+  mkParen
 } from '../../../src/ast/nodes.js';
 
 function makeOps(values: Record<string, unknown> = {}): SimplifyOps {
   return {
     unaryOps: {
       '-': (a: any) => -a,
-      'not': (a: any) => !a,
+      'not': (a: any) => !a
     },
     binaryOps: {
       '+': (a: any, b: any) => a + b,
-      '*': (a: any, b: any) => a * b,
+      '*': (a: any, b: any) => a * b
     },
     ternaryOps: {
-      'between': (a: any, b: any, c: any) => a >= b && a <= c,
+      'between': (a: any, b: any, c: any) => a >= b && a <= c
     },
-    values,
+    values
   };
 }
 
@@ -443,7 +443,7 @@ describe('simplifyAst', () => {
           mkIdent('v'),
           [
             { when: mkNumber(1), then: mkString('one') },
-            { when: mkIdent('v'), then: mkString('match') },
+            { when: mkIdent('v'), then: mkString('match') }
           ],
           mkString('default')
         ),
@@ -555,7 +555,7 @@ describe('simplifyAst', () => {
       const result = simplifyAst(
         mkObject([
           mkObjectSpread(mkIdent('base')),
-          { key: 'b', value: mkNumber(2) },
+          { key: 'b', value: mkNumber(2) }
         ]),
         ops
       );

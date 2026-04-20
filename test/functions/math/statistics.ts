@@ -5,7 +5,7 @@ import {
   mostFrequent,
   variance,
   stddev,
-  percentile,
+  percentile
 } from '../../../src/functions/math/statistics.js';
 
 describe('statistics functions (direct)', () => {
