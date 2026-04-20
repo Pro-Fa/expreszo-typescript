@@ -165,7 +165,6 @@ function loadExampleFromUrl() {
 (function() {
     const resizer = document.getElementById('verticalResizer');
     const contextPane = document.getElementById('contextPane');
-    const resultsPane = document.getElementById('resultsPane');
     const bottomArea = document.getElementById('bottomArea');
     let isResizing = false;
 
@@ -182,7 +181,6 @@ function loadExampleFromUrl() {
 
         const containerRect = bottomArea.getBoundingClientRect();
         const containerWidth = containerRect.width;
-        const resizerWidth = 6;
 
         let newLeftWidth = e.clientX - containerRect.left;
         newLeftWidth = Math.max(containerWidth * 0.2, Math.min(containerWidth * 0.8, newLeftWidth));

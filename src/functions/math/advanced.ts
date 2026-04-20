@@ -16,10 +16,7 @@ const GAMMA_P = [
   0.36899182659531622704e-5
 ] as const;
 
-function isInteger(value: number | undefined): boolean {
-  if (value === undefined) {
-    return false;
-  }
+function isInteger(value: number): boolean {
   return isFinite(value) && (value === Math.round(value));
 }
 

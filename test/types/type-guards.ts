@@ -209,13 +209,13 @@ describe('Type Guards', () => {
       }
     });
 
-    it('should narrow types correctly with isFunction', () => {
+    it('should narrow types correctly with isFunction', async () => {
       const value: Value = Math.sin;
 
       if (isFunction(value)) {
         // TypeScript should know value is ExpressionFunction here
         expect(typeof value).toBe('function');
-        expect(typeof value(Math.PI / 2)).toBe('number');
+        expect(typeof await value(Math.PI / 2)).toBe('number');
       }
     });
 
