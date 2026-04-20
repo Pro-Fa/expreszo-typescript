@@ -40,10 +40,10 @@ const server = http.createServer((req, res) => {
         urlPath = 'samples/language-service-sample' + urlPath;
     }
 
-    const relativePath = urlPath.replace(/^\/+/, '');
-    const filePath = path.resolve(root, relativePath);
-    const relativeToRoot = path.relative(root, filePath);
-    if (relativeToRoot.startsWith('..') || path.isAbsolute(relativeToRoot)) {
+    const safeRelativePath = urlPath.replace(/^([/\\])+/, '');
+    const filePath = path.resolve(root, safeRelativePath);
+    const rootWithSep = root.endsWith(path.sep) ? root : root + path.sep;
+    if (!(filePath === root || filePath.startsWith(rootWithSep))) {
         return send(res, 403, 'Forbidden');
     }
 
