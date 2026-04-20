@@ -40,9 +40,13 @@ const server = http.createServer((req, res) => {
         urlPath = 'samples/language-service-sample' + urlPath;
     }
 
-    const filePath = path.join(root, urlPath);
+    const safeRelativePath = urlPath.replace(/^([/\\])+/, '');
+    const filePath = path.resolve(root, safeRelativePath);
+    const rootWithSep = root.endsWith(path.sep) ? root : root + path.sep;
+    if (!(filePath === root || filePath.startsWith(rootWithSep))) {
+        return send(res, 403, 'Forbidden');
+    }
 
-    // OBVIOUSLY THIS IS NOT SECURE! DO NOT USE IN UNSAFE ENVIRONMENTS!
     fs.stat(filePath, (err, stat) => {
         if (err) {
             return send(res, 404, 'Not found');
