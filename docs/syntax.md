@@ -99,7 +99,7 @@ The unary `+` and `-` operators are an exception, and always have their normal p
 | sqrt x   | Square root of x. Result is NaN (Not a Number) if x is negative. |
 | tan x    | Tangent of x (x is in radians) |
 | tanh x   | Hyperbolic tangent of x (x is in radians) |
-| trunc x  | Integral part of a X, looks like floor(x) unless for negative number |
+| trunc x  | Integral part of x; behaves like floor(x) for positive numbers, but rounds toward zero for negative numbers. |
 
 ## Pre-defined Functions
 
@@ -233,7 +233,7 @@ The parser includes comprehensive string manipulation capabilities.
 |:--------------------- |:----------- |
 | padLeft(str, len, padChar?)     | Pads a string on the left with spaces (or optional padding character) to reach the target length. |
 | padRight(str, len, padChar?)    | Pads a string on the right with spaces (or optional padding character) to reach the target length. |
-| padBoth(str, len, padChar?)     | Pads a string on both sides with spaces (or optional padding character) to reach the target length. If an odd number of padding characters is needed, the extra character is added on the right. |
+| padBoth(str, len, padChar?)     | Pads a string on both sides with spaces (or optional padding character) to reach the target length. If `len` is less than or equal to the string length, the original string is returned unchanged (no truncation). If an odd number of padding characters is needed, the extra character is added on the right. |
 
 ### Slicing and Encoding
 
