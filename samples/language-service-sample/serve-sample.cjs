@@ -46,9 +46,13 @@ const server = http.createServer((req, res) => {
         urlPath = 'samples/language-service-sample' + urlPath;
     }
 
-    const filePath = path.join(root, urlPath);
+    const relativePath = urlPath.replace(/^\/+/, '');
+    const filePath = path.resolve(root, relativePath);
+    const relativeToRoot = path.relative(root, filePath);
+    if (relativeToRoot.startsWith('..') || path.isAbsolute(relativeToRoot)) {
+        return send(res, 403, 'Forbidden');
+    }
 
-    // OBVIOUSLY THIS IS NOT SECURE! DO NOT USE IN UNSAFE ENVIRONMENTS!
     fs.stat(filePath, (err, stat) => {
         if (err) {
             return send(res, 404, 'Not found');
