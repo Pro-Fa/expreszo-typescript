@@ -4,7 +4,7 @@
     "outDir": "./dist",
     "rootDir": "./",
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals", "node"]
   },
   "include": [
     "src/**/*",

@@ -36,6 +36,7 @@
     "vitest": "^4.1.0"
   },
   "resolutions": {
-    "ip-address": "^10.1.1"
+    "ip-address": "^10.1.1",
+    "vite": "^6.0.1"
   }
 }
