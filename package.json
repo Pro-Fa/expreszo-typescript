@@ -31,13 +31,13 @@
     "rimraf": "^5.0.10",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.15.0",
-    "vite": "^6.0.1",
+    "vite": "^6.4.3",
     "vite-plugin-dts": "^4.3.0",
     "vitest": "^4.1.0"
   },
   "resolutions": {
     "ip-address": "^10.1.1",
     "qs": "^6.15.2",
-    "vite": "^6.0.1"
+    "vite": "^6.4.3"
   }
 }
