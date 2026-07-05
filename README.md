@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Pro-Fa/expreszo-typescript/main/packages/expreszo/docs/logo_dark.png">
-  <img src="https://raw.githubusercontent.com/Pro-Fa/expreszo-typescript/main/packages/expreszo/docs/logo.png" alt="ExpresZo" width="420">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Smashman/expreszo-typescript/refs/heads/main/docs/logo_dark.png">
+  <img src="https://raw.githubusercontent.com/Smashman/expreszo-typescript/refs/heads/main/docs/logo.png" alt="ExpresZo" width="420">
 </picture>
 
 # ExpresZo Typescript
@@ -133,33 +133,33 @@ Try it live at the [Playground](https://pro-fa.github.io/expreszo-typescript/) â
 
 | Document | Description |
 |:---------|:------------|
-| [Quick Reference](https://github.com/Pro-Fa/expreszo-typescript/blob/main/packages/expreszo/docs/quick-reference.md) | Cheat sheet of operators, functions, and syntax |
-| [Expression Syntax](https://github.com/Pro-Fa/expreszo-typescript/blob/main/packages/expreszo/docs/syntax.md) | Complete syntax reference with examples |
-| [Date / Time functions](https://github.com/Pro-Fa/expreszo-typescript/blob/main/packages/expreszo/docs/datetime.md) | ~70 date/time functions (provided by the optional `@pro-fa/expreszo-datetime` package) |
+| [Quick Reference](https://pro-fa.github.io/expreszo-typescript/docs/quick-reference/) | Cheat sheet of operators, functions, and syntax |
+| [Expression Syntax](https://pro-fa.github.io/expreszo-typescript/docs/syntax/) | Complete syntax reference with examples |
+| [Date / Time functions](https://pro-fa.github.io/expreszo-typescript/docs/datetime/) | ~70 date/time functions (provided by the optional `@pro-fa/expreszo-datetime` package/) |
 
 ### For Developers
 
 | Document | Description |
 |:---------|:------------|
-| [Parser](https://github.com/Pro-Fa/expreszo-typescript/blob/main/packages/expreszo/docs/parser.md) | Parser configuration, methods, customization, and the `parser.use(plugin)` API |
-| [Expression](https://github.com/Pro-Fa/expreszo-typescript/blob/main/packages/expreszo/docs/expression.md) | Expression object methods: evaluate, simplify, variables |
-| [Advanced Features](https://github.com/Pro-Fa/expreszo-typescript/blob/main/packages/expreszo/docs/advanced-features.md) | Promises, custom resolution, type conversion, operator customization |
-| [Date / Time integration](https://github.com/Pro-Fa/expreszo-typescript/blob/main/packages/expreszo/docs/datetime-integration.md) | Wiring `@pro-fa/expreszo-datetime` into a parser |
-| [Language Service](https://github.com/Pro-Fa/expreszo-typescript/blob/main/packages/expreszo/docs/language-service.md) | IDE integration: completions, hover info, diagnostics, Monaco Editor |
-| [MCP Server](https://github.com/Pro-Fa/expreszo-typescript/blob/main/packages/expreszo/docs/mcp-server.md) | Model Context Protocol server exposing the language service to AI assistants |
-| [Migration Guide](https://github.com/Pro-Fa/expreszo-typescript/blob/main/packages/expreszo/docs/migration.md) | Migrating from expr-eval, legacy mode, version history |
+| [Parser](https://pro-fa.github.io/expreszo-typescript/docs/parser/) | Parser configuration, methods, customization, and the `parser.use(plugin)` API |
+| [Expression](https://pro-fa.github.io/expreszo-typescript/docs/expression/) | Expression object methods: evaluate, simplify, variables |
+| [Advanced Features](https://pro-fa.github.io/expreszo-typescript/docs/advanced-features/) | Promises, custom resolution, type conversion, operator customization |
+| [Date / Time integration](https://pro-fa.github.io/expreszo-typescript/docs/datetime-integration/) | Wiring `@pro-fa/expreszo-datetime` into a parser |
+| [Language Service](https://pro-fa.github.io/expreszo-typescript/docs/language-service/) | IDE integration: completions, hover info, diagnostics, Monaco Editor |
+| [MCP Server](https://pro-fa.github.io/expreszo-typescript/docs/mcp-server/) | Model Context Protocol server exposing the language service to AI assistants |
+| [Migration Guide](https://pro-fa.github.io/expreszo-typescript/docs/migration/) | Migrating from expr-eval, legacy mode, version history |
 
 ### For Contributors
 
 | Document | Description |
 |:---------|:------------|
-| [Contributing](https://github.com/Pro-Fa/expreszo-typescript/blob/main/CONTRIBUTING.md) | Development setup, code style, and PR guidelines |
-| [Performance Testing](https://github.com/Pro-Fa/expreszo-typescript/blob/main/packages/expreszo/docs/performance.md) | Benchmarks, profiling, and optimization guidance |
-| [Breaking Changes](https://github.com/Pro-Fa/expreszo-typescript/blob/main/packages/expreszo/BREAKING_CHANGES.md) | Version-by-version breaking change documentation |
+| [Contributing](https://pro-fa.github.io/expreszo-typescript/docs/contributing/) | Development setup, code style, and PR guidelines |
+| [Performance Testing](https://pro-fa.github.io/expreszo-typescript/docs/performance/) | Benchmarks, profiling, and optimization guidance |
+| [Breaking Changes](https://pro-fa.github.io/expreszo-typescript/docs/breaking-changes/) | Version-by-version breaking change documentation |
 
 ## Coming from expr-eval?
 
-ExpresZo is a direct successor to [expr-eval](https://github.com/silentmatt/expr-eval). Existing expressions work out of the box. A `{ legacy: true }` option preserves older operator semantics while you migrate incrementally. See the [Migration Guide](https://github.com/Pro-Fa/expreszo-typescript/blob/main/packages/expreszo/docs/migration.md) for details.
+ExpresZo is a direct successor to [expr-eval](https://github.com/silentmatt/expr-eval). Existing expressions work out of the box. A `{ legacy: true }` option preserves older operator semantics while you migrate incrementally. See the [Migration Guide](https://pro-fa.github.io/expreszo-typescript/docs/migration/) for details.
 
 ## Origins
 
