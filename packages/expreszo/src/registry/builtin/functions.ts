@@ -17,7 +17,7 @@ import type { FunctionDescriptor } from '../function-descriptor.js';
 import { BUILTIN_FUNCTION_DOCS } from './function-docs.js';
 import {
   atan2, condition, fac, filter, fold, gamma, hypot, indexOf, join, map,
-  max, min, random, roundTo, sum, json,
+  max, min, random, roundTo, sum, json, toJson, fromJson,
   stringLength, isEmpty, stringContains, startsWith, endsWith, searchCount,
   trim, toUpper, toLower, toTitle, split, repeat, reverse, left, right,
   replace, replaceFirst, naturalSort, toNumber, toBoolean,
@@ -120,6 +120,8 @@ const RAW_BUILTIN_FUNCTIONS: readonly Omit<FunctionDescriptor, 'docs'>[] = [
   // Utility
   { name: 'if',        category: 'utility', pure: true, safe: true, async: false, impl: condition },
   { name: 'json',      category: 'utility', pure: true, safe: true, async: false, impl: json },
+  { name: 'toJson',    category: 'utility', pure: true, safe: true, async: false, impl: toJson },
+  { name: 'fromJson',  category: 'utility', pure: true, safe: true, async: false, impl: fromJson },
   { name: 'ipInRange', category: 'utility', pure: true, safe: true, async: false, impl: ipInRange },
 
   // Type-check

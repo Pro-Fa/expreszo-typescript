@@ -110,6 +110,9 @@ This is a quick reference card. For detailed documentation, see [Expression Synt
 | `keys(obj)` | `keys({a: 1, b: 2})` | ["a", "b"] |
 | `values(obj)` | `values({a: 1, b: 2})` | [1, 2] |
 | `merge(o1, o2)` | `merge({a: 1}, {b: 2})` | {a: 1, b: 2} |
+| `json(x)` | `json({a: 1})` | '{"a":1}' |
+| `toJson(x)` | `toJson([1, 2])` | "[1,2]" |
+| `fromJson(s, fallback?)` | `fromJson('{"a":1}')` | {a: 1} |
 
 ## Type Checking
 

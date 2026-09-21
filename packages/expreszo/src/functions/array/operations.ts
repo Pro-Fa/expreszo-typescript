@@ -4,6 +4,7 @@
  */
 
 import { getTypeName } from '../../types/values.js';
+import { assignOwnProperties, setOwnProperty } from '../../utils/own-property.js';
 
 export function filter(arg1: Function | any[] | undefined, arg2: Function | any[] | undefined): any[] | undefined {
   // Support both filter(array, fn) and filter(fn, array) for backwards compatibility
@@ -375,9 +376,9 @@ function flattenObject(obj: Record<string, any>, sep: any = '_', prefix = ''): a
   for (const key of Object.keys(obj)) {
     const fullKey = prefix ? `${prefix}${separator}${key}` : key;
     if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
-      Object.assign(result, flattenObject(obj[key], separator, fullKey));
+      assignOwnProperties(result, flattenObject(obj[key], separator, fullKey));
     } else {
-      result[fullKey] = obj[key];
+      setOwnProperty(result, fullKey, obj[key]);
     }
   }
   return result;

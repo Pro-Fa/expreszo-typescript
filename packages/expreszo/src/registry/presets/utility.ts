@@ -1,5 +1,5 @@
 /**
- * Utility preset — `if`, `json`, and the `as` cast operator.
+ * Utility preset — `if`, `json`, `toJson`, `fromJson`, and the `as` cast operator.
  */
 import type { OperatorDescriptor } from '../operator-descriptor.js';
 import type { FunctionDescriptor } from '../function-descriptor.js';

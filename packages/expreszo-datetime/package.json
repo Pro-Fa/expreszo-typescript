@@ -1,6 +1,6 @@
 {
   "name": "@pro-fa/expreszo-datetime",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Optional Luxon-backed date/time functions for the @pro-fa/expreszo expression evaluator.",
   "license": "MIT",
   "type": "module",
@@ -40,7 +40,7 @@
     "plugin"
   ],
   "peerDependencies": {
-    "@pro-fa/expreszo": "^0.6.1"
+    "@pro-fa/expreszo": "^0.6.1 || ^0.7.0"
   },
   "dependencies": {
     "luxon": "^3.5.0"

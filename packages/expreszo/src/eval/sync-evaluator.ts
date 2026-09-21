@@ -36,6 +36,7 @@ import type {
 } from '../types/values.js';
 import { VariableError } from '../types/errors.js';
 import { ExpressionValidator } from '../validation/expression-validator.js';
+import { assignOwnProperties } from '../utils/own-property.js';
 import { AsyncRequiredError, isPromiseLike } from './value.js';
 
 /** Counter for generating unique keys for inline-defined functions. */
@@ -135,7 +136,7 @@ function evalObject(
       if (spread === null || typeof spread !== 'object' || Array.isArray(spread)) {
         throw new Error(`Spread in object literal expects an object, got ${typeof spread}. Example: {...myObj, key: value}`);
       }
-      Object.assign(obj, spread);
+      assignOwnProperties(obj, spread as Record<string, Value>);
     } else {
       const prop = entry as import('../ast/nodes.js').ObjectProperty;
       ExpressionValidator.validateMemberAccess(prop.key, expr.toString());

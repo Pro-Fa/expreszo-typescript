@@ -109,6 +109,19 @@ export const BUILTIN_FUNCTION_DOCS: Readonly<Record<string, FunctionDocs>> = {
       { name: 'x', description: 'Value to stringify.', type: 'any' }
     ]
   },
+  toJson: {
+    description: 'Alias for json. Return JSON string representation of x.',
+    params: [
+      { name: 'x', description: 'Value to stringify.', type: 'any' }
+    ]
+  },
+  fromJson: {
+    description: 'Parse a JSON string into an object, array, or scalar. Keys named `__proto__`, `prototype`, or `constructor` are dropped. Throws on invalid JSON unless a fallback is given.',
+    params: [
+      { name: 'text', description: 'JSON string to parse.', type: 'string' },
+      { name: 'fallback', description: 'Optional value returned when text is undefined or not valid JSON.', optional: true, type: 'any' }
+    ]
+  },
   ipInRange: {
     description: 'Return true if the IPv4 address falls within the given CIDR block (e.g. "10.0.0.0/8"). IPv4 only.',
     params: [

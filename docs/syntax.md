@@ -165,6 +165,8 @@ Besides the "operator" functions, there are several pre-defined functions. You c
 | if(c, a, b)   | Function form of c ? a : b. Uses lazy evaluation: only the matching branch is evaluated. |
 | coalesce(a, b, ...)   | Returns the first non-null and non-empty string value from the arguments. Numbers and booleans (including 0 and false) are considered valid values. |
 | json(value)   | Converts a value to a JSON string representation. |
+| toJson(value) | Alias for `json`. |
+| fromJson(text, fallback?) | Parses a JSON string into an object, array, or scalar. Throws on invalid JSON, or returns `fallback` when one is given. |
 | ipInRange(ip, cidr) | Returns `true` if the IPv4 address `ip` falls within the CIDR block `cidr` (e.g. `"10.0.0.0/8"`), `false` otherwise. IPv4 only. |
 
 ### Type Checking Functions
@@ -679,7 +681,7 @@ Check if a value exists in an array:
 
 > **Note:** The `in` operator may be disabled by your application.
 
-## JSON Function
+## JSON Functions
 
 Convert values to JSON strings:
 
@@ -687,4 +689,26 @@ Convert values to JSON strings:
 json([1, 2, 3])           → "[1,2,3]"
 json({a: 1, b: 2})        → '{"a":1,"b":2}'
 json("hello")             → '"hello"'
+toJson([1, 2, 3])         → "[1,2,3]"  (alias for json)
 ```
+
+Parse JSON strings back into values:
+
+```
+fromJson('{"a": 1, "b": [2, 3]}')  → {a: 1, b: [2, 3]}
+fromJson('[1, 2, 3]')              → [1, 2, 3]
+fromJson('42')                     → 42
+fromJson('not json')               → error
+fromJson('not json', {})           → {}
+fromJson(undefined, [])            → []
+fromJson(toJson({a: 1}))           → {a: 1}
+(fromJson('{"a": {"b": 2}}')).a.b  → 2
+```
+
+Wrap the call in parentheses (or assign it to a variable first) to access members of the result.
+
+`fromJson` applies the same protections as the rest of the language:
+
+- Keys named `__proto__`, `prototype`, or `constructor` are dropped from the result.
+- Nesting deeper than 256 levels is rejected (or returns the fallback).
+- Error messages report only the position of the problem, never the input text.

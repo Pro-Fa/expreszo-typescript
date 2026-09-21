@@ -85,7 +85,7 @@ export const withTypeCheck: ParserPreset = {
   functions: TYPE_CHECK_FUNCTIONS
 };
 
-/** `if`, `json`, and the `as` cast operator. */
+/** `if`, `json`, `toJson`, `fromJson`, and the `as` cast operator. */
 export const withUtility: ParserPreset = {
   operators: UTILITY_OPERATORS,
   functions: UTILITY_FUNCTIONS
