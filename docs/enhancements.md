@@ -17,7 +17,8 @@ This TypeScript port adds the following features over the original library:
 - **String concatenation with `|`** - Concatenate strings using the `|` (pipe) operator
 - **SQL-style CASE blocks** - Multi-way conditionals with `case/when/then/else/end`
 - **Object construction** - Create objects with `{key: value}` syntax
-- **`json()` function** - Convert values to JSON strings
+- **`json()` / `toJson()` functions** - Convert values to JSON strings
+- **`fromJson()` function** - Parse JSON strings into values, with an optional fallback for invalid input
 
 ### Developer Integration Features
 

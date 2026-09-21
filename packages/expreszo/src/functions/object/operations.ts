@@ -4,6 +4,7 @@
  */
 
 import { Value, ValueObject, getTypeName } from '../../types/values.js';
+import { assignOwnProperties, setOwnProperty } from '../../utils/own-property.js';
 
 /**
  * Merges two or more objects together.
@@ -25,7 +26,11 @@ export function merge(...objects: (ValueObject | undefined)[]): ValueObject | un
     }
   }
 
-  return Object.assign({}, ...objects);
+  const result: ValueObject = {};
+  for (const obj of objects) {
+    assignOwnProperties(result, obj as ValueObject);
+  }
+  return result;
 }
 
 /**
@@ -92,7 +97,7 @@ export function flatten(
         flattenHelper((current as ValueObject)[key], newKey);
       }
     } else {
-      result[prefix] = current;
+      setOwnProperty(result, prefix, current);
     }
   }
 
@@ -137,7 +142,7 @@ export function pick(
       );
     }
     if (Object.prototype.hasOwnProperty.call(obj, k)) {
-      result[k] = obj[k];
+      setOwnProperty(result, k, obj[k]);
     }
   }
   return result;
@@ -182,7 +187,7 @@ export function omit(
   const result: ValueObject = {};
   for (const k of Object.keys(obj)) {
     if (!exclude.has(k)) {
-      result[k] = obj[k];
+      setOwnProperty(result, k, obj[k]);
     }
   }
   return result;
@@ -198,7 +203,7 @@ export function mapValues(obj: any, fn: any): ValueObject | undefined {
   }
   const result: ValueObject = {};
   for (const [key, value] of Object.entries(obj)) {
-    result[key] = fn(value, key);
+    setOwnProperty(result, key, fn(value, key));
   }
   return result;
 }

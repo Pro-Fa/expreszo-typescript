@@ -1,6 +1,6 @@
 {
   "name": "@pro-fa/expreszo-mcp-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP (Model Context Protocol) server exposing the @pro-fa/expreszo language service to AI assistants.",
   "license": "MIT",
   "type": "module",
@@ -40,7 +40,7 @@
     "ai"
   ],
   "dependencies": {
-    "@pro-fa/expreszo": "^0.6.0",
+    "@pro-fa/expreszo": "^0.6.0 || ^0.7.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "vscode-languageserver-textdocument": "^1.0.12",
     "vscode-languageserver-types": "^3.17.5",

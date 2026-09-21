@@ -270,6 +270,16 @@ Convert values to JSON strings:
 ```
 json([1, 2, 3])           // "[1,2,3]"
 json({a: 1, b: 2})        // '{"a":1,"b":2}'
+toJson([1, 2, 3])         // "[1,2,3]" (alias for json)
+```
+
+### fromJson() Function
+
+Parse JSON strings into values, with an optional fallback for invalid input:
+
+```
+fromJson('{"a": 1}')          // {a: 1}
+fromJson('oops', {})          // {}
 ```
 
 ## Operator Customization

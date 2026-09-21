@@ -8,6 +8,7 @@
  */
 
 import { getTypeName } from '../../types/values.js';
+import { setOwnProperty } from '../../utils/own-property.js';
 
 export function range(
   start: number | undefined,
@@ -160,7 +161,7 @@ export function groupBy(
   for (let i = 0; i < a.length; i++) {
     const key = String(fn(a[i], i));
     if (!Object.prototype.hasOwnProperty.call(result, key)) {
-      result[key] = [];
+      setOwnProperty(result, key, []);
     }
     result[key].push(a[i]);
   }
@@ -189,7 +190,7 @@ export function countBy(
   const result: Record<string, number> = {};
   for (let i = 0; i < a.length; i++) {
     const key = String(fn(a[i], i));
-    result[key] = (Object.prototype.hasOwnProperty.call(result, key) ? result[key] : 0) + 1;
+    setOwnProperty(result, key, (Object.prototype.hasOwnProperty.call(result, key) ? result[key] : 0) + 1);
   }
   return result;
 }

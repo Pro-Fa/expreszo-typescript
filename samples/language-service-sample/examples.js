@@ -172,6 +172,16 @@ const exampleCases = [
         }
     },
     {
+        id: 'from-json',
+        title: 'Parse JSON Strings',
+        description: 'Parse a JSON payload with fromJson, falling back to a default when the input is not valid JSON.',
+        expression: '{\n  order: fromJson(payload),\n  total: sum(map((fromJson(payload)).lines, l => l.qty * l.price)),\n  settings: fromJson(rawSettings, { theme: "light" })\n}',
+        context: {
+            payload: '{"id": 7, "lines": [{"qty": 2, "price": 4.5}, {"qty": 1, "price": 10}]}',
+            rawSettings: 'not json'
+        }
+    },
+    {
         id: 'datetime-format',
         title: 'Format a future date',
         description: 'Add 7 days to today and render as yyyy-MM-dd. Requires the Date/Time plugin.',
