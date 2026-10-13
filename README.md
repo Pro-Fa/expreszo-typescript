@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Smashman/expreszo-typescript/refs/heads/main/docs/logo_dark.png">
-  <img src="https://raw.githubusercontent.com/Smashman/expreszo-typescript/refs/heads/main/docs/logo.png" alt="ExpresZo" width="420">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Pro-Fa/expreszo-typescript/refs/heads/main/docs/logo_dark.png">
+  <img src="https://raw.githubusercontent.com/Pro-Fa/expreszo-typescript/refs/heads/main/docs/logo.png" alt="ExpresZo" width="420">
 </picture>
 
 # ExpresZo Typescript
